@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>遠雄人壽 AI 保險助理</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* ══════════════════════════════════
+           THEME VARIABLES
+        ══════════════════════════════════ */
+        :root {
+            /* Gold palette */
+            --gold:        #B8965A;
+            --gold-dark:   #8A6D38;
+            --gold-mid:    #C9A86C;
+            --gold-light:  #E8D5B0;
+            --gold-faint:  #F7F1E5;
+
+            /* Ink (warm black) */
+            --ink:         #1A1814;
+            --ink-mid:     #3D3830;
+            --ink-soft:    #6B6158;
+
+            /* Neutrals */
+            --white:       #FFFFFF;
+            --warm-50:     #FDFBF8;
+            --warm-100:    #F7F3EC;
+            --warm-200:    #EDE8DF;
+            --warm-300:    #D9D2C5;
+            --shadow-sm:   0 1px 3px rgba(26,24,20,0.07);
+            --shadow-md:   0 4px 16px rgba(26,24,20,0.09);
+
+            /* ── LIGHT MODE (default for this design) ── */
+            --land-bg:          #F5F1E8;
+            --land-text:        #1A1814;
+            --land-text-dim:    rgba(26,24,20,0.5);
+            --land-text-faint:  rgba(26,24,20,0.3);
+            --land-card-bg:     rgba(255,255,255,0.75);
+            --land-card-border: rgba(184,150,90,0.18);
+            --land-card-hover-border: rgba(184,150,90,0.55);
+            --land-card-title:  #1A1814;
+            --land-card-desc:   #6B6158;
+            --land-card-cta:    rgba(26,24,20,0.3);
+            --land-footer:      rgba(26,24,20,0.28);
+            --land-divider:     rgba(184,150,90,0.25);
+            --land-label:       #B8965A;
+            --toggle-bg:        rgba(26,24,20,0.06);
+            --toggle-border:    rgba(184,150,90,0.25);
+            --toggle-color:     rgba(26,24,20,0.55);
+        }
+
+        /* ── DARK MODE ── */
+        [data-theme="dark"] {
+            --land-bg:          #0E0C0A;
+            --land-text:        #EDE8DF;
+            --land-text-dim:    rgba(237,232,223,0.45);
+            --land-text-faint:  rgba(237,232,223,0.22);
+            --land-card-bg:     rgba(255,255,255,0.045);
+            --land-card-border: rgba(184,150,90,0.15);
+            --land-card-hover-border: rgba(184,150,90,0.45);
+            --land-card-title:  #EDE8DF;
+            --land-card-desc:   rgba(237,232,223,0.45);
+            --land-card-cta:    rgba(237,232,223,0.22);
+            --land-footer:      rgba(237,232,223,0.2);
+            --land-divider:     rgba(184,150,90,0.18);
+            --land-label:       #C9A86C;
+            --toggle-bg:        rgba(255,255,255,0.06);
+            --toggle-border:    rgba(184,150,90,0.2);
+            --toggle-color:     rgba(237,232,223,0.55);
+        }
+
+        html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang TC', 'Noto Sans TC', Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+
+        .screen { position: fixed; inset: 0; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+        .screen.active { opacity: 1; pointer-events: all; }
+
+        /* ══════════════════════════════════
+           MARBLE BACKGROUND
+        ══════════════════════════════════ */
+        #screen-landing {
+            display: flex; align-items: flex-start; justify-content: center;
+            overflow-y: auto;
+        }
+
+        /* CSS marble base */
+        .marble-base {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background-color: var(--land-bg);
+            transition: background-color 0.6s ease;
+        }
+
+        /* Light marble: warm white Calacatta */
+        .marble-veins-light {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 1;
+            background-image:
+                repeating-linear-gradient(112deg,
+                    transparent 0px, transparent 110px,
+                    rgba(150,138,120,0.065) 110px, rgba(150,138,120,0.065) 112px,
+                    rgba(150,138,120,0.04) 112px, rgba(150,138,120,0.04) 115px,
+                    transparent 115px, transparent 320px),
+                repeating-linear-gradient(74deg,
+                    transparent 0px, transparent 180px,
+                    rgba(135,124,108,0.05) 180px, rgba(135,124,108,0.05) 181px,
+                    transparent 181px, transparent 420px),
+                repeating-linear-gradient(128deg,
+                    transparent 0px, transparent 260px,
+                    rgba(184,150,90,0.035) 260px, rgba(184,150,90,0.035) 262px,
+                    transparent 262px, transparent 540px),
+                repeating-linear-gradient(95deg,
+                    transparent 0px, transparent 340px,
+                    rgba(140,130,112,0.04) 340px, rgba(140,130,112,0.04) 341px,
+                    transparent 341px, transparent 600px),
+                linear-gradient(150deg, #F8F5EF 0%, #EDE7DA 45%, #F3EFE4 75%, #F9F6EF 100%);
+            transition: opacity 0.6s ease;
+        }
+        [data-theme="dark"] .marble-veins-light { opacity: 0; }
+
+        /* Dark marble: Nero Marquina — near-black with pale veins */
+        .marble-veins-dark {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0;
+            background-image:
+                repeating-linear-gradient(112deg,
+                    transparent 0px, transparent 110px,
+                    rgba(237,228,210,0.055) 110px, rgba(237,228,210,0.055) 112px,
+                    rgba(237,228,210,0.03) 112px, rgba(237,228,210,0.03) 115px,
+                    transparent 115px, transparent 320px),
+                repeating-linear-gradient(74deg,
+                    transparent 0px, transparent 180px,
+                    rgba(200,190,168,0.04) 180px, rgba(200,190,168,0.04) 181px,
+                    transparent 181px, transparent 420px),
+                repeating-linear-gradient(128deg,
+                    transparent 0px, transparent 260px,
+                    rgba(184,150,90,0.055) 260px, rgba(184,150,90,0.055) 262px,
+                    transparent 262px, transparent 540px),
+                repeating-linear-gradient(95deg,
+                    transparent 0px, transparent 340px,
+                    rgba(220,210,188,0.035) 340px, rgba(220,210,188,0.035) 341px,
+                    transparent 341px, transparent 600px),
+                linear-gradient(150deg, #100E0B 0%, #0A0806 45%, #120F0C 75%, #0F0D0A 100%);
+            transition: opacity 0.6s ease;
+        }
+        [data-theme="dark"] .marble-veins-dark { opacity: 1; }
+
+        /* SVG noise micro-texture */
+        .marble-noise {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            opacity: 0.03;
+        }
+        [data-theme="dark"] .marble-noise { opacity: 0.04; }
+
+        /* ── Theme toggle ── */
+        .theme-toggle {
+            position: absolute; top: 1.5rem; right: 1.5rem; z-index: 10;
+            width: 38px; height: 38px; border-radius: 7px;
+            background: var(--toggle-bg); border: 1px solid var(--toggle-border);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            color: var(--toggle-color); transition: all 0.2s;
+        }
+        .theme-toggle:hover { border-color: var(--gold); color: var(--gold); }
+        .theme-toggle svg { width: 15px; height: 15px; }
+        .icon-sun, .icon-moon { position: absolute; transition: opacity 0.25s; }
+        .icon-moon { opacity: 0; }
+        [data-theme="light"] .icon-sun  { opacity: 0; }
+        [data-theme="light"] .icon-moon { opacity: 1; }
+
+        /* ── Landing content ── */
+        .landing-content {
+            position: relative; z-index: 1;
+            width: 100%; max-width: 720px;
+            padding: 5rem 2rem;
+            display: flex; flex-direction: column;
+            align-items: center; gap: 2.75rem;
+            min-height: 100vh; justify-content: center;
+        }
+
+        /* Brand */
+        .landing-brand {
+            display: flex; flex-direction: column; align-items: center; gap: 1rem;
+            animation: landIn 0.7s ease both;
+        }
+        @keyframes landIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+        .brand-logo-row { display: flex; align-items: center; gap: 1rem; }
+        .brand-svg { width: 46px; height: 38px; flex-shrink: 0; }
+        .brand-company {
+            font-size: 1.45rem; font-weight: 600; letter-spacing: 0.06em;
+            color: var(--land-text); transition: color 0.5s;
+        }
+
+        /* Gold rule */
+        .brand-rule {
+            display: flex; align-items: center; gap: 0.75rem; width: 200px;
+        }
+        .brand-rule-line {
+            flex: 1; height: 1px; background: var(--land-divider); transition: background 0.5s;
+        }
+        .brand-rule-diamond {
+            width: 5px; height: 5px; background: var(--gold);
+            transform: rotate(45deg); flex-shrink: 0;
+            opacity: 0.7;
+        }
+
+        .brand-tagline {
+            font-size: 0.78rem; letter-spacing: 0.12em;
+            text-transform: uppercase; color: var(--land-text-dim);
+            transition: color 0.5s;
+        }
+
+        /* Section label */
+        .section-label {
+            font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase;
+            color: var(--land-label); transition: color 0.5s;
+            animation: landIn 0.7s 0.1s ease both;
+        }
+
+        /* Cards */
+        .mode-cards {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 1.1rem; width: 100%; max-width: 580px;
+        }
+        .mode-card {
+            background: var(--land-card-bg);
+            border: 1px solid var(--land-card-border);
+            border-radius: 8px; padding: 1.75rem 1.5rem;
+            cursor: pointer; position: relative; overflow: hidden;
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+            animation: landIn 0.7s ease both;
+        }
+        .mode-card:nth-child(1) { animation-delay: 0.15s; }
+        .mode-card:nth-child(2) { animation-delay: 0.22s; }
+        .mode-card:hover {
+            border-color: var(--land-card-hover-border);
+            box-shadow: 0 8px 32px rgba(184,150,90,0.12), 0 0 0 1px rgba(184,150,90,0.12);
+        }
+
+        /* Gold shimmer spotlight */
+        .mode-card::before {
+            content: ''; position: absolute; inset: 0; border-radius: 8px;
+            background: radial-gradient(300px circle at var(--cx, 50%) var(--cy, 50%),
+                rgba(184,150,90,0.09) 0%, transparent 65%);
+            opacity: 0; transition: opacity 0.4s; pointer-events: none;
+        }
+        .mode-card:hover::before { opacity: 1; }
+
+        /* Gold top border accent */
+        .mode-card::after {
+            content: ''; position: absolute;
+            top: 0; left: 15%; right: 15%; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            opacity: 0; transition: opacity 0.35s;
+        }
+        .mode-card:hover::after { opacity: 0.6; }
+
+        .card-num {
+            font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase;
+            color: var(--gold); margin-bottom: 1rem; display: block;
+            font-weight: 500;
+        }
+        .card-title {
+            font-size: 0.975rem; font-weight: 600; letter-spacing: 0.02em;
+            color: var(--land-card-title); margin-bottom: 0.55rem;
+            position: relative; z-index: 1; transition: color 0.4s;
+        }
+        .card-desc {
+            font-size: 0.815rem; color: var(--land-card-desc); line-height: 1.7;
+            position: relative; z-index: 1; transition: color 0.4s;
+        }
+        .card-cta {
+            display: flex; align-items: center; gap: 0.45rem;
+            font-size: 0.74rem; letter-spacing: 0.06em;
+            color: var(--land-card-cta); margin-top: 1.1rem;
+            position: relative; z-index: 1; transition: color 0.25s, gap 0.25s;
+        }
+        .card-cta span { border-bottom: 1px solid transparent; transition: border-color 0.25s; }
+        .card-cta svg { width: 12px; height: 12px; transition: transform 0.25s; }
+        .mode-card:hover .card-cta { color: var(--gold); gap: 0.65rem; }
+        .mode-card:hover .card-cta span { border-color: rgba(184,150,90,0.4); }
+        .mode-card:hover .card-cta svg { transform: translateX(3px); }
+
+        .landing-footer {
+            font-size: 0.67rem; letter-spacing: 0.02em;
+            color: var(--land-footer); text-align: center; line-height: 1.85;
+            transition: color 0.5s;
+            animation: landIn 0.7s 0.3s ease both;
+        }
+
+        /* ══════════════════════════════════
+           CHAT — SHARED
+        ══════════════════════════════════ */
+        #screen-chat { background: var(--warm-50); display: flex; flex-direction: column; }
+
+        .chat-header {
+            background: var(--white); height: 58px; padding: 0 1.25rem;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid var(--warm-200); flex-shrink: 0; z-index: 10;
+            box-shadow: 0 1px 0 rgba(184,150,90,0.08);
+        }
+        .h-left { display: flex; align-items: center; gap: 0.65rem; flex-shrink: 0; }
+        .back-btn {
+            width: 31px; height: 31px; border: 1px solid var(--warm-200);
+            border-radius: 6px; background: transparent; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--ink-soft); transition: all 0.2s;
+        }
+        .back-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-faint); }
+        .back-btn svg { width: 14px; height: 14px; }
+        .h-logo { width: 25px; height: 20px; }
+        .h-company { font-size: 0.835rem; font-weight: 600; color: var(--ink); letter-spacing: 0.04em; }
+        .h-sep { width: 1px; height: 14px; background: rgba(184,150,90,0.25); }
+
+        .h-right { display: flex; align-items: center; gap: 0.5rem; }
+        .mode-tabs {
+            display: flex; background: var(--warm-100);
+            border: 1px solid rgba(184,150,90,0.12);
+            border-radius: 7px; padding: 2px; gap: 1px;
+        }
+        .mode-tab {
+            padding: 0.28rem 0.85rem; border: none; border-radius: 5px;
+            font-size: 0.77rem; font-weight: 500; cursor: pointer;
+            color: var(--ink-soft); background: transparent; white-space: nowrap;
+            transition: all 0.2s; letter-spacing: 0.01em;
+        }
+        .mode-tab.active { background: var(--white); color: var(--gold-dark); font-weight: 600; box-shadow: var(--shadow-sm); }
+        .mode-tab:not(.active):hover { color: var(--ink); background: rgba(255,255,255,0.5); }
+
+        .h-theme-btn {
+            width: 30px; height: 30px; border-radius: 6px;
+            background: var(--warm-100); border: 1px solid rgba(184,150,90,0.15);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            color: var(--ink-soft); transition: all 0.2s; position: relative; flex-shrink: 0;
+        }
+        .h-theme-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-faint); }
+        .h-theme-btn svg { width: 14px; height: 14px; }
+        .h-theme-btn .icon-sun, .h-theme-btn .icon-moon { position: absolute; transition: opacity 0.25s; }
+        .h-theme-btn .icon-moon { opacity: 0; }
+        [data-theme="light"] .h-theme-btn .icon-sun  { opacity: 0; }
+        [data-theme="light"] .h-theme-btn .icon-moon { opacity: 1; }
+
+        /* File bar */
+        .file-bar {
+            display: none; align-items: center; justify-content: space-between;
+            padding: 0.4rem 1.25rem;
+            background: var(--gold-faint); border-bottom: 1px solid rgba(184,150,90,0.15);
+            flex-shrink: 0;
+        }
+        .file-bar.on { display: flex; }
+        .file-bar-left { display: flex; align-items: center; gap: 0.45rem; font-size: 0.77rem; color: var(--gold-dark); font-weight: 500; }
+        .file-bar-left svg { width: 13px; height: 13px; }
+        .change-btn {
+            display: flex; align-items: center; gap: 0.3rem;
+            padding: 0.22rem 0.6rem; background: var(--white);
+            border: 1px solid rgba(184,150,90,0.3); border-radius: 5px;
+            font-size: 0.71rem; color: var(--gold-dark); cursor: pointer; transition: all 0.2s;
+        }
+        .change-btn:hover { background: var(--gold); color: var(--white); border-color: var(--gold); }
+        .change-btn svg { width: 11px; height: 11px; }
+
+        /* Messages */
+        .chat-main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+        .messages {
+            flex: 1; overflow-y: auto; padding: 1.25rem;
+            display: flex; flex-direction: column; gap: 0.875rem;
+        }
+        .messages::-webkit-scrollbar { width: 3px; }
+        .messages::-webkit-scrollbar-track { background: transparent; }
+        .messages::-webkit-scrollbar-thumb { background: var(--warm-200); border-radius: 99px; }
+
+        /* Welcome */
+        .welcome-wrap {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            flex: 1; padding: 2rem 1.5rem; text-align: center;
+        }
+        .welcome-icon-wrap {
+            width: 58px; height: 58px; border-radius: 12px;
+            background: var(--gold-faint); border: 1px solid rgba(184,150,90,0.2);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.1rem;
+        }
+        .welcome-icon-wrap svg { width: 26px; height: 26px; color: var(--gold); }
+        .welcome-title { font-size: 1.05rem; font-weight: 600; color: var(--ink); margin-bottom: 0.3rem; }
+        .welcome-desc { font-size: 0.845rem; color: var(--ink-soft); line-height: 1.7; max-width: 310px; }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin-top: 1rem; max-width: 440px; }
+        .chip {
+            padding: 0.32rem 0.78rem;
+            background: var(--white); border: 1px solid rgba(184,150,90,0.2);
+            border-radius: 4px; font-size: 0.75rem; color: var(--ink-soft);
+            cursor: pointer; transition: all 0.2s;
+        }
+        .chip:hover { border-color: var(--gold); color: var(--gold-dark); background: var(--gold-faint); }
+
+        /* Message bubbles */
+        .msg { display: flex; gap: 0.6rem; max-width: 80%; animation: msgIn 0.25s ease both; }
+        @keyframes msgIn { from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:translateY(0)} }
+        .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+        .msg-av {
+            width: 30px; height: 30px; border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; padding: 5px;
+        }
+        .msg.assistant .msg-av { background: var(--white); border: 1px solid rgba(184,150,90,0.18); }
+        .msg.assistant .msg-av svg { width: 100%; height: 100%; }
+        .msg.user .msg-av { background: var(--warm-200); color: var(--ink-soft); padding: 0; font-size: 0.68rem; font-weight: 600; }
+        .msg-body { display: flex; flex-direction: column; gap: 0.16rem; }
+        .msg-text {
+            padding: 0.75rem 0.95rem; border-radius: 9px;
+            line-height: 1.65; font-size: 0.86rem;
+        }
+        .msg.assistant .msg-text {
+            background: var(--white); color: var(--ink);
+            border-bottom-left-radius: 2px; box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(184,150,90,0.1);
+        }
+        .msg.user .msg-text {
+            background: var(--ink); color: rgba(237,232,223,0.92);
+            border-bottom-right-radius: 2px;
+        }
+        .msg-time { font-size: 0.63rem; color: rgba(107,97,88,0.55); padding: 0 0.15rem; }
+        .msg.user .msg-time { text-align: right; }
+
+        /* Typing */
+        .typing-row { display: flex; gap: 0.6rem; align-items: flex-end; }
+        .typing-av {
+            width: 30px; height: 30px; border-radius: 7px;
+            background: var(--white); border: 1px solid rgba(184,150,90,0.18);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; padding: 5px;
+        }
+        .typing-av svg { width: 100%; height: 100%; }
+        .typing-bubble {
+            background: var(--white); border: 1px solid rgba(184,150,90,0.1);
+            border-radius: 9px; border-bottom-left-radius: 2px;
+            padding: 0.78rem 0.95rem; box-shadow: var(--shadow-sm);
+            display: flex; align-items: center; gap: 5px;
+        }
+        .td { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); opacity: 0.5; animation: tdWave 1.4s ease-in-out infinite; }
+        .td:nth-child(2) { animation-delay: 0.22s; }
+        .td:nth-child(3) { animation-delay: 0.44s; }
+        @keyframes tdWave { 0%,60%,100%{transform:translateY(0);opacity:0.45} 30%{transform:translateY(-5px);opacity:1} }
+
+        /* Input */
+        .input-area { padding: 0.875rem 1.25rem; background: var(--white); border-top: 1px solid rgba(184,150,90,0.1); flex-shrink: 0; }
+        .input-wrap {
+            display: flex; gap: 0.55rem; align-items: flex-end;
+            background: var(--warm-50); border: 1.5px solid var(--warm-200);
+            border-radius: 9px; padding: 0.5rem 0.5rem 0.5rem 0.875rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-wrap:focus-within { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(184,150,90,0.08); background: var(--white); }
+        .input-field {
+            flex: 1; border: none; background: transparent;
+            font-size: 0.86rem; color: var(--ink); resize: none;
+            min-height: 22px; max-height: 120px; font-family: inherit;
+            line-height: 1.5; outline: none;
+        }
+        .input-field::placeholder { color: rgba(107,97,88,0.42); }
+        .send-btn {
+            width: 33px; height: 33px; background: var(--ink);
+            border: none; border-radius: 7px; color: var(--gold-light);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; flex-shrink: 0;
+        }
+        .send-btn:hover:not(:disabled) { background: var(--gold-dark); box-shadow: 0 4px 12px rgba(184,150,90,0.25); }
+        .send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .send-btn svg { width: 15px; height: 15px; }
+
+        /* ══════════════════════════════════
+           LOADING OVERLAY
+        ══════════════════════════════════ */
+        .ov {
+            position: fixed; inset: 0;
+            background: rgba(14,12,10,0.72);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.25s;
+        }
+        .ov.on { opacity: 1; pointer-events: all; }
+        .ov-card {
+            background: var(--white); border-radius: 12px;
+            padding: 2.1rem 1.85rem; max-width: 270px; width: 90%;
+            display: flex; flex-direction: column; align-items: center; gap: 1rem;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.2);
+            border: 1px solid rgba(184,150,90,0.12);
+        }
+        .ov-icon {
+            width: 48px; height: 48px; border-radius: 10px;
+            background: var(--gold-faint); border: 1px solid rgba(184,150,90,0.2);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .ov-icon svg { width: 24px; height: 24px; color: var(--gold); }
+        .ov-title { font-size: 0.93rem; font-weight: 600; color: var(--ink); text-align: center; letter-spacing: 0.01em; }
+        .ov-sub { font-size: 0.73rem; color: var(--ink-soft); text-align: center; margin-top: -0.5rem; }
+        .ov-bar { width: 100%; height: 1.5px; background: var(--warm-200); border-radius: 99px; overflow: hidden; }
+        .ov-fill { height: 100%; background: linear-gradient(90deg, var(--gold-dark), var(--gold-mid)); border-radius: 99px; animation: ovFill 2.2s ease-in-out infinite; }
+        @keyframes ovFill { 0%{width:0%} 70%{width:85%} 100%{width:100%} }
+
+        /* ══════════════════════════════════
+           MODAL
+        ══════════════════════════════════ */
+        .modal-ov {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center;
+            z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+        }
+        .modal-ov.on { opacity: 1; pointer-events: all; }
+        .modal-card {
+            background: var(--white); border-radius: 10px;
+            padding: 1.75rem; max-width: 310px; width: 90%;
+            border: 1px solid rgba(184,150,90,0.15);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            transform: translateY(10px); transition: transform 0.2s ease;
+        }
+        .modal-ov.on .modal-card { transform: translateY(0); }
+        .modal-ico { width: 42px; height: 42px; border-radius: 9px; background: var(--gold-faint); display: flex; align-items: center; justify-content: center; margin-bottom: 0.875rem; border: 1px solid rgba(184,150,90,0.2); }
+        .modal-ico svg { width: 20px; height: 20px; color: var(--gold); }
+        .modal-title { font-size: 0.975rem; font-weight: 700; color: var(--ink); margin-bottom: 0.3rem; }
+        .modal-desc { font-size: 0.825rem; color: var(--ink-soft); line-height: 1.6; margin-bottom: 1.1rem; }
+        .modal-btns { display: flex; gap: 0.5rem; }
+        .btn-cancel { flex: 1; padding: 0.58rem; border: 1px solid var(--warm-200); border-radius: 6px; background: transparent; font-size: 0.825rem; color: var(--ink-soft); cursor: pointer; transition: all 0.2s; }
+        .btn-cancel:hover { border-color: var(--warm-300); background: var(--warm-50); }
+        .btn-confirm { flex: 1; padding: 0.58rem; border: none; border-radius: 6px; background: var(--ink); font-size: 0.825rem; color: var(--gold-light); cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        .btn-confirm:hover { background: var(--gold-dark); box-shadow: 0 4px 12px rgba(184,150,90,0.2); }
+
+        /* ══════════════════════════════════
+           CHAT DARK MODE
+        ══════════════════════════════════ */
+        [data-theme="dark"] #screen-chat              { background: #0A0806; }
+        [data-theme="dark"] .chat-header              { background: #100E0B; border-color: rgba(184,150,90,0.1); box-shadow: none; }
+        [data-theme="dark"] .h-company                { color: #C8BEA8; }
+        [data-theme="dark"] .h-sep                    { background: rgba(184,150,90,0.15); }
+        [data-theme="dark"] .back-btn                 { border-color: rgba(255,255,255,0.08); color: rgba(237,232,223,0.38); }
+        [data-theme="dark"] .back-btn:hover           { border-color: var(--gold); color: var(--gold); background: rgba(184,150,90,0.08); }
+        [data-theme="dark"] .mode-tabs                { background: rgba(255,255,255,0.04); border-color: rgba(184,150,90,0.1); }
+        [data-theme="dark"] .mode-tab                 { color: rgba(237,232,223,0.3); }
+        [data-theme="dark"] .mode-tab.active          { background: rgba(184,150,90,0.12); color: var(--gold-mid); box-shadow: none; }
+        [data-theme="dark"] .mode-tab:not(.active):hover { background: rgba(255,255,255,0.05); color: rgba(237,232,223,0.65); }
+        [data-theme="dark"] .h-theme-btn              { background: rgba(255,255,255,0.04); border-color: rgba(184,150,90,0.12); color: rgba(237,232,223,0.4); }
+        [data-theme="dark"] .h-theme-btn:hover        { border-color: var(--gold); color: var(--gold); background: rgba(184,150,90,0.08); }
+        [data-theme="dark"] .file-bar                 { background: rgba(184,150,90,0.07); border-color: rgba(184,150,90,0.14); }
+        [data-theme="dark"] .file-bar-left            { color: var(--gold-mid); }
+        [data-theme="dark"] .change-btn               { background: rgba(255,255,255,0.04); border-color: rgba(184,150,90,0.25); color: var(--gold-mid); }
+        [data-theme="dark"] .chat-main,
+        [data-theme="dark"] .messages                 { background: #0A0806; }
+        [data-theme="dark"] .messages::-webkit-scrollbar-thumb { background: rgba(184,150,90,0.12); }
+        [data-theme="dark"] .msg.assistant .msg-av    { background: rgba(255,255,255,0.05); border-color: rgba(184,150,90,0.14); }
+        [data-theme="dark"] .typing-av                { background: rgba(255,255,255,0.05); border-color: rgba(184,150,90,0.14); }
+        [data-theme="dark"] .msg.user .msg-av         { background: rgba(255,255,255,0.07); color: rgba(237,232,223,0.45); }
+        [data-theme="dark"] .msg.assistant .msg-text  { background: #1A1510; border-color: rgba(184,150,90,0.1); color: #D8CFBF; }
+        [data-theme="dark"] .msg.user .msg-text       { background: #2A2218; color: rgba(237,232,223,0.88); }
+        [data-theme="dark"] .msg-time                 { color: rgba(237,232,223,0.16); }
+        [data-theme="dark"] .typing-bubble            { background: #1A1510; border-color: rgba(184,150,90,0.1); }
+        [data-theme="dark"] .input-area               { background: #100E0B; border-color: rgba(184,150,90,0.08); }
+        [data-theme="dark"] .input-wrap               { background: rgba(255,255,255,0.03); border-color: rgba(184,150,90,0.12); }
+        [data-theme="dark"] .input-wrap:focus-within  { border-color: var(--gold); background: rgba(255,255,255,0.04); box-shadow: 0 0 0 3px rgba(184,150,90,0.08); }
+        [data-theme="dark"] .input-field              { color: #D8CFBF; }
+        [data-theme="dark"] .input-field::placeholder { color: rgba(237,232,223,0.2); }
+        [data-theme="dark"] .send-btn                 { background: rgba(184,150,90,0.15); color: var(--gold-mid); }
+        [data-theme="dark"] .send-btn:hover:not(:disabled) { background: var(--gold-dark); color: var(--gold-light); }
+        [data-theme="dark"] .welcome-icon-wrap        { background: rgba(184,150,90,0.08); border-color: rgba(184,150,90,0.15); }
+        [data-theme="dark"] .welcome-title            { color: #D8CFBF; }
+        [data-theme="dark"] .welcome-desc             { color: rgba(237,232,223,0.38); }
+        [data-theme="dark"] .chip                     { background: rgba(255,255,255,0.03); border-color: rgba(184,150,90,0.14); color: rgba(237,232,223,0.38); }
+        [data-theme="dark"] .chip:hover               { border-color: var(--gold); color: var(--gold); background: rgba(184,150,90,0.07); }
+
+        /* ══════════════════════════════════
+           ANALYSIS + PDF TAG
+        ══════════════════════════════════ */
+        .pdf-tag {
+            display: inline-flex; align-items: center; gap: 0.27rem;
+            padding: 0.17rem 0.5rem;
+            background: var(--gold-faint); border: 1px solid rgba(184,150,90,0.2);
+            border-radius: 3px; font-size: 0.67rem; color: var(--gold-dark);
+            margin-bottom: 0.5rem; max-width: 100%;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .pdf-tag svg { width: 10px; height: 10px; flex-shrink: 0; }
+        [data-theme="dark"] .pdf-tag { background: rgba(184,150,90,0.08); border-color: rgba(184,150,90,0.18); color: var(--gold-mid); }
+
+        .analysis-wrap { margin-bottom: 0.5rem; }
+        .analysis-toggle {
+            display: inline-flex; align-items: center; gap: 0.25rem;
+            background: none; border: none; cursor: pointer; padding: 0;
+            font-size: 0.67rem; font-family: inherit;
+            color: rgba(107,97,88,0.55); transition: color 0.2s; user-select: none;
+        }
+        .analysis-toggle:hover { color: var(--gold); }
+        .analysis-toggle .chev { width: 9px; height: 9px; transition: transform 0.2s; flex-shrink: 0; }
+        .analysis-toggle.open .chev { transform: rotate(90deg); }
+        .analysis-steps { display: none; margin-top: 0.25rem; padding: 0.28rem 0 0.12rem 0.6rem; border-left: 1px solid rgba(184,150,90,0.2); }
+        .analysis-steps.open { display: block; }
+        .analysis-step { font-size: 0.67rem; color: rgba(107,97,88,0.55); line-height: 1.65; padding: 0.04rem 0; }
+        .analysis-divider { border: none; border-top: 1px solid rgba(184,150,90,0.12); margin: 0.55rem 0; }
+        [data-theme="dark"] .analysis-toggle { color: rgba(237,232,223,0.2); }
+        [data-theme="dark"] .analysis-toggle:hover { color: var(--gold); }
+        [data-theme="dark"] .analysis-steps  { border-color: rgba(184,150,90,0.15); }
+        [data-theme="dark"] .analysis-step   { color: rgba(237,232,223,0.22); }
+        [data-theme="dark"] .analysis-divider { border-color: rgba(184,150,90,0.1); }
+
+        .batch-prog { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.1rem; }
+        .batch-prog-dots { display: flex; gap: 3px; align-items: center; }
+        .batch-prog-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--gold); opacity: 0.45; animation: bsDot 1.4s ease-in-out infinite; }
+        .batch-prog-dot:nth-child(2) { animation-delay: 0.2s; }
+        .batch-prog-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bsDot { 0%,60%,100%{transform:scale(0.65);opacity:0.35} 30%{transform:scale(1);opacity:1} }
+        .batch-prog-text { font-size: 0.72rem; color: rgba(107,97,88,0.55); }
+        [data-theme="dark"] .batch-prog-dot  { background: var(--gold-mid); }
+        [data-theme="dark"] .batch-prog-text { color: rgba(237,232,223,0.25); }
+
+        /* ══════════════════════════════════
+           RESPONSIVE
+        ══════════════════════════════════ */
+        @media (max-width: 600px) {
+            .mode-cards { grid-template-columns: 1fr; max-width: 320px; }
+            .mode-card { padding: 1.4rem 1.2rem; }
+            .chat-header { padding: 0 0.875rem; }
+            .h-company, .h-sep { display: none; }
+            .mode-tab { font-size: 0.73rem; padding: 0.26rem 0.58rem; }
+            .messages { padding: 0.875rem; }
+            .input-area { padding: 0.7rem; }
+            .msg { max-width: 88%; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     LANDING
+══════════════════════════════════════════ -->
+<div id="screen-landing" class="screen active">
+
+    <!-- Marble background layers -->
+    <div class="marble-base"></div>
+    <div class="marble-veins-light"></div>
+    <div class="marble-veins-dark"></div>
+
+    <!-- SVG micro-texture noise -->
+    <svg class="marble-noise" xmlns="http://www.w3.org/2000/svg">
+        <filter id="mf">
+            <feTurbulence type="turbulence" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+            <feColorMatrix type="saturate" values="0"/>
+        </filter>
+        <rect width="100%" height="100%" filter="url(#mf)"/>
+    </svg>
+
+    <button class="theme-toggle" onclick="toggleTheme()" title="切換主題">
+        <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707.707M6.343 6.343l-.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+        </svg>
+        <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+        </svg>
+    </button>
+
+    <div class="landing-content">
+        <div class="landing-brand">
+            <div class="brand-logo-row">
+                <svg class="brand-svg" viewBox="0 0 144 118" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M133.494 91.4018C138.591 84.9436 143.944 74.8739 143.982 66.82C128.359 66.973 112.735 67.0103 97.1122 66.9315L85.5354 66.9192C82.0714 66.9063 78.4166 66.6879 75.0017 67.3524C72.7199 67.7964 70.6601 68.9955 69.0515 70.664C63.5669 76.3526 55.1847 93.8431 49.4468 97.0127C46.9472 98.3935 43.7445 98.4913 40.9583 98.5569C37.7887 98.6316 34.6103 98.5961 31.4397 98.5782C34.1483 93.3528 36.5444 90.2013 39.8389 85.3386L48.3318 72.6197C54.3946 63.6795 57.5067 55.8325 68.5342 52.3289C68.9619 52.1938 69.3928 52.068 69.8262 51.9518C71.9976 51.3631 89.8723 50.1856 144 50.1856C142.763 37.9666 133.055 24.5334 123.615 16.8822C112.264 7.73637 98.3929 2.31491 84.0032 0.356431C80.1116 -0.02489 76.1477 0.00753451 72.2268 0.0396069L71.931 0.0420202C69.4927 0.0617318 66.6695 -0.0934234 64.2476 0.0925683C44.4512 1.6129 24.2206 10.6244 11.6695 26.2485C3.90027 35.9199 -0.43227 46.9941 0.0341583 59.3413C0.135811 61.6238 -0.0459885 63.8996 0.26366 66.2154C4.10945 95.0047 32.541 114.489 59.8449 117.704C64.0488 118.074 68.2815 117.965 72.5065 117.971C75.1023 117.975 77.8139 118.046 80.4223 117.95C100.444 117.218 121.074 107.14 133.494 91.4018Z" fill="var(--land-text)"/>
+                </svg>
+                <span class="brand-company">遠雄人壽</span>
+            </div>
+            <div class="brand-rule">
+                <div class="brand-rule-line"></div>
+                <div class="brand-rule-diamond"></div>
+                <div class="brand-rule-line"></div>
+            </div>
+            <span class="brand-tagline">Far Glory Life Insurance</span>
+        </div>
+
+        <span class="section-label">Select Service</span>
+
+        <div class="mode-cards">
+            <div class="mode-card" onclick="enterChat('terms')">
+                <span class="card-num">01</span>
+                <div class="card-title">保險條款諮詢</div>
+                <div class="card-desc">了解保障範圍、條款內容、除外事項及各版本保單差異說明</div>
+                <div class="card-cta">
+                    <span>進入諮詢</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="mode-card" onclick="enterChat('claims')">
+                <span class="card-num">02</span>
+                <div class="card-title">理賠諮詢</div>
+                <div class="card-desc">查詢理賠條件、所需文件、申請流程說明及可獲賠付金額計算</div>
+                <div class="card-cta">
+                    <span>進入諮詢</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="landing-footer">
+            © 2025 遠雄人壽保險事業股份有限公司 &nbsp;·&nbsp; Far Glory Life Insurance Co., Ltd.<br>
+            本服務由 AI 輔助提供，實際理賠以保單條款為準，如有疑問請洽詢客服專線
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     CHAT
+══════════════════════════════════════════ -->
+<div id="screen-chat" class="screen">
+    <header class="chat-header">
+        <div class="h-left">
+            <button class="back-btn" onclick="goToLanding()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+            </button>
+            <svg class="h-logo" viewBox="0 0 144 118" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M133.494 91.4018C138.591 84.9436 143.944 74.8739 143.982 66.82C128.359 66.973 112.735 67.0103 97.1122 66.9315L85.5354 66.9192C82.0714 66.9063 78.4166 66.6879 75.0017 67.3524C72.7199 67.7964 70.6601 68.9955 69.0515 70.664C63.5669 76.3526 55.1847 93.8431 49.4468 97.0127C46.9472 98.3935 43.7445 98.4913 40.9583 98.5569C37.7887 98.6316 34.6103 98.5961 31.4397 98.5782C34.1483 93.3528 36.5444 90.2013 39.8389 85.3386L48.3318 72.6197C54.3946 63.6795 57.5067 55.8325 68.5342 52.3289C68.9619 52.1938 69.3928 52.068 69.8262 51.9518C71.9976 51.3631 89.8723 50.1856 144 50.1856C142.763 37.9666 133.055 24.5334 123.615 16.8822C112.264 7.73637 98.3929 2.31491 84.0032 0.356431C80.1116 -0.02489 76.1477 0.00753451 72.2268 0.0396069L71.931 0.0420202C69.4927 0.0617318 66.6695 -0.0934234 64.2476 0.0925683C44.4512 1.6129 24.2206 10.6244 11.6695 26.2485C3.90027 35.9199 -0.43227 46.9941 0.0341583 59.3413C0.135811 61.6238 -0.0459885 63.8996 0.26366 66.2154C4.10945 95.0047 32.541 114.489 59.8449 117.704C64.0488 118.074 68.2815 117.965 72.5065 117.971C75.1023 117.975 77.8139 118.046 80.4223 117.95C100.444 117.218 121.074 107.14 133.494 91.4018Z" fill="var(--ink)"/>
+            </svg>
+            <span class="h-company">遠雄人壽</span>
+            <div class="h-sep"></div>
+        </div>
+        <div class="h-right">
+            <div class="mode-tabs">
+                <button class="mode-tab active" id="tab-terms" onclick="switchMode('terms')">保險條款諮詢</button>
+                <button class="mode-tab" id="tab-claims" onclick="switchMode('claims')">理賠諮詢</button>
+            </div>
+            <button class="h-theme-btn" onclick="toggleTheme()" title="切換主題">
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707.707M6.343 6.343l-.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+                </svg>
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="file-bar" id="fileBar">
+        <div class="file-bar-left">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <span id="fileBarName">-</span>
+        </div>
+        <button class="change-btn" onclick="resetConversation()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            換檔案
+        </button>
+    </div>
+
+    <main class="chat-main">
+        <div class="messages" id="messages"></div>
+    </main>
+
+    <div class="input-area">
+        <div class="input-wrap">
+            <textarea class="input-field" id="inputField" rows="1" onkeydown="handleKeyDown(event)" placeholder="輸入您的問題..."></textarea>
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Loading overlay -->
+<div id="loadingOv" class="ov">
+    <div class="ov-card">
+        <div class="ov-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+        </div>
+        <div class="ov-title" id="ovTitle">正在讀取文件</div>
+        <div class="ov-sub"   id="ovSub">請稍候...</div>
+        <div class="ov-bar"><div class="ov-fill"></div></div>
+    </div>
+</div>
+
+<!-- Mode switch modal -->
+<div id="switchModal" class="modal-ov">
+    <div class="modal-card">
+        <div class="modal-ico">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+            </svg>
+        </div>
+        <div class="modal-title">切換服務模式</div>
+        <div class="modal-desc">切換模式將清除目前的對話記錄，確定要繼續嗎？</div>
+        <div class="modal-btns">
+            <button class="btn-cancel"  onclick="cancelSwitch()">取消</button>
+            <button class="btn-confirm" onclick="confirmSwitch()">確定切換</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const API_KEY = '';
+
+const SYSTEM_PROMPTS = {
+    terms: `你是遠雄人壽的保險條款諮詢助理。根據提供的 PDF 文件內容，幫助客戶了解保險條款。
+重要規則：
+1. 清楚解釋保障範圍、除外事項、等待期等條款細節
+2. 引用具體條款號碼或頁碼
+3. 用平易近人的語言解釋專業術語
+4. 只根據文件內容回答，不編造資訊
+5. 文件未提及時，誠實告知
+6. 必要時用條列方式整理
+7. 比較不同版本時，明確指出版本差異`,
+    claims: `你是遠雄人壽的理賠諮詢助理。根據提供的 PDF 文件內容，協助客戶了解理賠相關事宜。
+重要規則：
+1. 直接回答是否符合理賠條件
+2. 明確列出所需申請文件清單
+3. 說明理賠申請流程與時程
+4. 計算或說明可獲得的理賠金額
+5. 引用具體條款依據
+6. 只根據文件內容回答，不編造資訊
+7. 如有疑義，建議聯繫遠雄人壽理賠部門`
+};
+const SUGGESTIONS = {
+    terms:  ['住院日額有哪些限制？', '等待期是多久？', '哪些疾病不在保障範圍？', 'HJ3 與 HJ5 有何不同？'],
+    claims: ['大腸息肉切除可以理賠嗎？', '申請理賠需要哪些文件？', '手術理賠如何計算？', '住院幾天才能申請？']
+};
+const MODE_LABELS  = { terms: '保險條款諮詢', claims: '理賠諮詢' };
+const PLACEHOLDERS = { terms: '詢問保障範圍、條款說明...', claims: '詢問理賠條件、申請流程...' };
+
+const PDF_FILES = [
+    { file: '遠雄人壽新溫馨終身醫療健康保險附約(HJ1)990901.pdf', desc: '新溫馨終身醫療 HJ1 (99年版)' },
+    { file: '遠雄人壽新溫馨終身醫療健康保險附約(HJ2)1010701.pdf', desc: '新溫馨終身醫療 HJ2 (101年版)' },
+    { file: '遠雄人壽新溫馨終身醫療健康保險附約(103)(HJ3)1030501.pdf', desc: '新溫馨終身醫療 HJ3 (103年版)' },
+    { file: '遠雄人壽新溫馨終身醫療健康保險附約(103)(HJ4)1081001.pdf', desc: '新溫馨終身醫療 HJ4 (108年版)' },
+    { file: '遠雄人壽新溫馨終身醫療健康保險附約(103)(HJ5)1100701.pdf', desc: '新溫馨終身醫療 HJ5 (110年版)' },
+    { file: '遠雄人壽新癌症終身健康保險附約(99)(HG3)1010224.pdf', desc: '新癌症終身健康 HG3 (101年版)' },
+    { file: '遠雄人壽新癌症終身健康保險附約(99)(HG4)1030501.pdf', desc: '新癌症終身健康 HG4 (103年版)' },
+    { file: '遠雄人壽新癌症終身健康保險附約(99)(HG5)1080101.pdf', desc: '新癌症終身健康 HG5 (108年版)' },
+    { file: '遠雄人壽新癌症終身健康保險附約(99)(HG6)1111202.pdf', desc: '新癌症終身健康 HG6 (111年版)' },
+    { file: '遠雄人壽真安心醫療保險附約(RSJ)990901.pdf', desc: '真安心醫療 RSJ (99年版)' },
+    { file: '遠雄人壽真安心醫療保險附約(103)(RSL)1090101.pdf', desc: '真安心醫療 RSL (109年版)' },
+    { file: '遠雄人壽好安心住院醫療健康保險附約(RSK)1020301.pdf', desc: '好安心住院醫療 RSK (102年版)' },
+    { file: '遠雄人壽好安心住院醫療健康保險附約(103)(RSM)1111202.pdf', desc: '好安心住院醫療 RSM (111年版)' },
+    { file: '遠雄人壽康富醫療健康保險附約(RJ1)1111202.pdf', desc: '康富醫療 RJ1 (111年版)' },
+    { file: '遠雄人壽新康富醫療健康保險附約(RM1)1100709.pdf', desc: '新康富醫療 RM1 (110年版)' },
+    { file: '遠雄人壽安心康富醫療健康保險附約(RM2)1110620.pdf', desc: '安心康富醫療 RM2 (111年版)' },
+    { file: '遠雄人壽永康富醫療健康保險附約(RM3)1120601.pdf', desc: '永康富醫療 RM3 (112年版)' },
+];
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const LOGO_SVG = `<svg viewBox="0 0 144 118" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M133.494 91.4018C138.591 84.9436 143.944 74.8739 143.982 66.82C128.359 66.973 112.735 67.0103 97.1122 66.9315L85.5354 66.9192C82.0714 66.9063 78.4166 66.6879 75.0017 67.3524C72.7199 67.7964 70.6601 68.9955 69.0515 70.664C63.5669 76.3526 55.1847 93.8431 49.4468 97.0127C46.9472 98.3935 43.7445 98.4913 40.9583 98.5569C37.7887 98.6316 34.6103 98.5961 31.4397 98.5782C34.1483 93.3528 36.5444 90.2013 39.8389 85.3386L48.3318 72.6197C54.3946 63.6795 57.5067 55.8325 68.5342 52.3289C68.9619 52.1938 69.3928 52.068 69.8262 51.9518C71.9976 51.3631 89.8723 50.1856 144 50.1856C142.763 37.9666 133.055 24.5334 123.615 16.8822C112.264 7.73637 98.3929 2.31491 84.0032 0.356431C80.1116 -0.02489 76.1477 0.00753451 72.2268 0.0396069L71.931 0.0420202C69.4927 0.0617318 66.6695 -0.0934234 64.2476 0.0925683C44.4512 1.6129 24.2206 10.6244 11.6695 26.2485C3.90027 35.9199 -0.43227 46.9941 0.0341583 59.3413C0.135811 61.6238 -0.0459885 63.8996 0.26366 66.2154C4.10945 95.0047 32.541 114.489 59.8449 117.704C64.0488 118.074 68.2815 117.965 72.5065 117.971C75.1023 117.975 77.8139 118.046 80.4223 117.95C100.444 117.218 121.074 107.14 133.494 91.4018Z" fill="#1A1814"/></svg>`;
+const PAPERCLIP_SVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>`;
+const CHEV_SVG = `<svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>`;
+
+function toggleTheme() {
+    document.documentElement.dataset.theme =
+        document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+}
+
+let currentMode='terms', currentState='idle', conversationHistory=[];
+let currentPdfFile=null, currentPdfText='', pendingPdfFile=null, originalQuestion='', pendingModeSwitch=null;
+
+function enterChat(mode) {
+    currentMode=mode; updateModeUI(); renderWelcome();
+    document.getElementById('screen-landing').classList.remove('active');
+    document.getElementById('screen-chat').classList.add('active');
+    setTimeout(()=>document.getElementById('inputField').focus(),500);
+}
+function goToLanding() {
+    resetConversation();
+    document.getElementById('screen-chat').classList.remove('active');
+    document.getElementById('screen-landing').classList.add('active');
+}
+function switchMode(mode) {
+    if(mode===currentMode) return;
+    if(conversationHistory.length>0||currentPdfFile){pendingModeSwitch=mode;document.getElementById('switchModal').classList.add('on');return;}
+    applyModeSwitch(mode);
+}
+function cancelSwitch()  { pendingModeSwitch=null; document.getElementById('switchModal').classList.remove('on'); }
+function confirmSwitch() { if(pendingModeSwitch){applyModeSwitch(pendingModeSwitch);pendingModeSwitch=null;} document.getElementById('switchModal').classList.remove('on'); }
+function applyModeSwitch(mode) { currentMode=mode; resetConversation(); updateModeUI(); }
+function updateModeUI() {
+    document.getElementById('tab-terms').classList.toggle('active',currentMode==='terms');
+    document.getElementById('tab-claims').classList.toggle('active',currentMode==='claims');
+    document.getElementById('inputField').placeholder=PLACEHOLDERS[currentMode];
+}
+
+function showFileBar(name) { document.getElementById('fileBarName').textContent=name; document.getElementById('fileBar').classList.add('on'); }
+function hideFileBar()     { document.getElementById('fileBar').classList.remove('on'); }
+function showLoading(t,s)  { document.getElementById('ovTitle').textContent=t||'正在讀取文件'; document.getElementById('ovSub').textContent=s||'請稍候...'; document.getElementById('loadingOv').classList.add('on'); }
+function hideLoading()     { document.getElementById('loadingOv').classList.remove('on'); }
+function getTime()  { const n=new Date(); return `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`; }
+function escapeHtml(t) { const d=document.createElement('div'); d.textContent=t; return d.innerHTML.replace(/\n/g,'<br>'); }
+
+function addMessage(content, role, pdfTag) {
+    const c=document.getElementById('messages');
+    const w=c.querySelector('.welcome-wrap'); if(w) w.remove();
+    const d=document.createElement('div'); d.className=`msg ${role}`;
+    const av=role==='assistant'?LOGO_SVG:'U';
+    const tagHtml=(pdfTag&&role==='assistant')?`<div class="pdf-tag">${PAPERCLIP_SVG}${escapeHtml(pdfTag)}</div>`:'';
+    d.innerHTML=`<div class="msg-av">${av}</div><div class="msg-body">${tagHtml}<div class="msg-text">${escapeHtml(content)}</div><div class="msg-time">${getTime()}</div></div>`;
+    c.appendChild(d); c.scrollTop=c.scrollHeight; return d;
+}
+function showTyping() {
+    const c=document.getElementById('messages');
+    const d=document.createElement('div'); d.className='typing-row'; d.id='typingEl';
+    d.innerHTML=`<div class="typing-av">${LOGO_SVG}</div><div class="typing-bubble"><div class="td"></div><div class="td"></div><div class="td"></div></div>`;
+    c.appendChild(d); c.scrollTop=c.scrollHeight;
+}
+
+function toggleAnalysis(stepsId, btn) { const s=document.getElementById(stepsId); const o=s.classList.toggle('open'); btn.classList.toggle('open',o); }
+function startBatchBubble() {
+    const c=document.getElementById('messages'); const w=c.querySelector('.welcome-wrap'); if(w) w.remove();
+    const uid='bb'+Date.now(); const d=document.createElement('div'); d.className='msg assistant';
+    d.innerHTML=`<div class="msg-av">${LOGO_SVG}</div><div class="msg-body"><div class="msg-text" id="${uid}_box"><div class="batch-prog" id="${uid}_prog"><div class="batch-prog-dots"><div class="batch-prog-dot"></div><div class="batch-prog-dot"></div><div class="batch-prog-dot"></div></div><span class="batch-prog-text" id="${uid}_status">正在分析文件...</span></div><div id="${uid}_detail" style="display:none"><div class="analysis-wrap"><button class="analysis-toggle" onclick="toggleAnalysis('${uid}_steps',this)">${CHEV_SVG}Analysis</button><div class="analysis-steps" id="${uid}_steps"></div></div><hr class="analysis-divider"><div id="${uid}_answer"></div></div></div><div class="msg-time" id="${uid}_time"></div></div>`;
+    c.appendChild(d); c.scrollTop=c.scrollHeight; return uid;
+}
+function updateBatchStatus(uid, st, step) {
+    const s=document.getElementById(`${uid}_status`); if(s) s.textContent=st;
+    if(step){const steps=document.getElementById(`${uid}_steps`),detail=document.getElementById(`${uid}_detail`);if(steps){const p=document.createElement('div');p.className='analysis-step';p.textContent=step;steps.appendChild(p);}if(detail)detail.style.display='block';}
+    const c=document.getElementById('messages'); c.scrollTop=c.scrollHeight;
+}
+function finalizeBatchBubble(uid, ans) {
+    const prog=document.getElementById(`${uid}_prog`),detail=document.getElementById(`${uid}_detail`),answer=document.getElementById(`${uid}_answer`),time=document.getElementById(`${uid}_time`);
+    if(prog) prog.style.display='none'; if(detail) detail.style.display='block';
+    if(answer) answer.innerHTML=escapeHtml(ans); if(time) time.textContent=getTime();
+    const c=document.getElementById('messages'); c.scrollTop=c.scrollHeight;
+}
+function hideTyping() { const e=document.getElementById('typingEl'); if(e) e.remove(); }
+function setInput(en) { document.getElementById('inputField').disabled=!en; document.getElementById('sendBtn').disabled=!en; }
+
+function renderWelcome() {
+    const sug=SUGGESTIONS[currentMode];
+    document.getElementById('messages').innerHTML=`
+        <div class="welcome-wrap">
+            <div class="welcome-icon-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    ${currentMode==='terms'?'<path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>':'<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>'}
+                </svg>
+            </div>
+            <div class="welcome-title">${MODE_LABELS[currentMode]}</div>
+            <div class="welcome-desc">${currentMode==='terms'?'您可以詢問保障範圍、保單條款、除外事項，或比較不同版本保險內容。':'您可以詢問是否符合理賠條件、所需文件、申請流程及可獲賠付金額。'}</div>
+            <div class="chips">${sug.map(s=>`<button class="chip" onclick="useSuggestion('${s}')">${s}</button>`).join('')}</div>
+        </div>`;
+}
+function useSuggestion(t) { document.getElementById('inputField').value=t; sendMessage(); }
+
+async function loadPdf(fileName) {
+    const res=await fetch(fileName); if(!res.ok) throw new Error(`無法載入: ${fileName}`);
+    const buf=await res.arrayBuffer(); const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+    let text='';
+    for(let i=1;i<=pdf.numPages;i++){const page=await pdf.getPage(i);const ct=await page.getTextContent();text+=`\n[第 ${i} 頁]\n${ct.items.map(x=>x.str).join(' ')}\n`;}
+    return text.trim();
+}
+
+async function callClaude(messages, sys, retry=0) {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4096,system:sys,messages})});
+    if(!res.ok){const err=await res.json();const msg=err.error?.message||'API 呼叫失敗';const retryable=msg.toLowerCase().includes('rate limit')||msg.toLowerCase().includes('overloaded')||[429,529,503].includes(res.status);if(retryable&&retry<3){const w=retry===0?30:65;addMessage(`遇到 ${msg}，等待 ${w} 秒後重試（${retry+1}/3）...`,'assistant');await new Promise(r=>setTimeout(r,w*1000));return callClaude(messages,sys,retry+1);}throw new Error(msg);}
+    return (await res.json()).content[0].text;
+}
+
+function isMultiFile(msg){const kw=['哪些','比較','所有','每個','全部','都有','各個','一覽','整理','列出所有','有哪些','兩種','三種','多種','幾種','兩份','多份','幾份'];if(kw.some(k=>msg.includes(k)))return true;const c=msg.match(/HJ[1-5]|HG[3-6]|RSJ|RSK|RSL|RSM|RJ1|RM[1-3]/gi);return c&&c.length>=2;}
+function extractFiles(msg){const c=msg.match(/HJ[1-5]|HG[3-6]|RSJ|RSK|RSL|RSM|RJ1|RM[1-3]/gi);if(!c)return null;const u=[...new Set(c.map(x=>x.toUpperCase()))];const r=u.map(code=>PDF_FILES.find(f=>f.file.toUpperCase().includes(code))).filter(Boolean);return r.length>0?r:null;}
+
+async function batchQuery(userMessage) {
+    const specified=extractFiles(userMessage),files=specified||PDF_FILES;
+    const uid=startBatchBubble();
+    updateBatchStatus(uid,specified?`分析 ${files.length} 份指定保單...`:`分批分析全部 ${files.length} 份文件...`);
+    const BATCH=2,batches=[]; for(let i=0;i<files.length;i+=BATCH)batches.push(files.slice(i,i+BATCH)); const results=[];
+    for(let i=0;i<batches.length;i++){const batch=batches[i],batchDesc=batch.map(f=>f.desc).join('、');updateBatchStatus(uid,`正在分析第 ${i+1}/${batches.length} 批...`,`第 ${i+1}/${batches.length} 批：${batchDesc}`);showLoading(`分析第 ${i+1}/${batches.length} 批`,batchDesc);let batchText='';for(const f of batch){try{batchText+=`\n\n===== ${f.desc} =====\n${await loadPdf(f.file)}`;}catch(e){batchText+=`\n\n===== ${f.desc} =====\n[載入失敗]`;}}hideLoading();const sp=`${SYSTEM_PROMPTS[currentMode]}\n\n以下是保險文件內容：\n\n${batchText}`;const resp=await callClaude([{role:'user',content:userMessage}],sp);results.push({files:batch.map(f=>f.desc),response:resp});if(i<batches.length-1){updateBatchStatus(uid,'等待 API 速率限制 (65s)...','等待 65 秒以避免速率限制');await new Promise(r=>setTimeout(r,65000));}}
+    updateBatchStatus(uid,'統整所有分析結果...','等待 65 秒後統整');await new Promise(r=>setTimeout(r,65000));updateBatchStatus(uid,'正在統整中...');
+    const allText=results.map(r=>`【${r.files.join('、')}】\n${r.response}`).join('\n\n');
+    const sp2=`請統整以下分批保險文件分析結果，回答使用者的問題。\n原始問題：${userMessage}\n\n各批結果：\n${allText}\n\n整合所有資訊，去除重複，用清晰格式呈現。`;
+    const final=await callClaude([{role:'user',content:'請統整以上分析結果'}],sp2);
+    hideTyping();finalizeBatchBubble(uid,final);currentState='conversation';currentPdfFile='多檔模式';currentPdfText=results.map(r=>`[${r.files.join('、')}]\n${r.response}`).join('\n\n');conversationHistory=[{role:'user',content:userMessage},{role:'assistant',content:final}];showFileBar(`多檔模式 - ${files.length} 份文件`);
+}
+
+async function handleIdle(msg) {
+    originalQuestion=msg;
+    if(isMultiFile(msg)){hideTyping();await batchQuery(msg);return;}
+    const fileList=PDF_FILES.map((f,i)=>`[${i+1}] ${f.desc} (${f.file})`).join('\n');
+    const sp=`你是保險文件分類助理。根據使用者問題判斷要查詢哪份文件。\n\n可用文件：\n${fileList}\n\n【情況一：明確指定保險名稱或代號】直接推薦，格式：「根據您的問題，判斷需要查詢【文件描述】。\n請確認是否要查詢 [完整檔案名.pdf]？(回覆「是」繼續)」\n\n【情況二：通用問題，未指定保險】詢問用戶：「您的問題是通用性問題，請問要查詢哪一份保險？\n\n可選：\n• 終身醫療：HJ1~HJ5\n• 癌症險：HG3~HG6\n• 住院醫療：RSJ/RSK/RSL/RSM\n• 實支實付：RJ1/RM1~RM3」\n\n關鍵字：溫馨/終身醫療→HJ系列｜癌症→HG系列｜安心/住院→RS系列｜康富/實支→RJ1/RM系列`;
+    const resp=await callClaude([{role:'user',content:msg}],sp);
+    hideTyping();addMessage(resp,'assistant');
+    const isRec=resp.includes('請確認是否要查詢')||resp.includes('確認是否查詢');
+    if(isRec){for(const f of PDF_FILES){if(resp.includes(f.file)){pendingPdfFile=f.file;break;}}if(!pendingPdfFile){const m=resp.match(/\b(HJ[1-5]|HG[3-6]|RSJ|RSK|RSL|RSM|RJ1|RM[1-3])\b/i);if(m){const f=PDF_FILES.find(x=>x.file.toUpperCase().includes(m[1].toUpperCase()));if(f)pendingPdfFile=f.file;}}}
+    if(pendingPdfFile){currentState='waiting_confirmation';}else{currentState='waiting_file_selection';}
+}
+async function handleFileSelect(msg) {
+    const cm=msg.match(/\b(HJ[1-5]|HG[3-6]|RSJ|RSK|RSL|RSM|RJ1|RM[1-3])\b/i);
+    if(cm){const f=PDF_FILES.find(x=>x.file.toUpperCase().includes(cm[1].toUpperCase()));if(f){pendingPdfFile=f.file;hideTyping();addMessage(`好的，將查詢「${f.desc}」。\n\n請確認是否要查詢 ${f.file}？(回覆「是」繼續)`,'assistant');currentState='waiting_confirmation';return;}}
+    const m=msg.toLowerCase();let matched=null;
+    if(m.includes('溫馨')||m.includes('終身醫療'))matched=PDF_FILES.find(f=>f.file.includes('HJ5'));
+    else if(m.includes('癌症'))matched=PDF_FILES.find(f=>f.file.includes('HG6'));
+    else if(m.includes('真安心'))matched=PDF_FILES.find(f=>f.file.includes('RSL'));
+    else if(m.includes('好安心'))matched=PDF_FILES.find(f=>f.file.includes('RSM'));
+    else if(m.includes('永康富'))matched=PDF_FILES.find(f=>f.file.includes('RM3'));
+    else if(m.includes('安心康富'))matched=PDF_FILES.find(f=>f.file.includes('RM2'));
+    else if(m.includes('新康富'))matched=PDF_FILES.find(f=>f.file.includes('RM1'));
+    else if(m.includes('康富'))matched=PDF_FILES.find(f=>f.file.includes('RJ1'));
+    if(matched){pendingPdfFile=matched.file;hideTyping();addMessage(`好的，將查詢「${matched.desc}」。\n\n請確認是否要查詢 ${matched.file}？(回覆「是」繼續)`,'assistant');currentState='waiting_confirmation';}
+    else{hideTyping();addMessage('抱歉，無法識別您指定的保險。請輸入代號（如 HJ3、RSJ）或保險名稱（如 新溫馨、癌症險）。','assistant');}
+}
+async function handleConfirm(msg) {
+    const yes=['是','對','確認','yes','ok','好','沒錯','正確','y'].some(k=>msg.toLowerCase().includes(k));
+    if(yes&&pendingPdfFile){
+        showLoading('正在讀取文件',pendingPdfFile);
+        try{currentPdfText=await loadPdf(pendingPdfFile);currentPdfFile=pendingPdfFile;pendingPdfFile=null;hideLoading();const info=PDF_FILES.find(f=>f.file===currentPdfFile);showFileBar(info?.desc||currentPdfFile);hideTyping();currentState='conversation';conversationHistory=[];
+        if(originalQuestion){addMessage(`已載入「${info?.desc}」\n\n正在回答您的問題：「${originalQuestion}」`,'assistant',info?.desc||currentPdfFile);showTyping();await handleConversation(originalQuestion);originalQuestion='';}
+        else{addMessage(`已載入「${info?.desc}」，共擷取 ${currentPdfText.length} 個字元。請問您想了解什麼？`,'assistant',info?.desc||currentPdfFile);}
+        }catch(err){hideLoading();hideTyping();addMessage(`無法載入「${pendingPdfFile}」。錯誤：${err.message}`,'assistant');currentState='idle';pendingPdfFile=null;}
+    }else{currentState='idle';pendingPdfFile=null;await handleIdle(msg);}
+}
+async function handleConversation(msg) {
+    if(['換檔案','換文件','其他文件','重新選擇','換一個'].some(k=>msg.includes(k))){resetConversation();hideTyping();addMessage('好的，請問您想查詢什麼問題？我會幫您找到對應的文件。','assistant');return;}
+    conversationHistory.push({role:'user',content:msg});
+    const sp=`${SYSTEM_PROMPTS[currentMode]}\n\n以下是文件內容：\n${currentPdfText}`;
+    const resp=await callClaude(conversationHistory,sp);
+    const info=PDF_FILES.find(f=>f.file===currentPdfFile);
+    const pdfTag=info?info.desc:(currentPdfFile&&currentPdfFile!=='多檔模式'?currentPdfFile:null);
+    hideTyping();addMessage(resp,'assistant',pdfTag);conversationHistory.push({role:'assistant',content:resp});
+}
+
+async function sendMessage() {
+    const inp=document.getElementById('inputField'); const msg=inp.value.trim(); if(!msg) return;
+    inp.value=''; inp.style.height='auto';
+    addMessage(msg,'user'); setInput(false); showTyping();
+    try{if(currentState==='idle')await handleIdle(msg);else if(currentState==='waiting_file_selection')await handleFileSelect(msg);else if(currentState==='waiting_confirmation')await handleConfirm(msg);else if(currentState==='conversation')await handleConversation(msg);}
+    catch(err){hideTyping();addMessage(`發生錯誤：${err.message}`,'assistant');}
+    setInput(true); document.getElementById('inputField').focus();
+}
+function resetConversation() {
+    currentState='idle';conversationHistory=[];currentPdfFile=null;currentPdfText='';pendingPdfFile=null;originalQuestion='';hideFileBar();renderWelcome();
+}
+
+// ─── CURSOR CARD SPOTLIGHT ────────────────────────────────────
+(function() {
+    const cards = document.querySelectorAll('.mode-card');
+    document.getElementById('screen-landing').addEventListener('mousemove', e => {
+        cards.forEach(card => {
+            const r = card.getBoundingClientRect();
+            card.style.setProperty('--cx', `${e.clientX - r.left}px`);
+            card.style.setProperty('--cy', `${e.clientY - r.top}px`);
+        });
+    });
+})();
+
+function handleKeyDown(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
+document.getElementById('inputField').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px';});
+renderWelcome();
+</script>
+</body>
+</html>
