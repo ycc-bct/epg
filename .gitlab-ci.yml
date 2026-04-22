@@ -1,8 +1,10 @@
 pages:
   stage: deploy
   script:
-    - mkdir -p public
+    - mkdir -p public/v3 public/v2
     - cp pdf-assistant-v2-finance.html public/index.html
+    - cp pdf-assistant-v3.html public/v3/index.html
+    - cp pdf-assistant-v2-original.html public/v2/index.html
   artifacts:
     paths:
       - public
