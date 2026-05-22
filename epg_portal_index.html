@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ePG Electronic Payment Gateway</title>
+<style>
+  :root {
+    --bg: #F0F4F8;
+    --surface: #FFFFFF;
+    --border: #E2E8F0;
+    --border-strong: #CBD5E1;
+    --text: #0F172A;
+    --text-muted: #475569;
+    --text-subtle: #64748B;
+    --chip-bg: #F1F5F9;
+
+    --admin: #2E75B6;
+    --biller: #1D7A4E;
+    --teller: #B85C00;
+    --ocbs: #C8102E;
+    --status-green: #1D7A4E;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+    --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.10);
+
+    --transition: 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    background:
+      radial-gradient(1200px 600px at 80% -200px, rgba(46, 117, 182, 0.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 10%, rgba(29, 122, 78, 0.06), transparent 60%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ============ Header ============ */
+  .header {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: saturate(140%) blur(10px);
+    -webkit-backdrop-filter: saturate(140%) blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .brand-mark {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #2E75B6 0%, #1D7A4E 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    box-shadow: 0 4px 10px rgba(46, 117, 182, 0.30);
+    flex-shrink: 0;
+  }
+
+  .header-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+  }
+
+  .header-subtitle {
+    font-size: 13px;
+    color: var(--text-subtle);
+    margin-top: 2px;
+  }
+
+  .version-pill {
+    background: var(--chip-bg);
+    color: var(--text-muted);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    border: 1px solid var(--border);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ============ Main ============ */
+  .main {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 56px 32px 72px;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .eyebrow::before {
+    content: "";
+    width: 24px;
+    height: 2px;
+    background: linear-gradient(90deg, #2E75B6, #1D7A4E);
+    border-radius: 2px;
+  }
+
+  .section-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  .section-subtitle {
+    font-size: 15px;
+    color: var(--text-subtle);
+    margin-top: 6px;
+    max-width: 60ch;
+  }
+
+  /* ============ Card Grid ============ */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-top: 32px;
+  }
+
+  @media (max-width: 720px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .main { padding: 36px 20px 56px; }
+    .header { padding: 14px 20px; }
+    .header-title { font-size: 17px; }
+    .header-subtitle { font-size: 12px; }
+    .section-title { font-size: 24px; }
+  }
+
+  .card {
+    --card-accent: var(--text-muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px 24px 22px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-accent);
+    opacity: 0.85;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--border-strong);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .icon-badge {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--card-accent) 12%, white);
+    color: var(--card-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid color-mix(in srgb, var(--card-accent) 20%, transparent);
+  }
+
+  .icon-badge svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .icon-badge img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+  }
+
+  .card-titles {
+    flex: 1;
+    min-width: 0;
+    padding-top: 2px;
+  }
+
+  .card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+  }
+
+  .card-subtitle {
+    font-size: 13px;
+    color: var(--text-subtle);
+    margin-top: 3px;
+  }
+
+  .card-status {
+    background: var(--status-green);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(29, 122, 78, 0.25);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .card-status::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+  }
+
+  .card-description {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 16px;
+    flex-grow: 1;
+    line-height: 1.55;
+  }
+
+  .card-role {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--chip-bg);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 999px;
+    margin-top: 16px;
+    align-self: flex-start;
+    border: 1px solid var(--border);
+  }
+
+  .card-role::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--card-accent);
+  }
+
+  .card-button {
+    margin-top: 20px;
+    width: 100%;
+    min-height: 44px;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 10px;
+    background: var(--card-accent);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: filter 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.10);
+  }
+
+  .card-button:hover { filter: brightness(1.08); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18); }
+  .card-button:active { transform: translateY(1px); }
+  .card-button:focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 3px #ffffff,
+      0 0 0 5px var(--card-accent);
+  }
+
+  .card-button svg {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.15s ease;
+  }
+
+  .card-button:hover svg {
+    transform: translateX(2px);
+  }
+
+  /* ============ Integration block ============ */
+  .integration {
+    margin-top: 32px;
+    background: #F5F5F5;
+    border: 0.5px solid #DDDDDD;
+    border-radius: 8px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .integration-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1px solid #E2E8F0;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .integration-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .integration-body { flex: 1; }
+
+  .integration-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.005em;
+  }
+
+  .integration-text {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    line-height: 1.65;
+  }
+
+  /* ============ Toast ============ */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #0F172A;
+    color: #ffffff;
+    padding: 12px 18px 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 1000;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .toast-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #34D399;
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.25);
+  }
+
+  /* ============ Reduced motion ============ */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition: none !important;
+      animation: none !important;
+    }
+    .card:hover { transform: none; }
+    .card-button:hover svg { transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">ePG</div>
+    <div>
+      <div class="header-title">ePG Electronic Payment Gateway</div>
+      <div class="header-subtitle">One Common Billing System — Brunei Darussalam</div>
+    </div>
+  </div>
+  <div class="version-pill">v2.6</div>
+</header>
+
+<main class="main">
+  <h1 class="section-title">Select Portal</h1>
+  <p class="section-subtitle">Choose the portal based on your role.</p>
+
+  <div class="card-grid">
+
+    <!-- Card 1: Admin Portal -->
+    <div class="card" style="--card-accent: #2E75B6;">
+      <div class="card-header">
+        <div class="icon-badge" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" />
+          </svg>
+        </div>
+        <div class="card-titles">
+          <div class="card-title">Admin Portal</div>
+          <div class="card-subtitle">ePG System Administration</div>
+        </div>
+      </div>
+      <p class="card-description">
+        Manage entities, configure fees, GL mapping, reconciliation, and system settings.
+      </p>
+      <span class="card-role">ePG Administrator</span>
+      <button
+        class="card-button"
+        data-action="toast"
+        data-message="Opening Admin Portal..."
+        aria-label="Enter Admin Portal"
+      >
+        Enter Admin Portal
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14M13 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Card 2: Biller Portal -->
+    <div class="card" style="--card-accent: #1D7A4E;">
+      <div class="card-header">
+        <div class="icon-badge" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21" />
+          </svg>
+        </div>
+        <div class="card-titles">
+          <div class="card-title">Biller Portal</div>
+          <div class="card-subtitle">Service Provider Interface</div>
+        </div>
+      </div>
+      <p class="card-description">
+        Upload bill files, download confirmation files, and receive payment status notifications.
+      </p>
+      <span class="card-role">Service Provider / Biller</span>
+      <button
+        class="card-button"
+        data-action="toast"
+        data-message="Opening Biller Portal..."
+        aria-label="Enter Biller Portal"
+      >
+        Enter Biller Portal
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14M13 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Card 3: Teller Portal -->
+    <div class="card" style="--card-accent: #B85C00;">
+      <div class="card-header">
+        <div class="icon-badge" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z" />
+          </svg>
+        </div>
+        <div class="card-titles">
+          <div class="card-title">Teller Portal</div>
+          <div class="card-subtitle">Branch Teller Interface</div>
+        </div>
+      </div>
+      <p class="card-description">
+        Look up bills and process payments on behalf of customers at the bank branch.
+      </p>
+      <span class="card-role">Bank Teller</span>
+      <button
+        class="card-button"
+        data-action="toast"
+        data-message="Opening Teller Portal..."
+        aria-label="Enter Teller Portal"
+      >
+        Enter Teller Portal
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14M13 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Card 4: OCBS Portal -->
+    <div class="card" style="--card-accent: #C8102E;">
+      <div class="card-header">
+        <div class="icon-badge" aria-hidden="true" style="background:#ffffff; border-color:#E2E8F0;">
+          <img src="ocbs_logo.png" alt="" />
+        </div>
+        <div class="card-titles">
+          <div class="card-title">OCBS Portal</div>
+          <div class="card-subtitle">Citizen Self-Service (v1.0)</div>
+        </div>
+        <span class="card-status" style="background: #C8102E; box-shadow: 0 2px 6px rgba(200, 16, 46, 0.25);">v1.0 Live</span>
+      </div>
+      <p class="card-description">
+        View and pay government bills online. Login requires an active e-Darussalam account.
+      </p>
+      <span class="card-role">Bill Owner / Citizen</span>
+      <button
+        class="card-button"
+        data-action="open"
+        data-url="https://ocbs.mofe.gov.bn/login"
+        aria-label="Go to OCBS Portal (opens in new tab)"
+      >
+        Go to OCBS Portal
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M14 3h7v7M10 14L21 3M21 14v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h6"/>
+        </svg>
+      </button>
+    </div>
+
+  </div>
+
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span class="toast-dot" aria-hidden="true"></span>
+  <span id="toast-message"></span>
+</div>
+
+<script>
+  (function () {
+    var toastEl = document.getElementById('toast');
+    var toastMsg = document.getElementById('toast-message');
+    var toastTimer = null;
+
+    function showToast(message) {
+      toastMsg.textContent = message;
+      toastEl.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () {
+        toastEl.classList.remove('show');
+      }, 2200);
+    }
+
+    document.querySelectorAll('.card-button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var action = btn.getAttribute('data-action');
+        if (action === 'toast') {
+          showToast(btn.getAttribute('data-message') || '');
+        } else if (action === 'open') {
+          var url = btn.getAttribute('data-url');
+          if (url) window.open(url, '_blank', 'noopener');
+        }
+      });
+    });
+  })();
+</script>
+
+</body>
+</html>
