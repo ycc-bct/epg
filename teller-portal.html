@@ -1,0 +1,1849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Teller Portal — ePG Electronic Payment Gateway</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS  (aligned with supervisor's index.html)
+   ============================================================ */
+:root {
+  --bg:            #F0F4F8;
+  --surface:       #FFFFFF;
+  --border:        #E2E8F0;
+  --border-strong: #CBD5E1;
+  --text:          #0F172A;
+  --text-muted:    #475569;
+  --text-subtle:   #64748B;
+  --chip-bg:       #F1F5F9;
+
+  /* Teller accent */
+  --accent:        #B85C00;
+  --accent-dim:    color-mix(in srgb, #B85C00 10%, white);
+  --accent-border: color-mix(in srgb, #B85C00 25%, white);
+  --accent-text:   color-mix(in srgb, #B85C00 80%, #0F172A);
+
+  /* Semantic */
+  --green:         #1D7A4E;
+  --green-dim:     color-mix(in srgb, #1D7A4E 10%, white);
+  --red:           #C8102E;
+  --red-dim:       color-mix(in srgb, #C8102E 10%, white);
+  --blue:          #2E75B6;
+  --blue-dim:      color-mix(in srgb, #2E75B6 10%, white);
+
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+
+  --shadow-sm:  0 1px 2px rgba(15,23,42,.04);
+  --shadow-md:  0 4px 12px rgba(15,23,42,.06);
+  --shadow-lg:  0 16px 40px rgba(15,23,42,.10);
+
+  --transition: .2s cubic-bezier(.2,.8,.2,1);
+}
+
+/* ============================================================
+   RESET + BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   LOGIN SCREEN
+   ============================================================ */
+.login-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 49; /* below header (z-index:50) so header shows through */
+  padding: 24px;
+  padding-top: 80px; /* clear the sticky header */
+}
+.login-screen.hidden { display: none; }
+
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 40px 48px 40px;
+  width: 100%;
+  max-width: 520px;
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.login-brand-mark {
+  width: 44px; height: 44px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, var(--accent) 0%, #7c3f00 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: .03em;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 30%, transparent);
+  flex-shrink: 0;
+}
+.login-brand-text { line-height: 1.25; }
+.login-brand-title { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.login-brand-sub   { font-size: 12px; color: var(--text-subtle); margin-top: 2px; }
+
+.login-heading {
+  margin-bottom: 6px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  color: var(--text);
+}
+.login-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+}
+
+.login-field { margin-bottom: 16px; }
+.login-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.login-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.login-input-wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+.login-input-wrap svg {
+  width: 16px; height: 16px;
+  flex-shrink: 0;
+  color: var(--text-subtle);
+  pointer-events: none;
+  display: block;
+}
+.login-input-wrap input {
+  flex: 1;
+  padding: 11px 0;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text);
+  outline: none;
+  min-width: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  box-shadow: none;
+}
+.login-input-wrap input::-webkit-contacts-auto-fill-button,
+.login-input-wrap input::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+  pointer-events: none;
+}
+#login-id {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-appearance: none !important;
+}
+.login-input-wrap input::placeholder { color: var(--text-subtle); }
+
+.login-error {
+  display: none;
+  align-items: center;
+  gap: 7px;
+  background: var(--red-dim);
+  border: 1px solid color-mix(in srgb, var(--red) 25%, white);
+  color: var(--red);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+}
+.login-error.visible { display: flex; }
+.login-error svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+.login-btn {
+  width: 100%;
+  padding: 11px 20px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: background var(--transition), box-shadow var(--transition), transform var(--transition);
+  margin-top: 8px;
+}
+.login-btn:hover {
+  background: color-mix(in srgb, var(--accent) 85%, #000);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.login-btn:active { transform: scale(.98); }
+.login-btn svg { width: 16px; height: 16px; }
+
+.login-hint {
+  margin-top: 20px;
+  padding: 12px 14px;
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+.login-hint strong { color: var(--text-subtle); font-weight: 600; }
+
+/* Sign Out button in header */
+.btn-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--transition);
+}
+.btn-logout:hover { background: var(--bg); color: var(--text); border-color: var(--accent-border); }
+.btn-logout svg   { width: 14px; height: 14px; }
+
+/* ============================================================
+   HEADER  (exact same pattern as supervisor's index.html)
+   ============================================================ */
+.header {
+  background: rgba(255,255,255,.85);
+  backdrop-filter: saturate(140%) blur(10px);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--accent) 0%, #7c3f00 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: .03em;
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--accent) 35%, transparent);
+  flex-shrink: 0;
+}
+
+.brand-text { line-height: 1.2; }
+.brand-title  { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.brand-sub    { font-size: 12px; color: var(--text-subtle); margin-top: 1px; }
+
+.header-sep {
+  width: 1px; height: 24px;
+  background: var(--border-strong);
+  flex-shrink: 0;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-subtle);
+}
+.breadcrumb a {
+  color: var(--text-subtle);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+.breadcrumb a:hover { color: var(--text); }
+.breadcrumb-sep { opacity: .4; }
+.breadcrumb-current { color: var(--text); font-weight: 600; }
+
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.teller-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent-dim);
+  color: var(--accent-text);
+  border: 1px solid var(--accent-border);
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.teller-chip::before {
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  color: var(--accent-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ============================================================
+   MAIN LAYOUT
+   ============================================================ */
+.main {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 40px 32px 80px;
+}
+
+/* ============================================================
+   STEP INDICATOR
+   ============================================================ */
+.steps {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  margin-bottom: 32px;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+}
+
+.step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 16px;
+  left: calc(50% + 20px);
+  right: calc(-50% + 20px);
+  height: 2px;
+  background: var(--border-strong);
+  transition: background var(--transition);
+}
+.step.done:not(:last-child)::after { background: var(--accent); }
+
+.step-circle {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-subtle);
+  transition: all var(--transition);
+  position: relative;
+  z-index: 1;
+}
+
+.step.done .step-circle {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.step.active .step-circle {
+  background: var(--surface);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-dim);
+}
+
+.step-label {
+  margin-top: 8px;
+  text-align: center;
+  line-height: 1.3;
+}
+.step-label-main {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-subtle);
+  transition: color var(--transition);
+}
+.step.active .step-label-main,
+.step.done  .step-label-main { color: var(--text); }
+
+.step-label-uc {
+  font-size: 10px;
+  color: var(--text-subtle);
+  opacity: .65;
+  font-weight: 600;
+  letter-spacing: .05em;
+  margin-top: 2px;
+}
+
+/* ============================================================
+   PANELS  (one per step, toggled via JS)
+   ============================================================ */
+.panel { display: none; }
+.panel.active {
+  display: block;
+  animation: fadeUp .22s ease both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   CARD  (same pattern as index.html)
+   ============================================================ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow var(--transition);
+}
+
+.card-section {
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--border);
+}
+.card-section:last-child { border-bottom: none; }
+
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-subtle);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-label::before {
+  content: "";
+  width: 3px; height: 14px;
+  border-radius: 2px;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   FORM ELEMENTS
+   ============================================================ */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field + .field { margin-top: 14px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+.field-row .field + .field { margin-top: 0; }
+
+label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+label .req { color: var(--red); margin-left: 2px; }
+
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--surface);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  appearance: none;
+  -webkit-appearance: none;
+}
+input:focus, select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+input::placeholder { color: var(--text-subtle); opacity: .6; }
+
+.input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.input-wrap svg {
+  position: absolute;
+  left: 12px;
+  width: 16px; height: 16px;
+  color: var(--text-subtle);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+.input-wrap input { padding-left: 38px; }
+
+.select-wrap {
+  position: relative;
+}
+.select-wrap select { padding-right: 36px; cursor: pointer; }
+.select-wrap::after {
+  content: "";
+  position: absolute;
+  right: 12px; top: 50%;
+  transform: translateY(-50%);
+  width: 0; height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--text-subtle);
+  pointer-events: none;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--text-subtle);
+  line-height: 1.5;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  transition: filter var(--transition), transform var(--transition), box-shadow var(--transition), background var(--transition);
+  white-space: nowrap;
+}
+.btn svg { width: 16px; height: 16px; flex-shrink: 0; transition: transform var(--transition); }
+.btn:hover svg.arrow { transform: translateX(2px); }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: .45; pointer-events: none; }
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.btn-primary:hover { filter: brightness(1.08); box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 30%, transparent); }
+.btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--accent); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-strong);
+}
+.btn-ghost:hover { background: var(--chip-bg); color: var(--text); }
+
+.btn-success {
+  background: var(--green);
+  color: #fff;
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--green) 40%, transparent);
+}
+.btn-success:hover { filter: brightness(1.08); }
+
+.btn-full { width: 100%; }
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+.btn-row .btn { flex: 1; }
+
+/* ============================================================
+   CHIPS / BADGES
+   ============================================================ */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  border: 1px solid transparent;
+}
+
+.chip-offline  { background: var(--chip-bg); color: var(--text-muted); border-color: var(--border-strong); }
+.chip-online   { background: var(--blue-dim); color: var(--blue); border-color: color-mix(in srgb, var(--blue) 25%, white); }
+.chip-hybrid   { background: color-mix(in srgb, #7c3f00 8%, white); color: #7c3f00; border-color: color-mix(in srgb, #7c3f00 25%, white); }
+.chip-outstanding { background: color-mix(in srgb, #CA8A04 10%, white); color: #854D0E; border-color: color-mix(in srgb, #CA8A04 25%, white); }
+.chip-partial  { background: var(--green-dim); color: var(--green); border-color: color-mix(in srgb, var(--green) 25%, white); }
+.chip-uc       { background: var(--accent-dim); color: var(--accent-text); border-color: var(--accent-border); font-family: ui-monospace, monospace; }
+.chip-id       { background: var(--chip-bg); color: var(--text-muted); border-color: var(--border-strong); font-family: ui-monospace, monospace; font-size: 10px; }
+
+/* ============================================================
+   MODE INFO BANNER
+   ============================================================ */
+.mode-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  transition: all var(--transition);
+}
+.mode-banner.hidden { display: none; }
+.mode-banner svg { flex-shrink: 0; margin-top: 1px; width: 16px; height: 16px; color: var(--text-subtle); }
+
+/* ============================================================
+   ALERT
+   ============================================================ */
+.alert {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  line-height: 1.55;
+  margin-top: 14px;
+  border: 1px solid transparent;
+}
+.alert svg { flex-shrink: 0; width: 16px; height: 16px; margin-top: 1px; }
+.alert.hidden { display: none; }
+.alert-error   { background: var(--red-dim);   color: var(--red);   border-color: color-mix(in srgb, var(--red) 25%, white); }
+.alert-success { background: var(--green-dim); color: var(--green); border-color: color-mix(in srgb, var(--green) 25%, white); }
+.alert-info    { background: var(--blue-dim);  color: var(--blue);  border-color: color-mix(in srgb, var(--blue) 25%, white); }
+
+/* ============================================================
+   DEMO HINT
+   ============================================================ */
+.demo-hint {
+  padding: 12px 14px;
+  background: color-mix(in srgb, #CA8A04 6%, white);
+  border: 1px solid color-mix(in srgb, #CA8A04 20%, white);
+  border-radius: var(--radius-sm);
+  margin-top: 14px;
+}
+.demo-hint-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #92400E;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 6px;
+}
+.demo-hint p { font-size: 12.5px; color: var(--text-muted); line-height: 1.7; }
+.demo-hint code {
+  background: #fff;
+  border: 1px solid var(--border-strong);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  font-size: 11.5px;
+  color: var(--text);
+}
+
+/* ============================================================
+   LOADING SPINNER
+   ============================================================ */
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+.table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  margin-top: 16px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+thead tr { background: var(--chip-bg); }
+thead th {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-subtle);
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+thead th.th-check { width: 40px; }
+thead th.th-right { text-align: right; }
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--chip-bg); }
+tbody tr.selected { background: var(--accent-dim); }
+
+tbody td { padding: 12px 12px; vertical-align: middle; }
+tbody td.td-right { text-align: right; }
+tbody td.td-check { vertical-align: middle; }
+
+.bill-name   { font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.bill-id     { font-size: 11px; color: var(--text-subtle); font-family: ui-monospace, monospace; }
+.bill-ref    { font-size: 12px; font-family: ui-monospace, monospace; color: var(--text-muted); white-space: nowrap; }
+.bill-amount { font-weight: 700; font-family: ui-monospace, monospace; color: var(--text); white-space: nowrap; }
+.bill-period { font-size: 13px; white-space: nowrap; color: var(--text-muted); }
+.bill-due    { font-size: 13px; white-space: nowrap; color: var(--text); }
+.bill-due-overdue { font-size: 13px; white-space: nowrap; color: var(--red); font-weight: 600; }
+
+/* Checkbox */
+input[type="checkbox"] {
+  width: 16px; height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* ============================================================
+   BILLER INFO ROW
+   ============================================================ */
+.biller-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 4px;
+}
+.biller-avatar {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--blue-dim);
+  border: 1px solid color-mix(in srgb, var(--blue) 20%, white);
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  flex-shrink: 0;
+}
+.biller-name  { font-size: 14px; font-weight: 600; color: var(--text); }
+.biller-meta  { font-size: 12px; color: var(--text-subtle); margin-top: 1px; }
+
+/* ============================================================
+   SELECTION SUMMARY BAR
+   ============================================================ */
+.selection-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  transition: opacity var(--transition);
+}
+.selection-bar.hidden { opacity: 0; pointer-events: none; }
+.sel-label { font-size: 13px; color: var(--accent-text); font-weight: 600; }
+.sel-note  { font-size: 11px; color: var(--text-subtle); margin-top: 1px; }
+.sel-total { font-size: 18px; font-weight: 800; font-family: ui-monospace, monospace; color: var(--accent); }
+
+/* ============================================================
+   PAYMENT REVIEW LAYOUT
+   ============================================================ */
+.review-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 0;
+  row-gap: 20px;
+}
+
+.review-grid > *:first-child {
+  padding-right: 28px;
+  border-right: 1px solid var(--border-strong);
+}
+
+.review-grid > *:last-child {
+  padding-left: 28px;
+}
+
+.summary-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+.summary-row + .summary-row { border-top: 1px solid var(--border); }
+.summary-row-label  { font-size: 13px; color: var(--text-muted); }
+.summary-row-sub    { font-size: 11px; color: var(--text-subtle); margin-top: 1px; }
+.summary-row-value  { font-size: 13px; font-weight: 600; font-family: ui-monospace, monospace; color: var(--text); text-align: right; }
+
+.total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-sm);
+  margin-top: 14px;
+}
+.total-label { font-size: 14px; font-weight: 700; color: var(--accent-text); }
+.total-value { font-size: 22px; font-weight: 800; font-family: ui-monospace, monospace; color: var(--accent); }
+
+/* ============================================================
+   PROCESSING STATE
+   ============================================================ */
+.processing-state {
+  text-align: center;
+  padding: 56px 24px;
+}
+.processing-spinner {
+  width: 48px; height: 48px;
+  border: 3px solid var(--border-strong);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  margin: 0 auto 24px;
+}
+.processing-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.processing-sub   { font-size: 14px; color: var(--text-muted); }
+
+/* ============================================================
+   RECEIPT
+   ============================================================ */
+.receipt {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.receipt-header {
+  background: var(--accent);
+  color: #fff;
+  padding: 24px;
+  text-align: center;
+}
+.receipt-ministry { font-size: 12px; font-weight: 700; letter-spacing: .08em; opacity: .8; margin-bottom: 2px; }
+.receipt-ministry-ms { font-size: 11px; opacity: .65; margin-bottom: 12px; }
+.receipt-title    { font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
+.receipt-system   { font-size: 13px; opacity: .75; margin-top: 4px; }
+
+.receipt-body { padding: 24px; }
+
+.receipt-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.receipt-meta-item {
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.receipt-meta-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-subtle); margin-bottom: 3px; }
+.receipt-meta-value { font-size: 13px; font-weight: 600; color: var(--text); word-break: break-all; }
+
+.receipt-divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+.receipt-bills table { font-size: 13px; }
+.receipt-bills thead th { font-size: 10px; }
+.receipt-bills tbody tr { cursor: default; }
+.receipt-bills tbody tr:hover { background: transparent; }
+
+.receipt-total-block {
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  margin-top: 14px;
+}
+.rt-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 3px 0;
+}
+.rt-row.rt-total {
+  padding-top: 10px;
+  margin-top: 6px;
+  border-top: 1px solid var(--border-strong);
+}
+.rt-row.rt-total .rt-label { font-weight: 700; font-size: 14px; }
+.rt-row.rt-total .rt-val   { font-weight: 800; font-size: 18px; color: var(--accent); font-family: ui-monospace, monospace; }
+.rt-row .rt-label { color: var(--text-muted); }
+.rt-row .rt-val   { font-weight: 600; font-family: ui-monospace, monospace; }
+
+.receipt-footer {
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--text-subtle);
+  margin-top: 20px;
+  line-height: 1.7;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  .main { padding: 28px 20px 64px; }
+  .review-grid { grid-template-columns: 1fr; }
+  .review-grid > *:first-child { padding-right: 0; border-right: none; border-bottom: 1px solid var(--border-strong); padding-bottom: 20px; }
+  .review-grid > *:last-child  { padding-left: 0; }
+}
+@media (max-width: 680px) {
+  .main { padding: 24px 16px 56px; }
+  .header { padding: 12px 16px; }
+  .receipt-meta { grid-template-columns: 1fr; }
+  .field-row { grid-template-columns: 1fr; }
+  .step-label { display: none; }
+}
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+@media print {
+  .no-print { display: none !important; }
+  .header   { display: none !important; }
+  body { background: #fff; }
+  .receipt { box-shadow: none; border: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN SCREEN ── -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+
+    <div class="login-brand">
+      <div class="login-brand-mark">ePG</div>
+      <div class="login-brand-text">
+        <div class="login-brand-title">ePG Electronic Payment Gateway</div>
+        <div class="login-brand-sub">Brunei Darussalam — Ministry of Finance &amp; Economy</div>
+      </div>
+    </div>
+
+    <div class="login-heading">Sign in to Teller Portal</div>
+    <div class="login-sub">Enter your employee credentials to continue.</div>
+
+    <div class="login-error" id="login-error">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+      </svg>
+      <span id="login-error-text">Invalid Employee ID or password.</span>
+    </div>
+
+    <div class="login-field">
+      <label for="login-id">Employee ID</label>
+      <div class="login-input-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+        </svg>
+        <input type="text" id="login-id" placeholder="e.g. T-001" autocomplete="off"
+               onkeydown="if(event.key==='Enter')doLogin()" />
+      </div>
+    </div>
+
+    <div class="login-field">
+      <label for="login-pw">Password</label>
+      <div class="login-input-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+        </svg>
+        <input type="password" id="login-pw" placeholder="Enter your password" autocomplete="current-password"
+               onkeydown="if(event.key==='Enter')doLogin()" />
+      </div>
+    </div>
+
+    <button class="login-btn" onclick="doLogin()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+      </svg>
+      Sign In
+    </button>
+
+    <div class="login-hint">
+      <strong>Demo credentials:</strong><br>
+      Employee ID: <strong>T-001</strong> &nbsp;/&nbsp; Password: <strong>1234</strong><br>
+      Employee ID: <strong>T-002</strong> &nbsp;/&nbsp; Password: <strong>1234</strong>
+    </div>
+
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="header no-print">
+  <a class="brand" href="https://ycc-bct.github.io/epg/" target="_blank">
+    <div class="brand-mark">ePG</div>
+    <div class="brand-text">
+      <div class="brand-title">ePG Electronic Payment Gateway</div>
+      <div class="brand-sub">One Common Billing System — Brunei Darussalam</div>
+    </div>
+  </a>
+  <div class="header-sep"></div>
+  <nav class="breadcrumb">
+    <a href="https://ycc-bct.github.io/epg/">Portals</a>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-current">Teller Portal</span>
+  </nav>
+  <div class="header-right">
+    <span class="teller-chip">Bank Teller</span>
+    <div class="avatar" id="header-avatar">—</div>
+    <button class="btn-logout" onclick="doLogout()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25 2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+      </svg>
+      Sign Out
+    </button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main" style="display:none">
+
+  <!-- Step Indicator -->
+  <div class="steps no-print" id="steps">
+    <div class="step active" id="step-1">
+      <div class="step-circle">1</div>
+      <div class="step-label">
+        <div class="step-label-main">Bill Enquiry</div>
+      </div>
+    </div>
+    <div class="step" id="step-2">
+      <div class="step-circle">2</div>
+      <div class="step-label">
+        <div class="step-label-main">Select Bills</div>
+      </div>
+    </div>
+    <div class="step" id="step-3">
+      <div class="step-circle">3</div>
+      <div class="step-label">
+        <div class="step-label-main">Payment Review</div>
+      </div>
+    </div>
+    <div class="step" id="step-4">
+      <div class="step-circle">4</div>
+      <div class="step-label">
+        <div class="step-label-main">Confirmation</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PANEL 1: Bill Enquiry Form ── -->
+  <div class="panel active" id="panel-1">
+    <div class="card">
+
+      <div class="card-section">
+        <div class="section-label">
+          Bill Enquiry
+        </div>
+
+        <div class="field">
+          <label for="biller-select">Service Provider / Biller</label>
+          <div class="select-wrap">
+            <select id="biller-select" onchange="onBillerChange()">
+              <option value="">Select a Service Provider…</option>
+              <option value="HDD" data-mode="offline" data-short="HDD">Housing Development Department</option>
+              <option value="WEWA" data-mode="online" data-short="WEWA">Water Services Authority (WEWA)</option>
+              <option value="JPN" data-mode="hybrid" data-short="JPN">Jabatan Penerangan — e-Darussalam</option>
+              <option value="LMWD" data-mode="offline" data-short="LMWD">Land Management &amp; Water Department</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="mode-banner" class="mode-banner hidden">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+          </svg>
+          <span id="mode-banner-text"></span>
+        </div>
+      </div>
+
+      <div class="card-section">
+        <div class="field-row">
+          <div class="field">
+            <label for="search-type">Search By</label>
+            <div class="select-wrap">
+              <select id="search-type">
+                <option value="ic">IC Number</option>
+                <option value="account">Account / Service No.</option>
+                <option value="invoice">Invoice Reference No.</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="search-val">Reference Value <span class="req">*</span></label>
+            <div class="input-wrap">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z" />
+              </svg>
+              <input type="text" id="search-val" placeholder="e.g. ic-01-123456" autocomplete="off" onkeydown="if(event.key==='Enter')doSearch()" />
+            </div>
+          </div>
+        </div>
+
+        <div id="search-error" class="alert alert-error hidden">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+          <span id="search-error-msg"></span>
+        </div>
+
+        <div class="demo-hint">
+          <div class="demo-hint-label">Demo References</div>
+          <p>
+            <code>ic-01-123456</code> — 2 HDD housing rent bills<br>
+            <code>WEWA-ACC-88821</code> — 1 water bill (partial payment allowed)<br>
+            <code>ABCDE-0001-WXYZ-0099</code> — 1 HDD bill by invoice reference
+          </p>
+        </div>
+      </div>
+
+      <div class="card-section">
+        <button class="btn btn-primary btn-full" id="search-btn" onclick="doSearch()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z" />
+          </svg>
+          <span id="search-btn-label">Look Up Bills</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── PANEL 2: Bill Results ── -->
+  <div class="panel" id="panel-2">
+    <div class="card">
+      <div class="card-section">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+          <span style="font-size:13px;font-weight:600;color:var(--text);">Bill Enquiry Results</span>
+          <span class="chip chip-id" id="result-enquiry-id" style="margin-left:auto;"></span>
+        </div>
+
+        <div class="biller-row" id="result-biller-row">
+          <div class="biller-avatar" id="result-biller-short"></div>
+          <div style="flex:1;min-width:0">
+            <div class="biller-name" id="result-biller-name"></div>
+            <div class="biller-meta" id="result-biller-meta"></div>
+          </div>
+          <span id="result-mode-chip"></span>
+        </div>
+      </div>
+
+      <div class="card-section">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="th-check"><input type="checkbox" id="check-all" onchange="toggleAll(this)"></th>
+                <th>Bill Details</th>
+                <th>Invoice Reference</th>
+                <th>Period</th>
+                <th>Due Date</th>
+                <th class="th-right">Amount (BND)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="bills-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="selection-bar hidden" id="selection-bar">
+          <div>
+            <div class="sel-label" id="sel-label"></div>
+            <div class="sel-note">ePG service fee (0.5%) will be shown at payment review</div>
+          </div>
+          <div class="sel-total" id="sel-total"></div>
+        </div>
+      </div>
+
+      <div class="card-section">
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="goTo(1)">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            </svg>
+            New Search
+          </button>
+          <button class="btn btn-primary" id="proceed-btn" disabled onclick="goToReview()">
+            Proceed to Payment
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" class="arrow">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PANEL 3: Payment Review ── -->
+  <div class="panel" id="panel-3">
+    <div class="card">
+      <div class="card-section">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:13px;font-weight:600;color:var(--text);">Payment Review</span>
+          <span class="chip chip-id" id="review-enquiry-id" style="margin-left:auto;"></span>
+        </div>
+      </div>
+
+      <div class="card-section">
+        <div class="review-grid">
+
+          <!-- Left: Customer + Tender -->
+          <div>
+            <div class="section-label">Customer Details</div>
+            <div class="field">
+              <label for="payer-name">Customer Name <span class="req">*</span></label>
+              <div class="input-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+                <input type="text" id="payer-name" placeholder="Full name of customer" />
+              </div>
+            </div>
+            <div class="field">
+              <label for="payer-ic">IC Number <span style="font-weight:400;color:var(--text-subtle)">(optional)</span></label>
+              <div class="input-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z" />
+                </svg>
+                <input type="text" id="payer-ic" placeholder="01-123456" />
+              </div>
+            </div>
+
+            <div class="field" style="margin-top:20px;">
+              <div class="section-label" style="margin-bottom:10px;">Payment Method</div>
+              <label for="tender-type">Tender Type</label>
+              <div class="select-wrap">
+                <select id="tender-type">
+                  <option value="cash">Cash</option>
+                  <option value="cheque">Cheque</option>
+                  <option value="debit">Debit Card (Counter)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Bill Summary -->
+          <div>
+            <div class="section-label">Bills to Pay</div>
+            <div id="review-bill-lines"></div>
+            <div class="total-row">
+              <div class="total-label">Total Payable</div>
+              <div class="total-value" id="review-grand-total"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <div id="review-error" class="alert alert-error hidden" style="margin-top:16px;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+          <span id="review-error-msg"></span>
+        </div>
+      </div>
+
+      <div class="card-section">
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="goTo(2)">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            </svg>
+            Back
+          </button>
+          <button class="btn btn-success" id="confirm-btn" onclick="doConfirm()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="confirm-btn-label">Confirm Payment</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PANEL 4: Confirmation ── -->
+  <div class="panel" id="panel-4">
+
+    <!-- Processing state (shown briefly) -->
+    <div id="processing-state" class="card processing-state">
+      <div class="processing-spinner"></div>
+      <div class="processing-title">Processing Payment…</div>
+      <div class="processing-sub" id="processing-sub">Validating transaction with ePG system</div>
+    </div>
+
+    <!-- Success + receipt (hidden until processing done) -->
+    <div id="success-state" style="display:none;">
+      <div class="alert alert-success no-print" style="margin-bottom:16px;">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div>
+          <strong>Payment Successful.</strong> Please print the receipt for the customer.
+        </div>
+      </div>
+
+      <div class="receipt" id="receipt">
+        <div class="receipt-header">
+          <div class="receipt-ministry">MINISTRY OF FINANCE AND ECONOMY — BRUNEI DARUSSALAM</div>
+          <div class="receipt-ministry-ms">كمنترين كواغن دان ايكونومي</div>
+          <div class="receipt-title">PAYMENT RECEIPT &nbsp;·&nbsp; RESIT PEMBAYARAN</div>
+          <div class="receipt-system">ePG Electronic Payment Gateway</div>
+        </div>
+        <div class="receipt-body">
+          <div class="receipt-meta" id="receipt-meta"></div>
+          <div class="receipt-divider"></div>
+          <div class="receipt-bills">
+            <table>
+              <thead>
+                <tr>
+                  <th>Keterangan / Description</th>
+                  <th>Rujukan / Reference</th>
+                  <th class="th-right">Amaun / Amount</th>
+                </tr>
+              </thead>
+              <tbody id="receipt-tbody"></tbody>
+            </table>
+          </div>
+          <div class="receipt-total-block" id="receipt-total-block"></div>
+          <div class="receipt-footer">
+            This is a computer-generated receipt. No signature required.<br>
+            Resit ini dijana komputer. Tiada tandatangan diperlukan.
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row no-print" style="margin-top:16px;">
+        <button class="btn btn-ghost" onclick="window.print()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.056 48.056 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" />
+          </svg>
+          Print Receipt
+        </button>
+        <button class="btn btn-primary" onclick="reset()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          Next Customer
+        </button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+/* ─── AUTH ────────────────────────────────────────────── */
+const MOCK_USERS = {
+  'T-001': { password: '1234', name: 'Ahmad Zulhilmi',  initials: 'AZ', branch: 'Bandar Seri Begawan' },
+  'T-002': { password: '1234', name: 'Nurul Ain Binti Haji Mohd', initials: 'NA', branch: 'Kuala Belait' },
+};
+
+let currentUser = null;
+
+function doLogin() {
+  const empId = document.getElementById('login-id').value.trim();
+  const pw    = document.getElementById('login-pw').value;
+  const errEl = document.getElementById('login-error');
+  const errTx = document.getElementById('login-error-text');
+  errEl.classList.remove('visible');
+
+  if (!empId || !pw) {
+    errTx.textContent = 'Please enter your Employee ID and password.';
+    errEl.classList.add('visible');
+    return;
+  }
+  const user = MOCK_USERS[empId];
+  if (!user || user.password !== pw) {
+    errTx.textContent = 'Invalid Employee ID or password. Please try again.';
+    errEl.classList.add('visible');
+    document.getElementById('login-pw').value = '';
+    document.getElementById('login-pw').focus();
+    return;
+  }
+
+  // Login success
+  currentUser = { ...user, id: empId };
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('header-avatar').textContent = user.initials;
+  document.querySelector('.header').removeAttribute('style');
+  document.querySelector('.main').removeAttribute('style');
+}
+
+function doLogout() {
+  currentUser = null;
+  reset();
+  document.getElementById('login-id').value = '';
+  document.getElementById('login-pw').value = '';
+  document.getElementById('login-error').classList.remove('visible');
+  document.querySelector('.main').style.display = 'none';
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('login-id').focus();
+}
+
+/* ─── MOCK DATA ───────────────────────────────────────── */
+const MOCK_BILLS = {
+  'ic-01-123456': [
+    { id:'HDD-2024-00891', ref:'ABCDE-0001-WXYZ-0023', desc:'Housing Rent — Q1 2025', sp:'HDD', amount:350.00, due:'2025-03-31', period:'Jan – Mar 2025', partial:false },
+    { id:'HDD-2024-00892', ref:'ABCDE-0002-WXYZ-0024', desc:'Housing Rent — Q2 2025', sp:'HDD', amount:350.00, due:'2025-06-30', period:'Apr – Jun 2025', partial:false },
+  ],
+  'wewa-acc-88821': [
+    { id:'WEWA-2025-10044', ref:'BFGHJ-0012-KLMN-0078', desc:'Water Bill — April 2025', sp:'WEWA', amount:42.80, due:'2025-05-15', period:'April 2025', partial:true },
+  ],
+  'abcde-0001-wxyz-0099': [
+    { id:'HDD-2025-00011', ref:'ABCDE-0001-WXYZ-0099', desc:'Housing Rent — Mar 2025', sp:'HDD', amount:116.67, due:'2025-03-31', period:'March 2025', partial:false },
+  ],
+};
+
+const BILLER_INFO = {
+  HDD:  { name:'Housing Development Department', short:'HDD',  mode:'offline' },
+  WEWA: { name:'Water Services Authority (WEWA)', short:'WEWA', mode:'online'  },
+  JPN:  { name:'Jabatan Penerangan — e-Darussalam', short:'JPN', mode:'hybrid'  },
+  LMWD: { name:'Land Management & Water Department', short:'LMWD', mode:'offline' },
+};
+
+const MODE_TEXT = {
+  offline: 'Offline SP — bill data retrieved from ePG database (pre-uploaded by SP).',
+  online:  'Online SP — bill data queried in real-time from the SP\'s bill server.',
+  hybrid:  'Hybrid SP — ePG database checked first; SP server queried if not found.',
+};
+
+const MODE_LABEL = { offline:'Offline SP', online:'Online SP', hybrid:'Hybrid SP' };
+const FEE_RATE   = 0.005;
+
+/* ─── STATE ──────────────────────────────────────────── */
+let state = {
+  step: 1,
+  biller: null,
+  bills: [],
+  selected: new Set(),
+  enquiryId: '',
+  payerName: '',
+  payerIC: '',
+  tenderType: 'cash',
+  grandTotal: 0,
+  fee: 0,
+  subtotal: 0,
+  txnId: '',
+  timestamp: '',
+};
+
+/* ─── UTILS ──────────────────────────────────────────── */
+function fmtBND(n) {
+  return 'BND ' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+function isOverdue(due) {
+  return new Date(due) < new Date();
+}
+function genId(prefix) {
+  return prefix + Date.now().toString().slice(-8);
+}
+function nowStr() {
+  const d = new Date();
+  return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })
+    + ', ' + d.toLocaleTimeString('en-GB');
+}
+
+/* ─── STEP NAVIGATION ─────────────────────────────────── */
+function goTo(n) {
+  const prev = state.step;
+  state.step = n;
+
+  document.querySelectorAll('.panel').forEach((p, i) => {
+    p.classList.toggle('active', i + 1 === n);
+  });
+
+  document.querySelectorAll('.step').forEach((s, i) => {
+    s.classList.remove('active', 'done');
+    if (i + 1 < n) s.classList.add('done');
+    if (i + 1 === n) s.classList.add('active');
+  });
+
+  // Check icon in done steps
+  document.querySelectorAll('.step.done .step-circle').forEach(c => {
+    if (!c.querySelector('svg')) {
+      c.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>`;
+    }
+  });
+  document.querySelectorAll('.step:not(.done) .step-circle').forEach((c, i) => {
+    const num = ['1','2','3','4'][i]; // approximate — we know 4 steps
+    c.innerHTML = (i + 1 < n) ? c.innerHTML : (i + 1 === n - 1 + 1 ? '' : '');
+  });
+
+  // Re-number undone circles
+  document.querySelectorAll('.step').forEach((s, i) => {
+    if (!s.classList.contains('done')) {
+      s.querySelector('.step-circle').textContent = i + 1;
+    }
+  });
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ─── BILLER CHANGE ───────────────────────────────────── */
+function onBillerChange() {
+  const sel  = document.getElementById('biller-select');
+  const opt  = sel.options[sel.selectedIndex];
+  const mode = opt.dataset.mode;
+  const banner = document.getElementById('mode-banner');
+
+  if (!mode) { banner.classList.add('hidden'); return; }
+
+  document.getElementById('mode-banner-text').innerHTML =
+    `<span class="chip chip-${mode}" style="margin-right:8px;">${MODE_LABEL[mode]}</span>${MODE_TEXT[mode]}`;
+  banner.classList.remove('hidden');
+}
+
+/* ─── STEP 1: SEARCH ──────────────────────────────────── */
+function doSearch() {
+  const selEl   = document.getElementById('biller-select');
+  const billerId = selEl.value;
+  const val     = document.getElementById('search-val').value.trim();
+  const errEl   = document.getElementById('search-error');
+  const errMsg  = document.getElementById('search-error-msg');
+  const btn     = document.getElementById('search-btn');
+  const lbl     = document.getElementById('search-btn-label');
+
+  errEl.classList.add('hidden');
+
+  if (!billerId) { showError(errEl, errMsg, 'Please select a Service Provider.'); return; }
+  if (!val)      { showError(errEl, errMsg, 'Please enter a reference value.'); return; }
+
+  const biller  = BILLER_INFO[billerId];
+  const delay   = biller.mode === 'online' ? 1800 : biller.mode === 'hybrid' ? 1300 : 700;
+
+  // Loading state
+  btn.disabled = true;
+  btn.innerHTML = `<div class="spinner"></div> ${
+    biller.mode === 'online'  ? 'Querying SP Bill Server…' :
+    biller.mode === 'hybrid'  ? 'Checking ePG Database…' :
+                                'Retrieving from ePG Database…'
+  }`;
+
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z"/></svg> Look Up Bills`;
+
+    const key   = val.toLowerCase();
+    const bills = MOCK_BILLS[key];
+
+    if (!bills || bills.length === 0) {
+      showError(errEl, errMsg, 'No outstanding bills found. Please verify the reference and try again.');
+      return;
+    }
+
+    state.biller    = biller;
+    state.bills     = bills;
+    state.selected  = new Set();
+    state.enquiryId = genId('ENQ');
+
+    renderResults();
+    goTo(2);
+  }, delay);
+}
+
+function showError(el, msgEl, msg) {
+  msgEl.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+/* ─── STEP 2: RESULTS ─────────────────────────────────── */
+function renderResults() {
+  const b = state.biller;
+
+  document.getElementById('result-enquiry-id').textContent = 'ENQ: ' + state.enquiryId;
+  document.getElementById('result-biller-short').textContent = b.short;
+  document.getElementById('result-biller-name').textContent  = b.name;
+
+  const sv = document.getElementById('search-val').value.trim();
+  const st = document.getElementById('search-type');
+  document.getElementById('result-biller-meta').textContent =
+    st.options[st.selectedIndex].text + ': ' + sv;
+
+  document.getElementById('result-mode-chip').outerHTML =
+    `<span id="result-mode-chip" class="chip chip-${b.mode}">${MODE_LABEL[b.mode]}</span>`;
+
+  const tbody = document.getElementById('bills-tbody');
+  tbody.innerHTML = state.bills.map(bill => `
+    <tr class="bill-row" data-id="${bill.id}" onclick="toggleBill('${bill.id}', this)">
+      <td class="td-check"><input type="checkbox" class="bill-check" data-id="${bill.id}" onclick="event.stopPropagation();toggleBill('${bill.id}',this.closest('tr'))" ></td>
+      <td>
+        <div class="bill-name">${bill.desc}</div>
+        <div class="bill-id">${bill.id}</div>
+      </td>
+      <td><div class="bill-ref">${bill.ref}</div></td>
+      <td><span class="bill-period">${bill.period}</span></td>
+      <td><span class="bill-due${isOverdue(bill.due) ? '-overdue' : ''}">${bill.due}</span></td>
+      <td class="td-right"><div class="bill-amount">${fmtBND(bill.amount)}</div></td>
+      <td>
+        <span class="chip chip-outstanding">Outstanding</span>
+        ${bill.partial ? '<br><span class="chip chip-partial" style="margin-top:4px;">Partial OK</span>' : ''}
+      </td>
+    </tr>
+  `).join('');
+
+  updateSelectionBar();
+}
+
+function toggleBill(id, row) {
+  if (state.selected.has(id)) {
+    state.selected.delete(id);
+    row.classList.remove('selected');
+  } else {
+    state.selected.add(id);
+    row.classList.add('selected');
+  }
+  // sync checkbox
+  const cb = row.querySelector('.bill-check');
+  if (cb) cb.checked = state.selected.has(id);
+  document.getElementById('check-all').checked = state.selected.size === state.bills.length;
+  updateSelectionBar();
+}
+
+function toggleAll(cb) {
+  state.selected = cb.checked ? new Set(state.bills.map(b => b.id)) : new Set();
+  document.querySelectorAll('.bill-row').forEach(row => {
+    const id = row.dataset.id;
+    row.classList.toggle('selected', state.selected.has(id));
+    row.querySelector('.bill-check').checked = state.selected.has(id);
+  });
+  updateSelectionBar();
+}
+
+function updateSelectionBar() {
+  const sel      = [...state.selected];
+  const selBills = state.bills.filter(b => sel.includes(b.id));
+  const subtotal = selBills.reduce((s, b) => s + b.amount, 0);
+  const bar      = document.getElementById('selection-bar');
+  const procBtn  = document.getElementById('proceed-btn');
+
+  if (sel.length === 0) {
+    bar.classList.add('hidden');
+    procBtn.disabled = true;
+  } else {
+    bar.classList.remove('hidden');
+    document.getElementById('sel-label').textContent = sel.length + ' bill' + (sel.length > 1 ? 's' : '') + ' selected';
+    document.getElementById('sel-total').textContent = fmtBND(subtotal);
+    procBtn.disabled = false;
+  }
+}
+
+/* ─── STEP 2 → 3 ──────────────────────────────────────── */
+function goToReview() {
+  const selBills = state.bills.filter(b => state.selected.has(b.id));
+  const subtotal = selBills.reduce((s, b) => s + b.amount, 0);
+  const fee      = subtotal * FEE_RATE;
+  const grand    = subtotal + fee;
+
+  state.subtotal   = subtotal;
+  state.fee        = fee;
+  state.grandTotal = grand;
+
+  // Populate review enquiry ID
+  document.getElementById('review-enquiry-id').textContent = 'ENQ: ' + state.enquiryId;
+
+  // Bill lines in review
+  const lines = selBills.map(b => `
+    <div class="summary-row">
+      <div>
+        <div class="summary-row-label" style="font-weight:600;">${b.desc}</div>
+        <div class="summary-row-sub">${b.id}</div>
+      </div>
+      <div class="summary-row-value">${fmtBND(b.amount)}</div>
+    </div>
+  `).join('');
+
+  const feeRow = `
+    <div class="summary-row">
+      <div class="summary-row-label">ePG Service Fee (0.5%)</div>
+      <div class="summary-row-value">${fmtBND(fee)}</div>
+    </div>
+  `;
+
+  document.getElementById('review-bill-lines').innerHTML = lines + feeRow;
+  document.getElementById('review-grand-total').textContent = fmtBND(grand);
+  document.getElementById('confirm-btn-label').textContent = 'Confirm Payment — ' + fmtBND(grand);
+
+  goTo(3);
+}
+
+/* ─── STEP 3: CONFIRM ─────────────────────────────────── */
+function doConfirm() {
+  const name = document.getElementById('payer-name').value.trim();
+  const errEl  = document.getElementById('review-error');
+  const errMsg = document.getElementById('review-error-msg');
+
+  errEl.classList.add('hidden');
+  if (!name) { showError(errEl, errMsg, 'Customer name is required.'); return; }
+
+  state.payerName  = name;
+  state.payerIC    = document.getElementById('payer-ic').value.trim();
+  state.tenderType = document.getElementById('tender-type').value;
+  state.txnId      = genId('TXN');
+  state.timestamp  = nowStr();
+
+  goTo(4);
+  document.getElementById('processing-state').style.display = 'block';
+  document.getElementById('success-state').style.display    = 'none';
+
+  const b = state.biller;
+  document.getElementById('processing-sub').textContent =
+    b.mode !== 'offline' ? 'Notifying Service Provider…' : 'Updating bill records in ePG…';
+
+  setTimeout(() => {
+    document.getElementById('processing-state').style.display = 'none';
+    buildReceipt();
+    document.getElementById('success-state').style.display = 'block';
+  }, 2400);
+}
+
+/* ─── RECEIPT ─────────────────────────────────────────── */
+function buildReceipt() {
+  const selBills = state.bills.filter(b => state.selected.has(b.id));
+  const b        = state.biller;
+
+  // Meta grid
+  const meta = [
+    { label:'No. Transaksi / Transaction ID', value: state.txnId },
+    { label:'No. Siasatan / Enquiry ID',       value: state.enquiryId },
+    { label:'Tarikh & Masa / Date & Time',      value: state.timestamp },
+    { label:'Jenis Bayaran / Tender Type',      value: state.tenderType.toUpperCase() },
+    { label:'Nama Pelanggan / Customer Name',   value: state.payerName },
+    { label:'No. IC / IC Number',               value: state.payerIC || '—' },
+    { label:'Pembayar Bil / Service Provider',  value: b.name },
+    { label:'Mod Sistem / SP Mode',             value: MODE_LABEL[b.mode] },
+  ];
+
+  document.getElementById('receipt-meta').innerHTML = meta.map(m => `
+    <div class="receipt-meta-item">
+      <div class="receipt-meta-label">${m.label}</div>
+      <div class="receipt-meta-value">${m.value}</div>
+    </div>
+  `).join('');
+
+  // Bill lines
+  document.getElementById('receipt-tbody').innerHTML = selBills.map(b => `
+    <tr>
+      <td>${b.desc}</td>
+      <td class="bill-ref">${b.ref}</td>
+      <td class="td-right bill-amount">${fmtBND(b.amount)}</td>
+    </tr>
+  `).join('');
+
+  // Totals
+  document.getElementById('receipt-total-block').innerHTML = `
+    <div class="rt-row"><span class="rt-label">Jumlah Kecil / Subtotal</span><span class="rt-val">${fmtBND(state.subtotal)}</span></div>
+    <div class="rt-row"><span class="rt-label">Yuran ePG / ePG Service Fee (0.5%)</span><span class="rt-val">${fmtBND(state.fee)}</span></div>
+    <div class="rt-row rt-total"><span class="rt-label">Jumlah Dibayar / Total Paid</span><span class="rt-val">${fmtBND(state.grandTotal)}</span></div>
+  `;
+}
+
+/* ─── RESET ───────────────────────────────────────────── */
+function reset() {
+  state = { step:1, biller:null, bills:[], selected:new Set(), enquiryId:'', payerName:'', payerIC:'', tenderType:'cash', grandTotal:0, fee:0, subtotal:0, txnId:'', timestamp:'' };
+  document.getElementById('biller-select').value = '';
+  document.getElementById('search-val').value    = '';
+  document.getElementById('payer-name').value    = '';
+  document.getElementById('payer-ic').value      = '';
+  document.getElementById('mode-banner').classList.add('hidden');
+  document.getElementById('search-error').classList.add('hidden');
+  document.getElementById('review-error').classList.add('hidden');
+  document.getElementById('check-all').checked = false;
+  goTo(1);
+}
+</script>
+</body>
+</html>
