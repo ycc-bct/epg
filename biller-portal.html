@@ -642,6 +642,68 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
 .processing-sub   { font-size: 14px; color: var(--text-muted); }
 
 /* ============================================================
+   DIALOG / MODAL
+   ============================================================ */
+.dialog-overlay {
+  position: fixed; inset: 0; background: rgba(15,23,42,.45);
+  backdrop-filter: blur(3px); z-index: 200;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.dialog-overlay.open { opacity: 1; pointer-events: all; }
+
+.dialog {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+  width: 100%; max-width: 560px; max-height: 85vh; overflow-y: auto;
+  transform: translateY(16px); transition: transform .2s;
+}
+.dialog-overlay.open .dialog { transform: translateY(0); }
+
+.dialog-header {
+  padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+}
+.dialog-title { font-size: 16px; font-weight: 700; color: var(--text); }
+.dialog-sub    { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.dialog-close  {
+  flex-shrink: 0; width: 28px; height: 28px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong); background: transparent;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--text-subtle); transition: all var(--transition);
+}
+.dialog-close:hover { background: var(--chip-bg); color: var(--text); }
+.dialog-close svg { width: 14px; height: 14px; }
+.dialog-body { padding: 20px 24px; }
+
+.spec-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+.spec-table th {
+  padding: 8px 10px; text-align: left; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--text-subtle);
+  background: var(--chip-bg); border-bottom: 1px solid var(--border);
+}
+.spec-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text-muted); vertical-align: top; }
+.spec-table td:first-child { font-family: ui-monospace, monospace; font-weight: 600; color: var(--text); white-space: nowrap; }
+.spec-table tr:last-child td { border-bottom: none; }
+.spec-req  { color: var(--red); font-size: 10px; font-weight: 700; margin-left: 4px; }
+.spec-opt  { color: var(--text-subtle); font-size: 10px; font-weight: 600; margin-left: 4px; }
+
+/* Hold chip */
+.chip-hold { background: color-mix(in srgb, #7C3AED 10%, white); color: #6D28D9; border-color: color-mix(in srgb, #7C3AED 25%, white); }
+
+/* Upload zone — simplified */
+.upload-area {
+  text-align: center; padding: 40px 24px 32px;
+}
+.upload-area .upload-desc {
+  font-size: 13px; color: var(--text-muted); margin-top: 12px; line-height: 1.6;
+}
+.upload-area .upload-desc a {
+  color: var(--accent); font-weight: 600; text-decoration: none; cursor: pointer;
+}
+.upload-area .upload-desc a:hover { text-decoration: underline; }
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 900px) {
@@ -819,55 +881,29 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
 
             <!-- Step 1 -->
             <div class="step-panel active" id="bsp-1">
-              <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:0;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
-                <div style="padding:18px 20px;border-right:1px solid var(--border);">
-                  <div class="section-label">File Requirements</div>
-                  <div class="field">
-                    <div style="font-size:13px;color:var(--text-muted);">Format</div>
-                    <div class="spec-pills"><span class="spec-pill">CSV</span><span class="spec-pill">XLSX</span></div>
-                  </div>
-                  <div class="field">
-                    <div style="font-size:13px;color:var(--text-muted);">Max records</div>
-                    <div style="font-size:14px;font-weight:600;color:var(--text);">500</div>
-                  </div>
-                  <div class="field">
-                    <div style="font-size:13px;color:var(--text-muted);">Max size</div>
-                    <div style="font-size:14px;font-weight:600;color:var(--text);">10 MB</div>
-                  </div>
-                </div>
-                <div style="padding:18px 20px;border-right:1px solid var(--border);">
-                  <div class="section-label">Required Columns</div>
-                  <div class="spec-pills">
-                    <span class="spec-pill">customer_id</span>
-                    <span class="spec-pill">bill_ref</span>
-                    <span class="spec-pill">biller_code</span>
-                    <span class="spec-pill">amount_due</span>
-                    <span class="spec-pill">due_date</span>
-                  </div>
-                  <div class="alert alert-info" style="margin-top:12px">
-                    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
-                    <span>All columns must be present. Optional: <strong>remarks</strong></span>
-                  </div>
-                </div>
-                <div style="padding:18px 20px;background:var(--chip-bg);">
-                  <div class="section-label">Upload Action</div>
-                  <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Biller code</div>
-                  <div style="font-size:13px;font-weight:700;color:var(--text);font-family:ui-monospace,monospace;margin-bottom:16px;">BCT-ELEC-001</div>
-                  <button class="btn btn-primary btn-full" onclick="bmSimUpload()">
+              <div id="upload-idle">
+                <div class="upload-area">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor" style="width:48px;height:48px;color:var(--accent);margin:0 auto 16px;display:block;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/></svg>
+                  <button class="btn btn-primary" style="font-size:14px;padding:11px 28px;" onclick="bmSimUpload()">
                     <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
-                    Browse &amp; Upload
+                    Upload Bill File
                   </button>
+                  <div class="upload-desc">
+                    CSV or XLSX &nbsp;·&nbsp; Max 500 records &nbsp;·&nbsp; 10 MB limit
+                    &nbsp;·&nbsp; <a onclick="openSpecDialog()">Learn more about file specs</a>
+                  </div>
                 </div>
               </div>
 
-              <div class="drop-zone" id="drop-zone" onclick="bmSimUpload()">
-                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/></svg>
-                <div class="drop-title">Drop your bill file here, or click to browse</div>
-                <div class="drop-sub">CSV, XLSX · Max 10 MB</div>
-              </div>
-
-              <!-- Progress (hidden initially) -->
-              <div id="upload-progress" style="display:none;margin-top:16px;">
+              <!-- Progress state -->
+              <div id="upload-progress" style="display:none;padding:24px 0 8px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor" style="width:32px;height:32px;color:var(--green);flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                  <div>
+                    <div style="font-size:13px;font-weight:600;color:var(--text);" id="progress-filename">bills_batch_20240520.csv</div>
+                    <div style="font-size:12px;color:var(--text-subtle);">47.2 KB · BCT-ELEC-001</div>
+                  </div>
+                </div>
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
                   <span id="progress-label" style="font-size:13px;color:var(--text-muted);">Reading file…</span>
                   <span id="progress-pct" style="font-size:12px;font-weight:700;color:var(--accent);">0%</span>
@@ -895,7 +931,7 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
               </div>
               <div class="total-row" style="margin-top:16px;">
                 <div><div class="total-label">Total Batch Amount</div><div style="font-size:11px;color:var(--accent-text);margin-top:2px;" id="bm-count-sub"></div></div>
-                <div class="total-value" id="bm-total-val">SAR 0.00</div>
+                <div class="total-value" id="bm-total-val">BND 0.00</div>
               </div>
               <div class="btn-row">
                 <button class="btn btn-ghost" onclick="bmGoStep(1)">
@@ -913,7 +949,7 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
             <div class="step-panel" id="bsp-3">
               <div class="alert alert-success">
                 <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <div><strong>Batch submitted to Fulfilment Entity.</strong> The batch will be processed within 1 business day.</div>
+                <div><strong>Batch submitted to Fulfilment Entity.</strong> Processing within 1 business day. A confirmation file will be available once the FE has reconciled all records.</div>
               </div>
               <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
                 <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
@@ -932,6 +968,20 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
                   <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">Submitted At</div>
                   <div style="font-size:16px;font-weight:700;font-family:ui-monospace,monospace;color:var(--text);" id="conf-time">—</div>
                 </div>
+              </div>
+              <!-- Download confirmation file -->
+              <div style="margin-top:16px;padding:14px 16px;border:1px solid var(--border);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:space-between;gap:16px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:18px;height:18px;color:var(--text-subtle);flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                  <div>
+                    <div style="font-size:13px;font-weight:600;color:var(--text);">Confirmation File (ACK)</div>
+                    <div style="font-size:12px;color:var(--text-muted);">Available after FE reconciliation · CSV format</div>
+                  </div>
+                </div>
+                <button class="btn btn-ghost" style="padding:8px 14px;font-size:13px;" onclick="showSnack('Confirmation file downloaded: ACK_' + document.getElementById(\'conf-jobid\').textContent + '.csv')">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                  Download
+                </button>
               </div>
               <div class="btn-row">
                 <button class="btn btn-ghost" onclick="bmReset()">
@@ -1205,6 +1255,80 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
   </main>
 </div>
 
+<!-- ════════ SPEC DIALOG ════════ -->
+<div class="dialog-overlay" id="spec-dialog" onclick="closeSpecDialog(event)">
+  <div class="dialog">
+    <div class="dialog-header">
+      <div>
+        <div class="dialog-title">Bill File Specifications</div>
+        <div class="dialog-sub">Offline Batch Upload · BCT-ELEC-001</div>
+      </div>
+      <button class="dialog-close" onclick="closeSpecDialogDirect()">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="dialog-body">
+      <!-- File limits -->
+      <div class="section-label">File Requirements</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;">
+        <div style="padding:12px 14px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);text-align:center;">
+          <div style="font-size:11px;color:var(--text-subtle);margin-bottom:4px;">Accepted Formats</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);">CSV · XLSX</div>
+        </div>
+        <div style="padding:12px 14px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);text-align:center;">
+          <div style="font-size:11px;color:var(--text-subtle);margin-bottom:4px;">Max Records</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);">500 rows</div>
+        </div>
+        <div style="padding:12px 14px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);text-align:center;">
+          <div style="font-size:11px;color:var(--text-subtle);margin-bottom:4px;">Max File Size</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);">10 MB</div>
+        </div>
+      </div>
+
+      <!-- Column spec table -->
+      <div class="section-label">Column Specifications</div>
+      <div style="border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+        <table class="spec-table">
+          <thead><tr><th>Column Name</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>customer_id<span class="spec-req">REQ</span></td><td>String</td><td>Unique customer identifier (e.g. CUST-10042)</td></tr>
+            <tr><td>bill_ref<span class="spec-req">REQ</span></td><td>String</td><td>Unique bill reference number (e.g. BILL-000001)</td></tr>
+            <tr><td>biller_code<span class="spec-req">REQ</span></td><td>String</td><td>Your registered biller code (BCT-ELEC-001)</td></tr>
+            <tr><td>amount_due<span class="spec-req">REQ</span></td><td>Decimal</td><td>Amount due in BND, 2 decimal places (e.g. 125.50)</td></tr>
+            <tr><td>due_date<span class="spec-req">REQ</span></td><td>Date</td><td>Payment due date in YYYY-MM-DD format</td></tr>
+            <tr><td>remarks<span class="spec-opt">OPT</span></td><td>String</td><td>Free-text note, max 200 characters</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Bill statuses -->
+      <div class="section-label" style="margin-top:20px;">Bill Status Reference</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);">
+          <span class="chip chip-green" style="flex-shrink:0;margin-top:1px;">Valid</span>
+          <div style="font-size:13px;color:var(--text-muted);">Bill passed all validation checks and is ready for submission.</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);">
+          <span class="chip chip-blue" style="flex-shrink:0;margin-top:1px;">Fully Paid</span>
+          <div style="font-size:13px;color:var(--text-muted);">This bill has already been paid in full. It will be excluded from the batch submission.</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);">
+          <span class="chip chip-hold" style="flex-shrink:0;margin-top:1px;">Hold</span>
+          <div style="font-size:13px;color:var(--text-muted);">Bill is flagged by the FE (e.g. dispute, duplicate, or account issue). Contact ePG support to resolve.</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);">
+          <span class="chip chip-red" style="flex-shrink:0;margin-top:1px;">Error</span>
+          <div style="font-size:13px;color:var(--text-muted);">Validation failed (e.g. missing field, invalid biller code). Correct the record and re-upload.</div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;padding:12px 14px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;color:var(--text-muted);line-height:1.7;">
+        💡 <strong>Tip:</strong> Download the <a href="#" onclick="showSnack('Downloading template…');closeSpecDialogDirect();return false;" style="color:var(--accent);font-weight:600;">sample template</a> to ensure your file matches the required format.
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- SNACKBAR -->
 <div class="snack" id="snack"></div>
 
@@ -1261,15 +1385,16 @@ function bmTab(t) {
 }
 
 // ── UPLOAD SIMULATION ──
+// status: 'valid' | 'paid' | 'hold'
 const BM_BILLS = [
-  {ref:'BILL-000001',name:'Al-Rashid Trading Co.',type:'Utility',amt:1250.00,due:'2024-05-31'},
-  {ref:'BILL-000002',name:'Green Valley Properties',type:'Utility',amt:3400.75,due:'2024-05-31'},
-  {ref:'BILL-000004',name:'Horizon Logistics LLC',type:'Utility',amt:2100.00,due:'2024-05-31'},
-  {ref:'BILL-000005',name:'Al-Baraka Supermarket',type:'Utility',amt:5670.25,due:'2024-05-31'},
-  {ref:'BILL-000007',name:'Gulf Star Manufacturing',type:'Utility',amt:9800.00,due:'2024-05-31'},
-  {ref:'BILL-000008',name:'Desert Rose Hotels',type:'Utility',amt:14320.50,due:'2024-05-31'},
-  {ref:'BILL-000010',name:'Al-Noor Pharmaceuticals',type:'Utility',amt:6450.00,due:'2024-05-31'},
-  {ref:'BILL-000011',name:'Falak Retail Group',type:'Utility',amt:3880.25,due:'2024-05-31'},
+  {ref:'BILL-000001',name:'Al-Rashid Trading Co.',type:'Utility',amt:1250.00,due:'2024-05-31',status:'valid'},
+  {ref:'BILL-000002',name:'Green Valley Properties',type:'Utility',amt:3400.75,due:'2024-05-31',status:'valid'},
+  {ref:'BILL-000004',name:'Horizon Logistics LLC',type:'Utility',amt:2100.00,due:'2024-05-31',status:'valid'},
+  {ref:'BILL-000005',name:'Al-Baraka Supermarket',type:'Utility',amt:5670.25,due:'2024-05-31',status:'paid'},
+  {ref:'BILL-000007',name:'Gulf Star Manufacturing',type:'Utility',amt:9800.00,due:'2024-05-31',status:'valid'},
+  {ref:'BILL-000008',name:'Desert Rose Hotels',type:'Utility',amt:14320.50,due:'2024-05-31',status:'hold'},
+  {ref:'BILL-000010',name:'Al-Noor Pharmaceuticals',type:'Utility',amt:6450.00,due:'2024-05-31',status:'valid'},
+  {ref:'BILL-000011',name:'Falak Retail Group',type:'Utility',amt:3880.25,due:'2024-05-31',status:'valid'},
 ];
 const STAGES = [
   {l:'Reading file…',p:15,d:400},{l:'Parsing records…',p:35,d:600},
@@ -1278,10 +1403,8 @@ const STAGES = [
 ];
 
 function bmSimUpload() {
-  const dz = document.getElementById('drop-zone');
+  document.getElementById('upload-idle').style.display = 'none';
   const pr = document.getElementById('upload-progress');
-  dz.classList.add('uploaded');
-  dz.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><div class="drop-title">bills_batch_20240520.csv</div><div class="drop-sub">8 records detected · 47.2 KB</div>';
   pr.style.display = 'block';
   let i = 0;
   function runStage() {
@@ -1312,21 +1435,32 @@ function bmGoStep(n) {
 function finishUpload() {
   const tbody = document.getElementById('bm-tbody');
   let total = 0;
+  const statusMap = {
+    valid: {chip:'chip-green', label:'Valid',       cbk:true,  dim:false},
+    paid:  {chip:'chip-blue',  label:'Fully Paid',  cbk:false, dim:true},
+    hold:  {chip:'chip-hold',  label:'Hold',        cbk:false, dim:true},
+  };
   tbody.innerHTML = BM_BILLS.map(b => {
-    total += b.amt;
-    return `<tr>
-      <td><input type="checkbox" checked></td>
+    const s = statusMap[b.status] || statusMap.valid;
+    if (s.cbk) total += b.amt;
+    const rowStyle = s.dim ? 'opacity:.55;' : '';
+    const tooltip  = b.status === 'paid' ? ' title="Already paid — excluded from batch"'
+                   : b.status === 'hold' ? ' title="On hold by FE — contact support"' : '';
+    return `<tr style="${rowStyle}"${tooltip}>
+      <td><input type="checkbox" ${s.cbk ? 'checked' : 'disabled'} ${s.dim ? 'title="Cannot submit"' : ''}></td>
       <td class="td-mono">${b.ref}</td>
       <td style="font-weight:600;">${b.name}</td>
       <td><span class="chip chip-muted">${b.type}</span></td>
       <td class="td-right" style="font-family:ui-monospace,monospace;font-weight:700;">${b.amt.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
       <td>${b.due}</td>
-      <td><span class="chip chip-green">Valid</span></td>
+      <td><span class="chip ${s.chip}">${s.label}</span></td>
     </tr>`;
   }).join('');
+  const validCount = BM_BILLS.filter(b => b.status === 'valid').length;
+  const skipped = BM_BILLS.length - validCount;
   document.getElementById('bm-count-lbl').textContent = `· ${BM_BILLS.length} records`;
-  document.getElementById('bm-count-sub').textContent = `${BM_BILLS.length} bills validated`;
-  document.getElementById('bm-total-val').textContent = 'SAR ' + total.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('bm-count-sub').textContent = `${validCount} submittable${skipped > 0 ? ` · ${skipped} excluded (Fully Paid / Hold)` : ''}`;
+  document.getElementById('bm-total-val').textContent = 'BND ' + total.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 
 function toggleAll(cb) {
@@ -1351,11 +1485,21 @@ function bmSubmit() {
 }
 
 function bmReset() {
-  const dz = document.getElementById('drop-zone');
-  dz.classList.remove('uploaded');
-  dz.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/></svg><div class="drop-title">Drop your bill file here, or click to browse</div><div class="drop-sub">CSV, XLSX · Max 10 MB</div>';
+  document.getElementById('upload-idle').style.display = 'block';
   document.getElementById('upload-progress').style.display = 'none';
+  document.getElementById('progress-fill').style.width = '0%';
   bmGoStep(1);
+}
+
+// ── SPEC DIALOG ──
+function openSpecDialog() {
+  document.getElementById('spec-dialog').classList.add('open');
+}
+function closeSpecDialogDirect() {
+  document.getElementById('spec-dialog').classList.remove('open');
+}
+function closeSpecDialog(e) {
+  if (e.target === document.getElementById('spec-dialog')) closeSpecDialogDirect();
 }
 
 // ── SERVICE FILTER ──
