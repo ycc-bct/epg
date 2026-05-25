@@ -1303,35 +1303,63 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
     <div class="page" id="page-invoices">
       <div class="page-header">
         <div class="page-title">Invoices &amp; Bills</div>
-        <div class="page-meta">All bills issued under your biller account · Biller Code: <strong style="font-family:ui-monospace,monospace;font-weight:600;">BCT-ELEC-001</strong> · Electricity</div>
+        <div class="page-meta">All bills issued under your biller account · <strong style="font-family:ui-monospace,monospace;font-weight:600;">BCT-ELEC-001</strong> · Electricity</div>
       </div>
       <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);">
         <div class="kpi-card"><div class="kpi-label">Total Bills Issued</div><div class="kpi-value">6</div><div class="kpi-sub">Apr 2024 cycle</div></div>
         <div class="kpi-card"><div class="kpi-label">Amount Billed</div><div class="kpi-value green">36,541</div><div class="kpi-sub">BND · Full period</div></div>
-        <div class="kpi-card"><div class="kpi-label">Outstanding</div><div class="kpi-value amber">8,420</div><div class="kpi-sub">BND · 2 partial</div></div>
+        <div class="kpi-card"><div class="kpi-label">Outstanding</div><div class="kpi-value amber">8,420</div><div class="kpi-sub">BND · 2 bills</div></div>
       </div>
       <div class="card">
         <div class="card-section">
+          <!-- Filter bar -->
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+            <div style="position:relative;flex:0 0 210px;">
+              <svg style="position:absolute;left:9px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text-subtle);pointer-events:none;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0Z"/></svg>
+              <input type="text" id="inv-search" placeholder="Bill ref or customer…"
+                style="width:100%;padding:7px 10px 7px 30px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);font-size:13px;outline:none;background:var(--surface);transition:border-color var(--transition);"
+                oninput="invFilter()">
+            </div>
+            <div style="display:flex;gap:4px;align-items:center;">
+              <span style="font-size:12px;color:var(--text-subtle);padding-right:4px;">Status</span>
+              <button class="btn btn-ghost inv-sb active" data-s="all"     onclick="invSetStatus('all')"     style="padding:5px 11px;font-size:12px;">All</button>
+              <button class="btn btn-ghost inv-sb"        data-s="paid"    onclick="invSetStatus('paid')"    style="padding:5px 11px;font-size:12px;">Paid</button>
+              <button class="btn btn-ghost inv-sb"        data-s="partial" onclick="invSetStatus('partial')" style="padding:5px 11px;font-size:12px;">Partial</button>
+              <button class="btn btn-ghost inv-sb"        data-s="hold"    onclick="invSetStatus('hold')"    style="padding:5px 11px;font-size:12px;">Hold</button>
+            </div>
+            <span id="inv-count" style="margin-left:auto;font-size:12px;color:var(--text-subtle);">6 bills</span>
+          </div>
+          <!-- Table -->
           <div class="table-wrap">
             <table>
               <thead><tr>
-                <th class="th-check"><input type="checkbox"></th>
                 <th>Bill Ref</th>
                 <th>Customer</th>
                 <th>Account No.</th>
-                <th>Biller Code</th>
                 <th>Period</th>
                 <th class="th-right">Amount Due (BND)</th>
                 <th>Due Date</th>
                 <th>Status</th>
               </tr></thead>
-              <tbody>
-                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000001</td><td><div style="font-weight:600;">Al-Rashid Trading Co.</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10042</div></td><td class="td-mono" style="font-size:11px;">SA0380…167519</td><td class="td-mono" style="font-size:11px;">BCT-ELEC-001</td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">1,250.00</td><td>31 May 2024</td><td><span class="chip chip-green">Active</span></td></tr>
-                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000002</td><td><div style="font-weight:600;">Green Valley Properties</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10087</div></td><td class="td-mono" style="font-size:11px;">SA8480…167530</td><td class="td-mono" style="font-size:11px;">BCT-ELEC-001</td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">3,400.75</td><td>31 May 2024</td><td><span class="chip chip-green">Active</span></td></tr>
-                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000004</td><td><div style="font-weight:600;">Horizon Logistics LLC</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10215</div></td><td class="td-mono" style="font-size:11px;">SA5480…167552</td><td class="td-mono" style="font-size:11px;">BCT-ELEC-001</td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">2,100.00</td><td>31 May 2024</td><td><span class="chip chip-amber">Partial</span></td></tr>
-                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000005</td><td><div style="font-weight:600;">Al-Baraka Supermarket</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10308</div></td><td class="td-mono" style="font-size:11px;">SA0380…167563</td><td class="td-mono" style="font-size:11px;">BCT-ELEC-001</td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">5,670.25</td><td>31 May 2024</td><td><span class="chip chip-green">Active</span></td></tr>
-                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000007</td><td><div style="font-weight:600;">Gulf Star Manufacturing</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10512</div></td><td class="td-mono" style="font-size:11px;">SA0380…167585</td><td class="td-mono" style="font-size:11px;">BCT-ELEC-001</td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">9,800.00</td><td>31 May 2024</td><td><span class="chip chip-green">Active</span></td></tr>
-                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000008</td><td><div style="font-weight:600;">Desert Rose Hotels</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10637</div></td><td class="td-mono" style="font-size:11px;">SA5480…167596</td><td class="td-mono" style="font-size:11px;">BCT-ELEC-001</td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">14,320.50</td><td>31 May 2024</td><td><span class="chip chip-amber">Partial</span></td></tr>
+              <tbody id="inv-tbody">
+                <tr data-status="paid" data-search="bill-000001 al-rashid trading co. cust-10042">
+                  <td class="td-mono">BILL-000001</td><td><div style="font-weight:600;">Al-Rashid Trading Co.</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10042</div></td><td class="td-mono" style="font-size:11px;">SA0380…167519</td><td>Apr 2024</td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">1,250.00</td><td>31 May 2024</td><td><span class="chip chip-blue">Paid</span></td>
+                </tr>
+                <tr data-status="paid" data-search="bill-000002 green valley properties cust-10087">
+                  <td class="td-mono">BILL-000002</td><td><div style="font-weight:600;">Green Valley Properties</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10087</div></td><td class="td-mono" style="font-size:11px;">SA8480…167530</td><td>Apr 2024</td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">3,400.75</td><td>31 May 2024</td><td><span class="chip chip-blue">Paid</span></td>
+                </tr>
+                <tr data-status="partial" data-search="bill-000004 horizon logistics llc cust-10215">
+                  <td class="td-mono">BILL-000004</td><td><div style="font-weight:600;">Horizon Logistics LLC</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10215</div></td><td class="td-mono" style="font-size:11px;">SA5480…167552</td><td>Apr 2024</td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">2,100.00</td><td>31 May 2024</td><td><span class="chip chip-amber">Partial</span></td>
+                </tr>
+                <tr data-status="paid" data-search="bill-000005 al-baraka supermarket cust-10308">
+                  <td class="td-mono">BILL-000005</td><td><div style="font-weight:600;">Al-Baraka Supermarket</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10308</div></td><td class="td-mono" style="font-size:11px;">SA0380…167563</td><td>Apr 2024</td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">5,670.25</td><td>31 May 2024</td><td><span class="chip chip-blue">Paid</span></td>
+                </tr>
+                <tr data-status="paid" data-search="bill-000007 gulf star manufacturing cust-10512">
+                  <td class="td-mono">BILL-000007</td><td><div style="font-weight:600;">Gulf Star Manufacturing</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10512</div></td><td class="td-mono" style="font-size:11px;">SA0380…167585</td><td>Apr 2024</td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">9,800.00</td><td>31 May 2024</td><td><span class="chip chip-blue">Paid</span></td>
+                </tr>
+                <tr data-status="hold" data-search="bill-000008 desert rose hotels cust-10637">
+                  <td class="td-mono">BILL-000008</td><td><div style="font-weight:600;">Desert Rose Hotels</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10637</div></td><td class="td-mono" style="font-size:11px;">SA5480…167596</td><td>Apr 2024</td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">14,320.50</td><td>31 May 2024</td><td><span class="chip chip-hold">Hold</span></td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -1917,6 +1945,27 @@ function closeSpecDialogDirect() {
 }
 function closeSpecDialog(e) {
   if (e.target === document.getElementById('spec-dialog')) closeSpecDialogDirect();
+}
+
+// ── INVOICES FILTER ──
+let invStatus = 'all';
+function invSetStatus(s) {
+  invStatus = s;
+  document.querySelectorAll('.inv-sb').forEach(b => b.classList.toggle('active', b.dataset.s === s));
+  invFilter();
+}
+function invFilter() {
+  const q = (document.getElementById('inv-search').value || '').toLowerCase();
+  const rows = document.querySelectorAll('#inv-tbody tr');
+  let n = 0;
+  rows.forEach(r => {
+    const show = (invStatus === 'all' || r.dataset.status === invStatus) &&
+                 (!q || (r.dataset.search || '').includes(q));
+    r.style.display = show ? '' : 'none';
+    if (show) n++;
+  });
+  const el = document.getElementById('inv-count');
+  if (el) el.textContent = n + ' bill' + (n !== 1 ? 's' : '');
 }
 
 // ── SERVICE FILTER ──
