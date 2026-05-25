@@ -688,6 +688,13 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
 .spec-req  { color: var(--red); font-size: 10px; font-weight: 700; margin-left: 4px; }
 .spec-opt  { color: var(--text-subtle); font-size: 10px; font-weight: 600; margin-left: 4px; }
 
+/* Field validation error */
+.field-err {
+  font-size: 12px; color: var(--red); margin-top: 4px; min-height: 0;
+  display: none;
+}
+.field-err.visible { display: block; }
+
 /* Hold chip */
 .chip-hold { background: color-mix(in srgb, #7C3AED 10%, white); color: #6D28D9; border-color: color-mix(in srgb, #7C3AED 25%, white); }
 
@@ -995,31 +1002,216 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
 
           <!-- ── ONLINE ── -->
           <div id="bm-online" style="display:none;">
-            <div style="max-width:520px;">
-              <div class="section-label">Single Bill Entry</div>
-              <div class="field-row">
-                <div class="field"><label>Customer ID <span class="req">*</span></label><input type="text" placeholder="CUST-10042"></div>
-                <div class="field"><label>Bill Reference <span class="req">*</span></label><input type="text" placeholder="BILL-000001"></div>
+
+            <!-- How it works banner -->
+            <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--blue-dim,#EFF6FF);border:1px solid color-mix(in srgb,var(--blue) 20%,white);border-radius:var(--radius-sm);margin-bottom:22px;font-size:13px;color:var(--blue);">
+              <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:16px;height:16px;flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+              <span><strong>Online Single Load</strong> registers one bill directly to ePG in real time. Unlike Offline Batch, the bill is validated against the FE immediately and becomes payable by the customer as soon as it's confirmed — no waiting period.</span>
+            </div>
+
+            <!-- Step indicator -->
+            <div class="steps" id="ol-steps">
+              <div class="step active" id="ol-s1">
+                <div class="step-circle">1</div>
+                <div class="step-label"><div class="step-label-main">Enter Bill Details</div><div class="step-label-sub">Fill form</div></div>
               </div>
-              <div class="field-row" style="margin-top:14px;">
-                <div class="field">
-                  <label>Biller Code <span class="req">*</span></label>
-                  <div class="select-wrap"><select><option>BCT-ELEC-001</option><option>BCT-WATER-002</option></select></div>
+              <div class="step" id="ol-s2">
+                <div class="step-circle">2</div>
+                <div class="step-label"><div class="step-label-main">Review &amp; Confirm</div><div class="step-label-sub">Verify</div></div>
+              </div>
+              <div class="step" id="ol-s3">
+                <div class="step-circle">3</div>
+                <div class="step-label"><div class="step-label-main">Bill Activated</div><div class="step-label-sub">Live</div></div>
+              </div>
+            </div>
+
+            <!-- ── Online Step 1: Enter Bill Details ── -->
+            <div class="step-panel active" id="ol-p1">
+              <div style="max-width:560px;">
+                <div class="section-label">Bill Information</div>
+                <div class="field-row">
+                  <div class="field">
+                    <label for="ol-cust">Customer ID <span class="req">*</span></label>
+                    <input type="text" id="ol-cust" placeholder="e.g. CUST-10042" oninput="olClearErr('ol-cust-err')">
+                    <div class="field-err" id="ol-cust-err"></div>
+                  </div>
+                  <div class="field">
+                    <label for="ol-ref">Bill Reference <span class="req">*</span></label>
+                    <input type="text" id="ol-ref" placeholder="e.g. BILL-000099" oninput="olClearErr('ol-ref-err')">
+                    <div class="field-err" id="ol-ref-err"></div>
+                  </div>
                 </div>
-                <div class="field"><label>Amount Due (SAR) <span class="req">*</span></label><input type="number" placeholder="0.00" min="0" step="0.01"></div>
+
+                <div class="field-row" style="margin-top:14px;">
+                  <div class="field">
+                    <label for="ol-code">Biller Code <span class="req">*</span></label>
+                    <div class="select-wrap">
+                      <select id="ol-code">
+                        <option value="BCT-ELEC-001">BCT-ELEC-001 — Electricity</option>
+                        <option value="BCT-WATER-002">BCT-WATER-002 — Water</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="ol-amt">Amount Due (BND) <span class="req">*</span></label>
+                    <input type="number" id="ol-amt" placeholder="0.00" min="0.01" step="0.01" oninput="olClearErr('ol-amt-err')">
+                    <div class="field-err" id="ol-amt-err"></div>
+                  </div>
+                </div>
+
+                <div class="field-row" style="margin-top:14px;">
+                  <div class="field">
+                    <label for="ol-due">Due Date <span class="req">*</span></label>
+                    <input type="text" id="ol-due" placeholder="YYYY-MM-DD" oninput="olClearErr('ol-due-err')">
+                    <div class="field-err" id="ol-due-err"></div>
+                  </div>
+                  <div class="field">
+                    <label for="ol-rmk">Remarks</label>
+                    <input type="text" id="ol-rmk" placeholder="Optional — max 200 characters" maxlength="200">
+                  </div>
+                </div>
+
+                <div class="btn-row">
+                  <button class="btn btn-ghost" onclick="olReset()">
+                    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+                    Clear
+                  </button>
+                  <button class="btn btn-primary" id="ol-validate-btn" onclick="olValidate()">
+                    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Validate &amp; Preview
+                  </button>
+                </div>
               </div>
-              <div class="field-row" style="margin-top:14px;">
-                <div class="field"><label>Due Date <span class="req">*</span></label><input type="text" placeholder="2024-05-31"></div>
-                <div class="field"><label>Remarks</label><input type="text" placeholder="Optional note"></div>
+            </div>
+
+            <!-- ── Online Step 2: Review & Confirm ── -->
+            <div class="step-panel" id="ol-p2">
+              <div class="alert alert-success" style="margin-bottom:20px;">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div><strong>Real-time validation passed.</strong> Review the bill details below before confirming submission to ePG.</div>
               </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+                <div style="padding:18px 20px;border-right:1px solid var(--border);">
+                  <div class="section-label">Bill Details</div>
+                  <div class="summary-row"><div class="summary-label">Customer ID</div><div class="summary-value" id="rv-cust">—</div></div>
+                  <div class="summary-row"><div class="summary-label">Bill Reference</div><div class="summary-value" id="rv-ref">—</div></div>
+                  <div class="summary-row"><div class="summary-label">Biller Code</div><div class="summary-value" id="rv-code">—</div></div>
+                  <div class="summary-row"><div class="summary-label">Remarks</div><div class="summary-value" id="rv-rmk" style="color:var(--text-subtle);font-family:inherit;font-weight:400;">—</div></div>
+                </div>
+                <div style="padding:18px 20px;background:var(--chip-bg);">
+                  <div class="section-label">Payment Details</div>
+                  <div class="summary-row"><div class="summary-label">Amount Due</div><div class="summary-value" id="rv-amt" style="color:var(--accent);font-size:15px;">—</div></div>
+                  <div class="summary-row"><div class="summary-label">Due Date</div><div class="summary-value" id="rv-due">—</div></div>
+                  <div class="summary-row"><div class="summary-label">Activation</div>
+                    <div style="font-size:12px;font-weight:600;color:var(--green);display:flex;align-items:center;gap:5px;">
+                      <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:13px;height:13px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+                      Immediate upon confirmation
+                    </div>
+                  </div>
+                  <div class="summary-row"><div class="summary-label">Channel</div><div style="font-size:13px;font-weight:600;color:var(--text);">Online Portal</div></div>
+                </div>
+              </div>
+
+              <div style="margin-top:14px;padding:12px 14px;background:var(--amber-dim);border:1px solid color-mix(in srgb,var(--amber) 25%,white);border-radius:var(--radius-sm);font-size:13px;color:var(--amber);display:flex;gap:10px;align-items:flex-start;">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:16px;height:16px;flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                <span>Once confirmed, this bill cannot be cancelled through the portal. Contact ePG support if you need to void it.</span>
+              </div>
+
               <div class="btn-row">
-                <button class="btn btn-ghost" onclick="showSnack('Form cleared')">Clear</button>
-                <button class="btn btn-primary" onclick="showSnack('Bill submitted successfully!')">
+                <button class="btn btn-ghost" onclick="olGoStep(1)">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+                  Back
+                </button>
+                <button class="btn btn-primary" id="ol-confirm-btn" onclick="olSubmit()">
                   <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                  Submit Bill
+                  Confirm &amp; Activate Bill
                 </button>
               </div>
             </div>
+
+            <!-- ── Online Step 3: Bill Activated ── -->
+            <div class="step-panel" id="ol-p3">
+              <div class="alert alert-success" style="margin-bottom:20px;">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div>
+                  <strong>Bill is now live.</strong> The customer can pay immediately through any ePG-connected channel (Teller Portal, OCBS, or mobile banking).
+                </div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">Bill Reference</div>
+                  <div style="font-size:15px;font-weight:700;font-family:ui-monospace,monospace;color:var(--text);" id="ol-conf-ref">—</div>
+                </div>
+                <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">ePG Reference</div>
+                  <div style="font-size:15px;font-weight:700;font-family:ui-monospace,monospace;color:var(--accent);" id="ol-conf-epg">—</div>
+                </div>
+                <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">Amount Due</div>
+                  <div style="font-size:15px;font-weight:700;font-family:ui-monospace,monospace;color:var(--text);" id="ol-conf-amt">—</div>
+                </div>
+                <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">Activated At</div>
+                  <div style="font-size:15px;font-weight:700;font-family:ui-monospace,monospace;color:var(--text);" id="ol-conf-time">—</div>
+                </div>
+              </div>
+
+              <!-- Status timeline -->
+              <div style="padding:16px 18px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:16px;">
+                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:14px;">Bill Lifecycle</div>
+                <div style="display:flex;flex-direction:column;gap:0;">
+                  <div style="display:flex;gap:14px;align-items:flex-start;">
+                    <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+                      <div style="width:22px;height:22px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;">
+                        <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="#fff" style="width:11px;height:11px;"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                      </div>
+                      <div style="width:2px;flex:1;background:var(--border);min-height:24px;"></div>
+                    </div>
+                    <div style="padding-bottom:18px;">
+                      <div style="font-size:13px;font-weight:600;color:var(--text);">Bill Created &amp; Validated</div>
+                      <div style="font-size:12px;color:var(--text-subtle);margin-top:1px;" id="ol-tl-created">—</div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:14px;align-items:flex-start;">
+                    <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+                      <div style="width:22px;height:22px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;">
+                        <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="#fff" style="width:11px;height:11px;"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                      </div>
+                      <div style="width:2px;flex:1;background:var(--border);min-height:24px;"></div>
+                    </div>
+                    <div style="padding-bottom:18px;">
+                      <div style="font-size:13px;font-weight:600;color:var(--text);">Registered with FE</div>
+                      <div style="font-size:12px;color:var(--text-subtle);margin-top:1px;" id="ol-tl-registered">—</div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:14px;align-items:flex-start;">
+                    <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+                      <div style="width:22px;height:22px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;">
+                        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#fff" style="width:11px;height:11px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+                      </div>
+                    </div>
+                    <div>
+                      <div style="font-size:13px;font-weight:600;color:var(--green);">Bill Live — Awaiting Customer Payment</div>
+                      <div style="font-size:12px;color:var(--text-subtle);margin-top:1px;">Payable via Teller Portal, OCBS, or mobile banking</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="btn-row">
+                <button class="btn btn-ghost" onclick="olReset()">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                  Register Another Bill
+                </button>
+                <button class="btn btn-primary" onclick="navTo('invoices',null);document.getElementById('ni-invoices').classList.add('active');document.getElementById('ni-bill-mgmt').classList.remove('active')">
+                  View in Invoices
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+                </button>
+              </div>
+            </div>
+
           </div>
 
           <!-- ── HISTORY ── -->
@@ -1538,6 +1730,106 @@ function bmReset() {
   document.getElementById('upload-progress').style.display = 'none';
   document.getElementById('progress-fill').style.width = '0%';
   bmGoStep(1);
+}
+
+// ── ONLINE SINGLE LOAD ──
+function olGoStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    const p = document.getElementById('ol-p' + i);
+    const s = document.getElementById('ol-s' + i);
+    if (p) p.classList.toggle('active', i === n);
+    if (s) {
+      s.classList.remove('active','done');
+      if (i < n) s.classList.add('done');
+      if (i === n) s.classList.add('active');
+    }
+  }
+}
+
+function olClearErr(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('visible');
+}
+
+function olShowErr(id, msg) {
+  const el = document.getElementById(id);
+  if (el) { el.textContent = msg; el.classList.add('visible'); }
+}
+
+function olValidate() {
+  const cust = document.getElementById('ol-cust').value.trim();
+  const ref  = document.getElementById('ol-ref').value.trim();
+  const amt  = parseFloat(document.getElementById('ol-amt').value);
+  const due  = document.getElementById('ol-due').value.trim();
+  let valid  = true;
+
+  if (!cust) { olShowErr('ol-cust-err', 'Customer ID is required'); valid = false; }
+  else if (!/^CUST-\d+$/i.test(cust)) { olShowErr('ol-cust-err', 'Format: CUST-XXXXX'); valid = false; }
+
+  if (!ref) { olShowErr('ol-ref-err', 'Bill Reference is required'); valid = false; }
+  else if (!/^BILL-\d+$/i.test(ref)) { olShowErr('ol-ref-err', 'Format: BILL-XXXXXX'); valid = false; }
+
+  if (!amt || amt <= 0) { olShowErr('ol-amt-err', 'Enter a valid amount greater than 0'); valid = false; }
+
+  if (!due) { olShowErr('ol-due-err', 'Due date is required'); valid = false; }
+  else if (!/^\d{4}-\d{2}-\d{2}$/.test(due)) { olShowErr('ol-due-err', 'Use format YYYY-MM-DD'); valid = false; }
+
+  if (!valid) return;
+
+  // Simulate FE validation delay
+  const btn = document.getElementById('ol-validate-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>Validating…';
+
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Validate &amp; Preview';
+
+    // Populate review panel
+    const code = document.getElementById('ol-code').value;
+    const rmk  = document.getElementById('ol-rmk').value.trim();
+    document.getElementById('rv-cust').textContent = cust;
+    document.getElementById('rv-ref').textContent  = ref;
+    document.getElementById('rv-code').textContent = code;
+    document.getElementById('rv-rmk').textContent  = rmk || '—';
+    document.getElementById('rv-amt').textContent  = 'BND ' + amt.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById('rv-due').textContent  = due;
+    olGoStep(2);
+  }, 1200);
+}
+
+function olSubmit() {
+  const btn = document.getElementById('ol-confirm-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>Activating…';
+
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Confirm &amp; Activate Bill';
+
+    const ref    = document.getElementById('ol-ref').value.trim();
+    const amt    = document.getElementById('rv-amt').textContent;
+    const epgRef = 'EPG-' + Date.now().toString().slice(-8);
+    const now    = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    const ts     = now + ', 20 May 2024';
+
+    document.getElementById('ol-conf-ref').textContent  = ref;
+    document.getElementById('ol-conf-epg').textContent  = epgRef;
+    document.getElementById('ol-conf-amt').textContent  = amt;
+    document.getElementById('ol-conf-time').textContent = ts;
+    document.getElementById('ol-tl-created').textContent    = ts + ' · FE validation OK';
+    document.getElementById('ol-tl-registered').textContent = ts + ' · ePG Ref: ' + epgRef;
+    olGoStep(3);
+  }, 1400);
+}
+
+function olReset() {
+  ['ol-cust','ol-ref','ol-amt','ol-due','ol-rmk'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  ['ol-cust-err','ol-ref-err','ol-amt-err','ol-due-err'].forEach(id => olClearErr(id));
+  olGoStep(1);
 }
 
 // ── HISTORY DATA & FILTER ──
