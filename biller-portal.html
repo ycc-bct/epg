@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Biller Portal — ePG Electronic Payment Gateway</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS  (aligned with teller-portal.html)
+   ============================================================ */
+:root {
+  --bg:            #F0F4F8;
+  --surface:       #FFFFFF;
+  --border:        #E2E8F0;
+  --border-strong: #CBD5E1;
+  --text:          #0F172A;
+  --text-muted:    #475569;
+  --text-subtle:   #64748B;
+  --chip-bg:       #F1F5F9;
+
+  /* Biller accent — green (from index.html --biller) */
+  --accent:        #1D7A4E;
+  --accent-dim:    color-mix(in srgb, #1D7A4E 10%, white);
+  --accent-border: color-mix(in srgb, #1D7A4E 25%, white);
+  --accent-text:   color-mix(in srgb, #1D7A4E 80%, #0F172A);
+
+  /* Semantic */
+  --green:         #1D7A4E;
+  --green-dim:     color-mix(in srgb, #1D7A4E 10%, white);
+  --red:           #C8102E;
+  --red-dim:       color-mix(in srgb, #C8102E 10%, white);
+  --blue:          #2E75B6;
+  --blue-dim:      color-mix(in srgb, #2E75B6 10%, white);
+  --amber:         #B45309;
+  --amber-dim:     color-mix(in srgb, #B45309 10%, white);
+
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+
+  --shadow-sm:  0 1px 2px rgba(15,23,42,.04);
+  --shadow-md:  0 4px 12px rgba(15,23,42,.06);
+  --shadow-lg:  0 16px 40px rgba(15,23,42,.10);
+
+  --transition: .2s cubic-bezier(.2,.8,.2,1);
+
+  --sidebar-w: 220px;
+}
+
+/* ============================================================
+   RESET + BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   LOGIN SCREEN
+   ============================================================ */
+.login-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+  padding: 24px;
+  padding-top: 80px;
+}
+.login-screen.hidden { display: none; }
+
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 40px 48px;
+  width: 100%;
+  max-width: 520px;
+}
+
+.login-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+.login-brand-mark {
+  width: 44px; height: 44px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, var(--accent) 0%, #0f4d30 100%);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 12px; letter-spacing: .03em;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 30%, transparent);
+  flex-shrink: 0;
+}
+.login-brand-text { line-height: 1.25; }
+.login-brand-title { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.login-brand-sub   { font-size: 12px; color: var(--text-subtle); margin-top: 2px; }
+
+.login-heading { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 6px; }
+.login-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
+
+.login-field { margin-bottom: 16px; }
+.login-field label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.login-input-wrap {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.login-input-wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+.login-input-wrap svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--text-subtle); pointer-events: none; }
+.login-input-wrap input {
+  flex: 1; padding: 11px 0; border: none; background: transparent;
+  font-size: 14px; font-family: inherit; color: var(--text); outline: none;
+}
+.login-input-wrap input::placeholder { color: var(--text-subtle); opacity: .6; }
+
+.login-error {
+  display: none; align-items: center; gap: 7px;
+  background: var(--red-dim); border: 1px solid color-mix(in srgb, var(--red) 25%, white);
+  color: var(--red); font-size: 13px; font-weight: 500;
+  padding: 10px 12px; border-radius: var(--radius-sm); margin-bottom: 16px;
+}
+.login-error.visible { display: flex; }
+.login-error svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+.login-btn {
+  width: 100%; padding: 11px 20px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600; font-family: inherit;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: background var(--transition), box-shadow var(--transition);
+  margin-top: 8px;
+}
+.login-btn:hover {
+  background: color-mix(in srgb, var(--accent) 85%, #000);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.login-btn svg { width: 16px; height: 16px; }
+
+.login-hint {
+  margin-top: 20px; padding: 12px 14px;
+  background: var(--chip-bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 12px; color: var(--text-muted); line-height: 1.7;
+}
+.login-hint strong { color: var(--text-subtle); font-weight: 600; }
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header {
+  background: rgba(255,255,255,.85);
+  backdrop-filter: saturate(140%) blur(10px);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex; align-items: center; gap: 16px;
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 50;
+  height: 60px;
+}
+
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; flex-shrink: 0; }
+.brand-mark {
+  width: 36px; height: 36px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--accent) 0%, #0f4d30 100%);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 11px; letter-spacing: .03em;
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--accent) 35%, transparent);
+  flex-shrink: 0;
+}
+.brand-text { line-height: 1.2; }
+.brand-title { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.brand-sub   { font-size: 11px; color: var(--text-subtle); margin-top: 1px; }
+
+.header-sep { width: 1px; height: 24px; background: var(--border-strong); flex-shrink: 0; }
+
+.breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-subtle); }
+.breadcrumb a { color: var(--text-subtle); text-decoration: none; transition: color var(--transition); }
+.breadcrumb a:hover { color: var(--text); }
+.breadcrumb-sep { opacity: .4; }
+.breadcrumb-current { color: var(--text); font-weight: 600; }
+
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+.biller-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--accent-dim); color: var(--accent-text);
+  border: 1px solid var(--accent-border);
+  padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+}
+.biller-chip::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+}
+
+.avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--accent-dim); border: 1px solid var(--accent-border);
+  color: var(--accent-text); display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+}
+
+.btn-logout {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm); background: transparent;
+  font-size: 12px; font-weight: 500; color: var(--text-muted);
+  cursor: pointer; font-family: inherit; transition: all var(--transition);
+}
+.btn-logout:hover { background: var(--bg); color: var(--text); border-color: var(--accent-border); }
+.btn-logout svg { width: 14px; height: 14px; }
+
+/* ============================================================
+   APP SHELL  (sidebar + content)
+   ============================================================ */
+.app {
+  display: none;
+  padding-top: 60px;
+  min-height: 100vh;
+}
+.app.visible { display: flex; }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: calc(100vh - 60px);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  position: fixed; top: 60px; left: 0; bottom: 0;
+  overflow-y: auto;
+  padding: 16px 10px 24px;
+  z-index: 40;
+  display: flex; flex-direction: column;
+}
+
+.sb-section { margin-bottom: 4px; }
+.sb-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--text-subtle); padding: 10px 8px 5px; display: block;
+}
+
+.sb-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 10px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500; color: var(--text-muted);
+  cursor: pointer; transition: all var(--transition);
+  user-select: none;
+}
+.sb-item:hover { background: var(--chip-bg); color: var(--text); }
+.sb-item.active { background: var(--accent-dim); color: var(--accent-text); font-weight: 600; }
+.sb-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+.sb-item .sb-badge {
+  margin-left: auto; background: var(--accent); color: #fff;
+  font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 999px;
+}
+.sb-item.active .sb-badge { background: color-mix(in srgb, var(--accent) 70%, white); }
+
+.sb-divider { height: 1px; background: var(--border); margin: 10px 0; }
+.sb-footer { margin-top: auto; font-size: 11px; color: var(--text-subtle); padding: 8px 8px 0; }
+
+/* ── Content area ── */
+.content {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  padding: 32px 32px 80px;
+  min-height: calc(100vh - 60px);
+}
+
+/* ============================================================
+   PAGE / PANEL SWITCHING
+   ============================================================ */
+.page { display: none; }
+.page.active { display: block; animation: fadeUp .18s ease both; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   PAGE TITLE
+   ============================================================ */
+.page-header { margin-bottom: 24px; }
+.page-title  { font-size: 22px; font-weight: 700; letter-spacing: -.02em; color: var(--text); }
+.page-meta   { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+/* ============================================================
+   CARD
+   ============================================================ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow var(--transition);
+}
+.card + .card { margin-top: 16px; }
+
+.card-section {
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--border);
+}
+.card-section:last-child { border-bottom: none; }
+
+.section-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--text-subtle);
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.section-label::before {
+  content: ""; width: 3px; height: 14px; border-radius: 2px;
+  background: var(--accent); flex-shrink: 0;
+}
+
+/* ============================================================
+   KPI ROW
+   ============================================================ */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.kpi-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+}
+.kpi-label { font-size: 12px; font-weight: 600; color: var(--text-subtle); margin-bottom: 6px; }
+.kpi-value { font-size: 24px; font-weight: 800; letter-spacing: -.03em; color: var(--text); font-family: ui-monospace, monospace; }
+.kpi-value.green  { color: var(--green); }
+.kpi-value.amber  { color: var(--amber); }
+.kpi-value.blue   { color: var(--blue); }
+.kpi-sub   { font-size: 11px; color: var(--text-subtle); margin-top: 4px; }
+.kpi-up    { color: var(--green); font-weight: 600; }
+
+/* ============================================================
+   STEP INDICATOR
+   ============================================================ */
+.steps { display: flex; align-items: flex-start; gap: 0; margin-bottom: 28px; }
+.step  { display: flex; flex-direction: column; align-items: center; flex: 1; position: relative; }
+.step:not(:last-child)::after {
+  content: ""; position: absolute; top: 15px;
+  left: calc(50% + 18px); right: calc(-50% + 18px);
+  height: 2px; background: var(--border-strong); transition: background var(--transition);
+}
+.step.done:not(:last-child)::after { background: var(--accent); }
+
+.step-circle {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 2px solid var(--border-strong); background: var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: var(--text-subtle);
+  transition: all var(--transition); position: relative; z-index: 1;
+}
+.step.done   .step-circle { background: var(--accent); border-color: var(--accent); color: #fff; }
+.step.active .step-circle { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 0 4px var(--accent-dim); }
+
+.step-label { margin-top: 8px; text-align: center; }
+.step-label-main { font-size: 12px; font-weight: 600; color: var(--text-subtle); transition: color var(--transition); }
+.step.active .step-label-main,
+.step.done   .step-label-main { color: var(--text); }
+.step-label-sub { font-size: 10px; color: var(--text-subtle); opacity: .65; font-weight: 600; letter-spacing: .05em; margin-top: 2px; }
+
+/* ============================================================
+   STEP PANELS
+   ============================================================ */
+.step-panel { display: none; }
+.step-panel.active { display: block; animation: fadeUp .18s ease both; }
+
+/* ============================================================
+   FORM ELEMENTS
+   ============================================================ */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field + .field { margin-top: 14px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+.field-row .field + .field { margin-top: 0; }
+
+label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+label .req { color: var(--red); margin-left: 2px; }
+
+input[type="text"], input[type="number"], input[type="email"], select, textarea {
+  width: 100%; padding: 10px 12px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+  font-size: 14px; font-family: inherit; color: var(--text);
+  background: var(--surface); outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  -webkit-appearance: none; appearance: none;
+}
+input:focus, select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+input::placeholder { color: var(--text-subtle); opacity: .6; }
+
+.select-wrap { position: relative; }
+.select-wrap select { padding-right: 36px; cursor: pointer; }
+.select-wrap::after {
+  content: ""; position: absolute; right: 12px; top: 50%;
+  transform: translateY(-50%); width: 0; height: 0;
+  border-left: 4px solid transparent; border-right: 4px solid transparent;
+  border-top: 5px solid var(--text-subtle); pointer-events: none;
+}
+
+.hint { font-size: 12px; color: var(--text-subtle); line-height: 1.5; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 18px; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600; font-family: inherit;
+  cursor: pointer; border: none;
+  transition: filter var(--transition), transform var(--transition), box-shadow var(--transition);
+  white-space: nowrap;
+}
+.btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: .45; pointer-events: none; }
+
+.btn-primary {
+  background: var(--accent); color: #fff;
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.btn-primary:hover { filter: brightness(1.08); box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 30%, transparent); }
+
+.btn-ghost {
+  background: transparent; color: var(--text-muted);
+  border: 1px solid var(--border-strong);
+}
+.btn-ghost:hover { background: var(--chip-bg); color: var(--text); }
+
+.btn-danger { background: var(--red); color: #fff; }
+.btn-danger:hover { filter: brightness(1.08); }
+
+.btn-full { width: 100%; }
+
+.btn-row { display: flex; gap: 10px; margin-top: 20px; }
+.btn-row .btn { flex: 1; }
+
+/* ============================================================
+   CHIPS / BADGES
+   ============================================================ */
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: .03em; border: 1px solid transparent;
+}
+.chip-green  { background: var(--green-dim); color: var(--green); border-color: color-mix(in srgb, var(--green) 25%, white); }
+.chip-red    { background: var(--red-dim);   color: var(--red);   border-color: color-mix(in srgb, var(--red) 25%, white); }
+.chip-amber  { background: var(--amber-dim); color: var(--amber); border-color: color-mix(in srgb, var(--amber) 25%, white); }
+.chip-blue   { background: var(--blue-dim);  color: var(--blue);  border-color: color-mix(in srgb, var(--blue) 25%, white); }
+.chip-muted  { background: var(--chip-bg);   color: var(--text-muted); border-color: var(--border-strong); }
+.chip-mono   { font-family: ui-monospace, monospace; font-size: 10px; background: var(--chip-bg); color: var(--text-muted); border-color: var(--border-strong); }
+
+/* ============================================================
+   FILTER BAR
+   ============================================================ */
+.filter-bar {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 14px; flex-wrap: wrap;
+}
+.filter-bar input[type="text"] {
+  padding: 8px 12px; font-size: 13px;
+  width: 200px; border-radius: var(--radius-sm);
+}
+.fchip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--accent-dim); color: var(--accent-text);
+  border: 1px solid var(--accent-border);
+  padding: 4px 8px 4px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 600;
+}
+.fchip button {
+  border: none; background: transparent; cursor: pointer;
+  color: var(--accent-text); font-size: 14px; line-height: 1;
+  padding: 0 2px; transition: color var(--transition);
+}
+.fchip button:hover { color: var(--red); }
+.filter-bar-right { margin-left: auto; display: flex; gap: 8px; }
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+.table-wrap {
+  overflow-x: auto; border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead tr { background: var(--chip-bg); }
+thead th {
+  padding: 10px 12px; text-align: left;
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--text-subtle); white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+thead th.th-right { text-align: right; }
+thead th.th-check { width: 40px; }
+tbody tr { border-bottom: 1px solid var(--border); transition: background var(--transition); cursor: pointer; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--chip-bg); }
+tbody tr.selected { background: var(--accent-dim); }
+tbody td { padding: 11px 12px; vertical-align: middle; }
+tbody td.td-right { text-align: right; }
+tbody td.td-mono  { font-family: ui-monospace, monospace; font-size: 12px; color: var(--text-muted); }
+tbody td.td-bold  { font-weight: 700; }
+input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }
+
+/* ============================================================
+   UPLOAD DROP ZONE
+   ============================================================ */
+.drop-zone {
+  border: 2px dashed var(--border-strong); border-radius: var(--radius-md);
+  padding: 48px 24px; text-align: center;
+  cursor: pointer; transition: all var(--transition); margin-top: 16px;
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: var(--accent); background: var(--accent-dim);
+}
+.drop-zone svg { width: 40px; height: 40px; color: var(--text-subtle); margin-bottom: 12px; }
+.drop-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.drop-sub   { font-size: 13px; color: var(--text-muted); }
+.drop-zone.uploaded { border-color: var(--green); background: var(--green-dim); }
+.drop-zone.uploaded svg { color: var(--green); }
+
+/* ============================================================
+   PROGRESS BAR
+   ============================================================ */
+.progress-wrap {
+  background: var(--border); border-radius: 999px;
+  height: 6px; overflow: hidden; margin: 8px 0;
+}
+.progress-fill {
+  height: 100%; background: var(--accent); border-radius: 999px;
+  transition: width .3s ease;
+}
+
+/* ============================================================
+   SUMMARY ROW
+   ============================================================ */
+.summary-row {
+  display: flex; align-items: flex-start; justify-content: space-between; padding: 9px 0;
+}
+.summary-row + .summary-row { border-top: 1px solid var(--border); }
+.summary-label { font-size: 13px; color: var(--text-muted); }
+.summary-value { font-size: 13px; font-weight: 600; font-family: ui-monospace, monospace; color: var(--text); }
+
+.total-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px; background: var(--accent-dim); border: 1px solid var(--accent-border);
+  border-radius: var(--radius-sm); margin-top: 14px;
+}
+.total-label { font-size: 14px; font-weight: 700; color: var(--accent-text); }
+.total-value { font-size: 22px; font-weight: 800; font-family: ui-monospace, monospace; color: var(--accent); }
+
+/* ============================================================
+   ALERT / MODE BANNER
+   ============================================================ */
+.alert {
+  display: flex; gap: 10px; padding: 12px 14px;
+  border-radius: var(--radius-sm); font-size: 13px; line-height: 1.55;
+  margin-top: 14px; border: 1px solid transparent;
+}
+.alert svg { flex-shrink: 0; width: 16px; height: 16px; margin-top: 1px; }
+.alert.hidden { display: none; }
+.alert-success { background: var(--green-dim); color: var(--green); border-color: color-mix(in srgb, var(--green) 25%, white); }
+.alert-error   { background: var(--red-dim);   color: var(--red);   border-color: color-mix(in srgb, var(--red) 25%, white); }
+.alert-info    { background: var(--blue-dim);  color: var(--blue);  border-color: color-mix(in srgb, var(--blue) 25%, white); }
+.alert-amber   { background: var(--amber-dim); color: var(--amber); border-color: color-mix(in srgb, var(--amber) 25%, white); }
+
+/* ============================================================
+   SNACKBAR
+   ============================================================ */
+.snack {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px);
+  background: #0F172A; color: #fff;
+  padding: 10px 20px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500;
+  opacity: 0; transition: all .2s; pointer-events: none; z-index: 100; white-space: nowrap;
+}
+.snack.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ============================================================
+   BILL MANAGEMENT TABS
+   ============================================================ */
+.tab-row { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.tab-btn {
+  padding: 10px 16px; font-size: 13px; font-weight: 500; color: var(--text-muted);
+  background: transparent; border: none; cursor: pointer; font-family: inherit;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color var(--transition), border-color var(--transition);
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.tab-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 999px;
+  background: var(--accent-dim); color: var(--accent-text);
+  font-size: 10px; font-weight: 700; margin-left: 5px;
+}
+
+/* ============================================================
+   FILE SPEC PILLS
+   ============================================================ */
+.spec-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.spec-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 999px;
+  background: var(--chip-bg); border: 1px solid var(--border-strong);
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+  font-family: ui-monospace, monospace;
+}
+
+/* ============================================================
+   SPINNER
+   ============================================================ */
+.spinner {
+  width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff; border-radius: 50%;
+  animation: spin .6s linear infinite; flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.processing-state { text-align: center; padding: 56px 24px; }
+.processing-spinner {
+  width: 48px; height: 48px;
+  border: 3px solid var(--border-strong); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 24px;
+}
+.processing-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.processing-sub   { font-size: 14px; color: var(--text-muted); }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  :root { --sidebar-w: 0px; }
+  .sidebar { display: none; }
+  .content { margin-left: 0; padding: 20px 16px 60px; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+  .field-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════
+     LOGIN SCREEN
+════════════════════════════════════════════════════════ -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-brand-mark">ePG</div>
+      <div class="login-brand-text">
+        <div class="login-brand-title">ePG Electronic Payment Gateway</div>
+        <div class="login-brand-sub">Brunei Darussalam — Ministry of Finance &amp; Economy</div>
+      </div>
+    </div>
+    <div class="login-heading">Sign in to Biller Portal</div>
+    <div class="login-sub">Enter your service provider credentials to continue.</div>
+
+    <div class="login-error" id="login-error">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+      <span id="login-error-text">Invalid Biller ID or password.</span>
+    </div>
+
+    <div class="login-field">
+      <label for="login-id">Biller ID</label>
+      <div class="login-input-wrap">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+        <input type="text" id="login-id" placeholder="e.g. B-001" autocomplete="off"
+               onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+    </div>
+    <div class="login-field">
+      <label for="login-pw">Password</label>
+      <div class="login-input-wrap">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+        <input type="password" id="login-pw" placeholder="Enter your password"
+               onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+    </div>
+    <button class="login-btn" onclick="doLogin()">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
+      Sign In
+    </button>
+    <div class="login-hint">
+      <strong>Demo credentials:</strong><br>
+      Biller ID: <strong>B-001</strong> &nbsp;/&nbsp; Password: <strong>1234</strong><br>
+      Biller ID: <strong>B-002</strong> &nbsp;/&nbsp; Password: <strong>1234</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════════════════ -->
+<header class="header">
+  <a class="brand" href="https://ycc-bct.github.io/epg/">
+    <div class="brand-mark">ePG</div>
+    <div class="brand-text">
+      <div class="brand-title">ePG Electronic Payment Gateway</div>
+      <div class="brand-sub">One Common Billing System — Brunei Darussalam</div>
+    </div>
+  </a>
+  <div class="header-sep"></div>
+  <nav class="breadcrumb">
+    <a href="https://ycc-bct.github.io/epg/">Portals</a>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-current">Biller Portal</span>
+  </nav>
+  <div class="header-right">
+    <span class="biller-chip">Service Provider</span>
+    <div class="avatar" id="header-avatar">—</div>
+    <button class="btn-logout" onclick="doLogout()">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg>
+      Sign Out
+    </button>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════════════════════
+     APP SHELL
+════════════════════════════════════════════════════════ -->
+<div class="app" id="app">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sb-section">
+      <span class="sb-label">Billing</span>
+      <div class="sb-item active" id="ni-bill-mgmt" onclick="navTo('bill-mgmt',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+        Bill Management
+      </div>
+      <div class="sb-item" id="ni-invoices" onclick="navTo('invoices',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
+        Invoices &amp; Bills
+        <span class="sb-badge">3</span>
+      </div>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">
+      <span class="sb-label">Customers</span>
+      <div class="sb-item" id="ni-customers" onclick="navTo('customers',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
+        Customers
+      </div>
+      <div class="sb-item" id="ni-products" onclick="navTo('products',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.658.524a18.634 18.634 0 005.83-5.829c.349-.879.177-1.96-.523-2.659L9.568 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/></svg>
+        Products &amp; Pricing
+      </div>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">
+      <span class="sb-label">Finance</span>
+      <div class="sb-item" id="ni-payments" onclick="navTo('payments',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/></svg>
+        Payment Tracking
+      </div>
+      <div class="sb-item" id="ni-reports" onclick="navTo('reports',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+        Reports
+      </div>
+    </div>
+    <div class="sb-footer">ePG R2 · v2.4.1</div>
+  </aside>
+
+  <!-- ── CONTENT ── -->
+  <main class="content">
+
+    <!-- ════════ BILL MANAGEMENT ════════ -->
+    <div class="page active" id="page-bill-mgmt">
+      <div class="page-header">
+        <div class="page-title">Bill Management</div>
+        <div class="page-meta">Upload and manage bills submitted to the ePG Fulfilment Entity · Biller Code: BCT-ELEC-001</div>
+      </div>
+
+      <div class="card">
+        <div class="card-section">
+          <div class="tab-row">
+            <button class="tab-btn active" id="bm-tab-offline" onclick="bmTab('offline')">
+              Offline Batch Upload <span class="tab-count">4</span>
+            </button>
+            <button class="tab-btn" id="bm-tab-online" onclick="bmTab('online')">Online – Single Load</button>
+            <button class="tab-btn" id="bm-tab-history" onclick="bmTab('history')">Submission History</button>
+          </div>
+
+          <!-- ── OFFLINE ── -->
+          <div id="bm-offline">
+            <!-- Step indicator -->
+            <div class="steps" id="bm-steps">
+              <div class="step active" id="bs-1">
+                <div class="step-circle">1</div>
+                <div class="step-label"><div class="step-label-main">Upload Bills</div><div class="step-label-sub">CSV / XLSX</div></div>
+              </div>
+              <div class="step" id="bs-2">
+                <div class="step-circle">2</div>
+                <div class="step-label"><div class="step-label-main">Review &amp; Submit</div><div class="step-label-sub">Verify</div></div>
+              </div>
+              <div class="step" id="bs-3">
+                <div class="step-circle">3</div>
+                <div class="step-label"><div class="step-label-main">Confirmation</div><div class="step-label-sub">Job ID</div></div>
+              </div>
+            </div>
+
+            <!-- Step 1 -->
+            <div class="step-panel active" id="bsp-1">
+              <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:0;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+                <div style="padding:18px 20px;border-right:1px solid var(--border);">
+                  <div class="section-label">File Requirements</div>
+                  <div class="field">
+                    <div style="font-size:13px;color:var(--text-muted);">Format</div>
+                    <div class="spec-pills"><span class="spec-pill">CSV</span><span class="spec-pill">XLSX</span></div>
+                  </div>
+                  <div class="field">
+                    <div style="font-size:13px;color:var(--text-muted);">Max records</div>
+                    <div style="font-size:14px;font-weight:600;color:var(--text);">500</div>
+                  </div>
+                  <div class="field">
+                    <div style="font-size:13px;color:var(--text-muted);">Max size</div>
+                    <div style="font-size:14px;font-weight:600;color:var(--text);">10 MB</div>
+                  </div>
+                </div>
+                <div style="padding:18px 20px;border-right:1px solid var(--border);">
+                  <div class="section-label">Required Columns</div>
+                  <div class="spec-pills">
+                    <span class="spec-pill">customer_id</span>
+                    <span class="spec-pill">bill_ref</span>
+                    <span class="spec-pill">biller_code</span>
+                    <span class="spec-pill">amount_due</span>
+                    <span class="spec-pill">due_date</span>
+                  </div>
+                  <div class="alert alert-info" style="margin-top:12px">
+                    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+                    <span>All columns must be present. Optional: <strong>remarks</strong></span>
+                  </div>
+                </div>
+                <div style="padding:18px 20px;background:var(--chip-bg);">
+                  <div class="section-label">Upload Action</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Biller code</div>
+                  <div style="font-size:13px;font-weight:700;color:var(--text);font-family:ui-monospace,monospace;margin-bottom:16px;">BCT-ELEC-001</div>
+                  <button class="btn btn-primary btn-full" onclick="bmSimUpload()">
+                    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                    Browse &amp; Upload
+                  </button>
+                </div>
+              </div>
+
+              <div class="drop-zone" id="drop-zone" onclick="bmSimUpload()">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/></svg>
+                <div class="drop-title">Drop your bill file here, or click to browse</div>
+                <div class="drop-sub">CSV, XLSX · Max 10 MB</div>
+              </div>
+
+              <!-- Progress (hidden initially) -->
+              <div id="upload-progress" style="display:none;margin-top:16px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                  <span id="progress-label" style="font-size:13px;color:var(--text-muted);">Reading file…</span>
+                  <span id="progress-pct" style="font-size:12px;font-weight:700;color:var(--accent);">0%</span>
+                </div>
+                <div class="progress-wrap"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step-panel" id="bsp-2">
+              <div class="section-label">Parsed Records <span id="bm-count-lbl" style="font-family:ui-monospace,monospace;font-size:11px;font-weight:600;color:var(--text-muted);margin-left:4px;text-transform:none;letter-spacing:0;"></span></div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr>
+                    <th class="th-check"><input type="checkbox" checked id="cb-all" onchange="toggleAll(this)"></th>
+                    <th>Bill Reference</th>
+                    <th>Customer</th>
+                    <th>Type</th>
+                    <th class="th-right">Amount Due</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                  </tr></thead>
+                  <tbody id="bm-tbody"></tbody>
+                </table>
+              </div>
+              <div class="total-row" style="margin-top:16px;">
+                <div><div class="total-label">Total Batch Amount</div><div style="font-size:11px;color:var(--accent-text);margin-top:2px;" id="bm-count-sub"></div></div>
+                <div class="total-value" id="bm-total-val">SAR 0.00</div>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-ghost" onclick="bmGoStep(1)">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+                  Back
+                </button>
+                <button class="btn btn-primary" onclick="bmSubmit()">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  Submit to ePG
+                </button>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step-panel" id="bsp-3">
+              <div class="alert alert-success">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div><strong>Batch submitted to Fulfilment Entity.</strong> The batch will be processed within 1 business day.</div>
+              </div>
+              <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">Job ID</div>
+                  <div style="font-size:16px;font-weight:700;font-family:ui-monospace,monospace;color:var(--text);" id="conf-jobid">—</div>
+                </div>
+                <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">Records Submitted</div>
+                  <div style="font-size:16px;font-weight:700;font-family:ui-monospace,monospace;color:var(--text);" id="conf-count">—</div>
+                </div>
+                <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">Total Amount</div>
+                  <div style="font-size:16px;font-weight:700;font-family:ui-monospace,monospace;color:var(--accent);" id="conf-total">—</div>
+                </div>
+                <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">Submitted At</div>
+                  <div style="font-size:16px;font-weight:700;font-family:ui-monospace,monospace;color:var(--text);" id="conf-time">—</div>
+                </div>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-ghost" onclick="bmReset()">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+                  New Upload
+                </button>
+                <button class="btn btn-primary" onclick="bmTab('history')">View History</button>
+              </div>
+            </div>
+          </div><!-- /bm-offline -->
+
+          <!-- ── ONLINE ── -->
+          <div id="bm-online" style="display:none;">
+            <div style="max-width:520px;">
+              <div class="section-label">Single Bill Entry</div>
+              <div class="field-row">
+                <div class="field"><label>Customer ID <span class="req">*</span></label><input type="text" placeholder="CUST-10042"></div>
+                <div class="field"><label>Bill Reference <span class="req">*</span></label><input type="text" placeholder="BILL-000001"></div>
+              </div>
+              <div class="field-row" style="margin-top:14px;">
+                <div class="field">
+                  <label>Biller Code <span class="req">*</span></label>
+                  <div class="select-wrap"><select><option>BCT-ELEC-001</option><option>BCT-WATER-002</option></select></div>
+                </div>
+                <div class="field"><label>Amount Due (SAR) <span class="req">*</span></label><input type="number" placeholder="0.00" min="0" step="0.01"></div>
+              </div>
+              <div class="field-row" style="margin-top:14px;">
+                <div class="field"><label>Due Date <span class="req">*</span></label><input type="text" placeholder="2024-05-31"></div>
+                <div class="field"><label>Remarks</label><input type="text" placeholder="Optional note"></div>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-ghost" onclick="showSnack('Form cleared')">Clear</button>
+                <button class="btn btn-primary" onclick="showSnack('Bill submitted successfully!')">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  Submit Bill
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── HISTORY ── -->
+          <div id="bm-history" style="display:none;">
+            <div class="filter-bar">
+              <input type="text" placeholder="Search batches…" style="width:200px;">
+              <span class="fchip">May 2024 <button onclick="this.parentElement.remove()">×</button></span>
+              <span class="fchip">BCT-ELEC-001 <button onclick="this.parentElement.remove()">×</button></span>
+              <div class="filter-bar-right">
+                <button class="btn btn-ghost" style="padding:8px 14px;font-size:13px;">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:14px;height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                  Export
+                </button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr>
+                  <th class="th-check"><input type="checkbox"></th>
+                  <th>Batch ID</th>
+                  <th>Date</th>
+                  <th>Bills</th>
+                  <th class="th-right">Total Value</th>
+                  <th>FE Status</th>
+                  <th>Confirmed At</th>
+                </tr></thead>
+                <tbody>
+                  <tr><td><input type="checkbox"></td><td class="td-mono">BATCH-20240520</td><td>20 May 2024, 10:15</td><td>20</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">SAR 84,284.00</td><td><span class="chip chip-green">Confirmed</span></td><td>20 May 2024, 14:30</td></tr>
+                  <tr class="selected"><td><input type="checkbox" checked></td><td class="td-mono">BATCH-20240415</td><td>15 Apr 2024, 09:42</td><td>18</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">SAR 71,540.50</td><td><span class="chip chip-green">Confirmed</span></td><td>15 Apr 2024, 13:15</td></tr>
+                  <tr><td><input type="checkbox"></td><td class="td-mono">BATCH-20240310</td><td>10 Mar 2024, 10:05</td><td>22</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">SAR 96,720.25</td><td><span class="chip chip-green">Confirmed</span></td><td>10 Mar 2024, 15:00</td></tr>
+                  <tr><td><input type="checkbox"></td><td class="td-mono">BATCH-20240205</td><td>05 Feb 2024, 09:30</td><td>16</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">SAR 58,930.00</td><td><span class="chip chip-green">Confirmed</span></td><td>05 Feb 2024, 14:45</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ INVOICES ════════ -->
+    <div class="page" id="page-invoices">
+      <div class="page-header">
+        <div class="page-title">Invoices &amp; Bills</div>
+        <div class="page-meta">All bills issued under your biller account · Biller Code: BCT-ELEC-001</div>
+      </div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="kpi-card"><div class="kpi-label">Total Bills Issued</div><div class="kpi-value">20</div><div class="kpi-sub">Apr 2024 cycle</div></div>
+        <div class="kpi-card"><div class="kpi-label">Amount Billed</div><div class="kpi-value green">84,284</div><div class="kpi-sub">SAR · Full period</div></div>
+        <div class="kpi-card"><div class="kpi-label">Outstanding</div><div class="kpi-value amber">27,882</div><div class="kpi-sub">SAR · 3 partial</div></div>
+      </div>
+      <div class="card">
+        <div class="card-section">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+            <button class="btn btn-ghost" style="padding:7px 12px;font-size:12px;" id="svc-all" onclick="svcFilter('all')">All Services</button>
+            <button class="btn btn-ghost" style="padding:7px 12px;font-size:12px;" id="svc-elec" onclick="svcFilter('elec')">Electricity</button>
+            <button class="btn btn-ghost" style="padding:7px 12px;font-size:12px;" id="svc-water" onclick="svcFilter('water')">Water</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th class="th-check"><input type="checkbox"></th>
+                <th>Bill Ref</th>
+                <th>Customer</th>
+                <th>Account No.</th>
+                <th>Type</th>
+                <th>Period</th>
+                <th class="th-right">Amount Due</th>
+                <th>Due Date</th>
+                <th>Status</th>
+              </tr></thead>
+              <tbody>
+                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000001</td><td><div style="font-weight:600;">Al-Rashid Trading Co.</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10042</div></td><td class="td-mono" style="font-size:11px;">SA0380…167519</td><td><span class="chip chip-muted">Utility</span></td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">1,250.00</td><td>31 May 2024</td><td><span class="chip chip-green">Active</span></td></tr>
+                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000002</td><td><div style="font-weight:600;">Green Valley Properties</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10087</div></td><td class="td-mono" style="font-size:11px;">SA8480…167530</td><td><span class="chip chip-muted">Utility</span></td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">3,400.75</td><td>31 May 2024</td><td><span class="chip chip-green">Active</span></td></tr>
+                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000003</td><td><div style="font-weight:600;">Sunrise Medical Center</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10103</div></td><td class="td-mono" style="font-size:11px;">SA0380…167541</td><td><span class="chip chip-blue">Water</span></td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">780.50</td><td>31 May 2024</td><td><span class="chip chip-green">Active</span></td></tr>
+                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000004</td><td><div style="font-weight:600;">Horizon Logistics LLC</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10215</div></td><td class="td-mono" style="font-size:11px;">SA5480…167552</td><td><span class="chip chip-muted">Utility</span></td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">2,100.00</td><td>31 May 2024</td><td><span class="chip chip-amber">Partial</span></td></tr>
+                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000005</td><td><div style="font-weight:600;">Al-Baraka Supermarket</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10308</div></td><td class="td-mono" style="font-size:11px;">SA0380…167563</td><td><span class="chip chip-muted">Utility</span></td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">5,670.25</td><td>31 May 2024</td><td><span class="chip chip-green">Active</span></td></tr>
+                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000007</td><td><div style="font-weight:600;">Gulf Star Manufacturing</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10512</div></td><td class="td-mono" style="font-size:11px;">SA0380…167585</td><td><span class="chip chip-muted">Utility</span></td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">9,800.00</td><td>31 May 2024</td><td><span class="chip chip-green">Active</span></td></tr>
+                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000008</td><td><div style="font-weight:600;">Desert Rose Hotels</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10637</div></td><td class="td-mono" style="font-size:11px;">SA5480…167596</td><td><span class="chip chip-muted">Utility</span></td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">14,320.50</td><td>31 May 2024</td><td><span class="chip chip-amber">Partial</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ CUSTOMERS ════════ -->
+    <div class="page" id="page-customers">
+      <div class="page-header">
+        <div class="page-title">Customer Management</div>
+        <div class="page-meta">Registered customers under biller account BCT-ELEC-001</div>
+      </div>
+      <div class="card">
+        <div class="card-section">
+          <div class="filter-bar">
+            <input type="text" placeholder="Search customers…" style="width:220px;">
+            <div class="filter-bar-right">
+              <button class="btn btn-primary" style="padding:8px 14px;font-size:13px;" onclick="showSnack('Add Customer — coming soon')">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:14px;height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                Add Customer
+              </button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Customer ID</th><th>Name</th><th>Account Number</th><th>Type</th><th>Bills</th><th>Status</th>
+              </tr></thead>
+              <tbody>
+                <tr><td class="td-mono">CUST-10042</td><td><div style="font-weight:600;">Al-Rashid Trading Co.</div></td><td class="td-mono" style="font-size:11px;">SA0380…167519</td><td><span class="chip chip-muted">Corporate</span></td><td>3</td><td><span class="chip chip-green">Active</span></td></tr>
+                <tr><td class="td-mono">CUST-10087</td><td><div style="font-weight:600;">Green Valley Properties</div></td><td class="td-mono" style="font-size:11px;">SA8480…167530</td><td><span class="chip chip-muted">Corporate</span></td><td>2</td><td><span class="chip chip-green">Active</span></td></tr>
+                <tr><td class="td-mono">CUST-10103</td><td><div style="font-weight:600;">Sunrise Medical Center</div></td><td class="td-mono" style="font-size:11px;">SA0380…167541</td><td><span class="chip chip-blue">Healthcare</span></td><td>1</td><td><span class="chip chip-green">Active</span></td></tr>
+                <tr><td class="td-mono">CUST-10215</td><td><div style="font-weight:600;">Horizon Logistics LLC</div></td><td class="td-mono" style="font-size:11px;">SA5480…167552</td><td><span class="chip chip-muted">Corporate</span></td><td>4</td><td><span class="chip chip-amber">Partial</span></td></tr>
+                <tr><td class="td-mono">CUST-10308</td><td><div style="font-weight:600;">Al-Baraka Supermarket</div></td><td class="td-mono" style="font-size:11px;">SA0380…167563</td><td><span class="chip chip-muted">Retail</span></td><td>2</td><td><span class="chip chip-green">Active</span></td></tr>
+                <tr><td class="td-mono">CUST-10512</td><td><div style="font-weight:600;">Gulf Star Manufacturing</div></td><td class="td-mono" style="font-size:11px;">SA0380…167585</td><td><span class="chip chip-muted">Industrial</span></td><td>5</td><td><span class="chip chip-green">Active</span></td></tr>
+                <tr><td class="td-mono">CUST-10637</td><td><div style="font-weight:600;">Desert Rose Hotels</div></td><td class="td-mono" style="font-size:11px;">SA5480…167596</td><td><span class="chip chip-muted">Hospitality</span></td><td>3</td><td><span class="chip chip-red">Overdue</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ PRODUCTS ════════ -->
+    <div class="page" id="page-products">
+      <div class="page-header">
+        <div class="page-title">Products &amp; Pricing</div>
+        <div class="page-meta">Service categories and fee structures for BCT-ELEC-001 and BCT-WATER-002</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="card">
+          <div class="card-section">
+            <div class="section-label">BCT-ELEC-001 · Electricity</div>
+            <div class="summary-row"><div class="summary-label">Service type</div><div class="summary-value">Utility — Electricity</div></div>
+            <div class="summary-row"><div class="summary-label">Billing cycle</div><div class="summary-value">Monthly</div></div>
+            <div class="summary-row"><div class="summary-label">Payment window</div><div class="summary-value">30 days</div></div>
+            <div class="summary-row"><div class="summary-label">Late fee</div><div class="summary-value">2% per month</div></div>
+            <div class="summary-row"><div class="summary-label">Status</div><div><span class="chip chip-green">Active</span></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-section">
+            <div class="section-label">BCT-WATER-002 · Water</div>
+            <div class="summary-row"><div class="summary-label">Service type</div><div class="summary-value">Utility — Water</div></div>
+            <div class="summary-row"><div class="summary-label">Billing cycle</div><div class="summary-value">Monthly</div></div>
+            <div class="summary-row"><div class="summary-label">Payment window</div><div class="summary-value">30 days</div></div>
+            <div class="summary-row"><div class="summary-label">Late fee</div><div class="summary-value">1.5% per month</div></div>
+            <div class="summary-row"><div class="summary-label">Status</div><div><span class="chip chip-green">Active</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ PAYMENTS ════════ -->
+    <div class="page" id="page-payments">
+      <div class="page-header">
+        <div class="page-title">Payment Tracking</div>
+        <div class="page-meta">Incoming payments confirmed by the Fulfilment Entity · 20 May 2024</div>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Total Collected</div><div class="kpi-value green">56,402</div><div class="kpi-sub">SAR · 12 payments</div></div>
+        <div class="kpi-card"><div class="kpi-label">Outstanding</div><div class="kpi-value amber">27,882</div><div class="kpi-sub">SAR · 3 partial</div></div>
+        <div class="kpi-card"><div class="kpi-label">Success Rate</div><div class="kpi-value blue">80%</div><div class="kpi-sub kpi-up">↑ from 74% last month</div></div>
+        <div class="kpi-card"><div class="kpi-label">Payments Today</div><div class="kpi-value">15</div><div class="kpi-sub">As of 10:38 AM</div></div>
+      </div>
+      <div class="card">
+        <div class="card-section">
+          <div class="section-label">Payment Advice · 20 May 2024</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Payment Ref</th><th>Bill Ref</th><th>Customer</th><th>Type</th><th class="th-right">Paid</th><th class="th-right">Bill Total</th><th>Channel</th><th>Time</th><th>Status</th>
+              </tr></thead>
+              <tbody>
+                <tr><td class="td-mono">PAY-0001</td><td class="td-mono">BILL-000001</td><td>Al-Rashid Trading</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">1,250.00</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">1,250.00</td><td>Portal</td><td>10:15</td><td><span class="chip chip-green">Full</span></td></tr>
+                <tr><td class="td-mono">PAY-0002</td><td class="td-mono">BILL-000002</td><td>Green Valley Prop.</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">3,400.75</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">3,400.75</td><td>Portal</td><td>10:17</td><td><span class="chip chip-green">Full</span></td></tr>
+                <tr><td class="td-mono">PAY-0003</td><td class="td-mono">BILL-000003</td><td>Sunrise Medical</td><td><span class="chip chip-blue">Water</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">780.50</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">780.50</td><td>Portal</td><td>10:18</td><td><span class="chip chip-green">Full</span></td></tr>
+                <tr><td class="td-mono">PAY-0004</td><td class="td-mono">BILL-000004</td><td>Horizon Logistics</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">1,000.00</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">2,100.00</td><td>Portal</td><td>10:20</td><td><span class="chip chip-amber">Partial</span></td></tr>
+                <tr><td class="td-mono">PAY-0005</td><td class="td-mono">BILL-000005</td><td>Al-Baraka Supermt.</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">5,670.25</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">5,670.25</td><td>Portal</td><td>10:21</td><td><span class="chip chip-green">Full</span></td></tr>
+                <tr><td class="td-mono">PAY-0008</td><td class="td-mono">BILL-000008</td><td>Desert Rose Hotels</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">7,000.00</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">14,320.50</td><td>Portal</td><td>10:26</td><td><span class="chip chip-amber">Partial</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ REPORTS ════════ -->
+    <div class="page" id="page-reports">
+      <div class="page-header">
+        <div class="page-title">Reports</div>
+        <div class="page-meta">Billing and payment reports for your biller account</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="card" style="cursor:pointer;" onclick="showSnack('Generating Monthly Billing Report…')">
+          <div class="card-section">
+            <div class="section-label">Monthly Billing Report</div>
+            <div style="font-size:13px;color:var(--text-muted);line-height:1.7;">Summary of all bills issued, payment status, and outstanding balances for any given month.</div>
+            <div style="margin-top:14px;display:flex;gap:8px;">
+              <span class="chip chip-muted">CSV</span><span class="chip chip-muted">XLSX</span><span class="chip chip-muted">PDF</span>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="showSnack('Generating Payment Reconciliation…')">
+          <div class="card-section">
+            <div class="section-label">Payment Reconciliation</div>
+            <div style="font-size:13px;color:var(--text-muted);line-height:1.7;">Match payments received against bills issued. Identify discrepancies and partial payments.</div>
+            <div style="margin-top:14px;display:flex;gap:8px;">
+              <span class="chip chip-muted">CSV</span><span class="chip chip-muted">XLSX</span>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="showSnack('Generating Batch Submission Log…')">
+          <div class="card-section">
+            <div class="section-label">Batch Submission Log</div>
+            <div style="font-size:13px;color:var(--text-muted);line-height:1.7;">Full audit trail of all offline batch uploads submitted to the ePG Fulfilment Entity.</div>
+            <div style="margin-top:14px;display:flex;gap:8px;">
+              <span class="chip chip-muted">CSV</span><span class="chip chip-muted">XLSX</span>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="showSnack('Generating Outstanding Bills Report…')">
+          <div class="card-section">
+            <div class="section-label">Outstanding Bills</div>
+            <div style="font-size:13px;color:var(--text-muted);line-height:1.7;">List of all unpaid or partially paid bills with ageing analysis and contact details.</div>
+            <div style="margin-top:14px;display:flex;gap:8px;">
+              <span class="chip chip-muted">CSV</span><span class="chip chip-muted">PDF</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- SNACKBAR -->
+<div class="snack" id="snack"></div>
+
+<script>
+// ── CREDENTIALS ──
+const CREDS = {'B-001':'1234','B-002':'1234'};
+let currentUser = null;
+
+function doLogin() {
+  const id = document.getElementById('login-id').value.trim();
+  const pw = document.getElementById('login-pw').value;
+  const err = document.getElementById('login-error');
+  if (CREDS[id] && CREDS[id] === pw) {
+    currentUser = id;
+    document.getElementById('header-avatar').textContent = id.replace('B-','B');
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('app').classList.add('visible');
+    err.classList.remove('visible');
+  } else {
+    err.classList.add('visible');
+    document.getElementById('login-error-text').textContent = 'Invalid Biller ID or password.';
+  }
+}
+function doLogout() {
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('login-id').value = '';
+  document.getElementById('login-pw').value = '';
+  currentUser = null;
+}
+
+// ── NAVIGATION ──
+const PAGE_TITLES = {
+  'bill-mgmt': 'Bill Management', 'invoices': 'Invoices & Bills',
+  'customers': 'Customer Management', 'products': 'Products & Pricing',
+  'payments': 'Payment Tracking', 'reports': 'Reports'
+};
+function navTo(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('page-' + id);
+  if (pg) pg.classList.add('active');
+  const ni = document.getElementById('ni-' + id);
+  if (ni) ni.classList.add('active');
+}
+
+// ── BILL MGMT TABS ──
+function bmTab(t) {
+  ['offline','online','history'].forEach(n => {
+    document.getElementById('bm-' + n).style.display = n === t ? 'block' : 'none';
+    document.getElementById('bm-tab-' + n).classList.toggle('active', n === t);
+  });
+  if (t === 'history') navTo('bill-mgmt', null);
+}
+
+// ── UPLOAD SIMULATION ──
+const BM_BILLS = [
+  {ref:'BILL-000001',name:'Al-Rashid Trading Co.',type:'Utility',amt:1250.00,due:'2024-05-31'},
+  {ref:'BILL-000002',name:'Green Valley Properties',type:'Utility',amt:3400.75,due:'2024-05-31'},
+  {ref:'BILL-000004',name:'Horizon Logistics LLC',type:'Utility',amt:2100.00,due:'2024-05-31'},
+  {ref:'BILL-000005',name:'Al-Baraka Supermarket',type:'Utility',amt:5670.25,due:'2024-05-31'},
+  {ref:'BILL-000007',name:'Gulf Star Manufacturing',type:'Utility',amt:9800.00,due:'2024-05-31'},
+  {ref:'BILL-000008',name:'Desert Rose Hotels',type:'Utility',amt:14320.50,due:'2024-05-31'},
+  {ref:'BILL-000010',name:'Al-Noor Pharmaceuticals',type:'Utility',amt:6450.00,due:'2024-05-31'},
+  {ref:'BILL-000011',name:'Falak Retail Group',type:'Utility',amt:3880.25,due:'2024-05-31'},
+];
+const STAGES = [
+  {l:'Reading file…',p:15,d:400},{l:'Parsing records…',p:35,d:600},
+  {l:'Validating schema…',p:55,d:700},{l:'Checking biller codes…',p:75,d:500},
+  {l:'Calculating totals…',p:90,d:400},{l:'Upload complete',p:100,d:300},
+];
+
+function bmSimUpload() {
+  const dz = document.getElementById('drop-zone');
+  const pr = document.getElementById('upload-progress');
+  dz.classList.add('uploaded');
+  dz.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><div class="drop-title">bills_batch_20240520.csv</div><div class="drop-sub">8 records detected · 47.2 KB</div>';
+  pr.style.display = 'block';
+  let i = 0;
+  function runStage() {
+    if (i >= STAGES.length) { setTimeout(() => bmGoStep(2), 400); return; }
+    const s = STAGES[i++];
+    document.getElementById('progress-label').textContent = s.l;
+    document.getElementById('progress-pct').textContent = s.p + '%';
+    document.getElementById('progress-fill').style.width = s.p + '%';
+    setTimeout(runStage, s.d);
+  }
+  runStage();
+}
+
+function bmGoStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    const sp = document.getElementById('bsp-' + i);
+    const sc = document.getElementById('bs-' + i);
+    if (sp) sp.classList.toggle('active', i === n);
+    if (sc) {
+      sc.classList.remove('active', 'done');
+      if (i < n) sc.classList.add('done');
+      if (i === n) sc.classList.add('active');
+    }
+  }
+  if (n === 2) finishUpload();
+}
+
+function finishUpload() {
+  const tbody = document.getElementById('bm-tbody');
+  let total = 0;
+  tbody.innerHTML = BM_BILLS.map(b => {
+    total += b.amt;
+    return `<tr>
+      <td><input type="checkbox" checked></td>
+      <td class="td-mono">${b.ref}</td>
+      <td style="font-weight:600;">${b.name}</td>
+      <td><span class="chip chip-muted">${b.type}</span></td>
+      <td class="td-right" style="font-family:ui-monospace,monospace;font-weight:700;">${b.amt.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td>${b.due}</td>
+      <td><span class="chip chip-green">Valid</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('bm-count-lbl').textContent = `· ${BM_BILLS.length} records`;
+  document.getElementById('bm-count-sub').textContent = `${BM_BILLS.length} bills validated`;
+  document.getElementById('bm-total-val').textContent = 'SAR ' + total.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function toggleAll(cb) {
+  document.querySelectorAll('#bm-tbody input[type="checkbox"]').forEach(c => c.checked = cb.checked);
+}
+
+function bmSubmit() {
+  const btn = event.target.closest('.btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>Submitting…';
+  setTimeout(() => {
+    const jobId = 'JOB-' + Date.now().toString().slice(-8);
+    const now = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('conf-jobid').textContent  = jobId;
+    document.getElementById('conf-count').textContent  = BM_BILLS.length + ' records';
+    document.getElementById('conf-total').textContent  = document.getElementById('bm-total-val').textContent;
+    document.getElementById('conf-time').textContent   = now + ', 20 May 2024';
+    bmGoStep(3);
+    btn.disabled = false;
+    btn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Submit to ePG';
+  }, 1400);
+}
+
+function bmReset() {
+  const dz = document.getElementById('drop-zone');
+  dz.classList.remove('uploaded');
+  dz.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/></svg><div class="drop-title">Drop your bill file here, or click to browse</div><div class="drop-sub">CSV, XLSX · Max 10 MB</div>';
+  document.getElementById('upload-progress').style.display = 'none';
+  bmGoStep(1);
+}
+
+// ── SERVICE FILTER ──
+function svcFilter(f) {
+  ['all','elec','water'].forEach(s => {
+    const btn = document.getElementById('svc-' + s);
+    if (btn) btn.classList.toggle('active', s === f);
+  });
+}
+
+// ── SNACK ──
+let snackTimer;
+function showSnack(msg) {
+  const el = document.getElementById('snack');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(snackTimer);
+  snackTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// Init service filter
+svcFilter('all');
+</script>
+</body>
+</html>
