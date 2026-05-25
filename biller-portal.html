@@ -1048,7 +1048,6 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
                     <div class="select-wrap">
                       <select id="ol-code">
                         <option value="BCT-ELEC-001">BCT-ELEC-001 — Electricity</option>
-                        <option value="BCT-WATER-002">BCT-WATER-002 — Water</option>
                       </select>
                     </div>
                   </div>
@@ -1304,20 +1303,15 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
     <div class="page" id="page-invoices">
       <div class="page-header">
         <div class="page-title">Invoices &amp; Bills</div>
-        <div class="page-meta">All bills issued under your biller account · Biller Code: BCT-ELEC-001</div>
+        <div class="page-meta">All bills issued under your biller account · Biller Code: <strong style="font-family:ui-monospace,monospace;font-weight:600;">BCT-ELEC-001</strong> · Electricity</div>
       </div>
       <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);">
-        <div class="kpi-card"><div class="kpi-label">Total Bills Issued</div><div class="kpi-value">20</div><div class="kpi-sub">Apr 2024 cycle</div></div>
-        <div class="kpi-card"><div class="kpi-label">Amount Billed</div><div class="kpi-value green">84,284</div><div class="kpi-sub">SAR · Full period</div></div>
-        <div class="kpi-card"><div class="kpi-label">Outstanding</div><div class="kpi-value amber">27,882</div><div class="kpi-sub">SAR · 3 partial</div></div>
+        <div class="kpi-card"><div class="kpi-label">Total Bills Issued</div><div class="kpi-value">6</div><div class="kpi-sub">Apr 2024 cycle</div></div>
+        <div class="kpi-card"><div class="kpi-label">Amount Billed</div><div class="kpi-value green">36,541</div><div class="kpi-sub">BND · Full period</div></div>
+        <div class="kpi-card"><div class="kpi-label">Outstanding</div><div class="kpi-value amber">8,420</div><div class="kpi-sub">BND · 2 partial</div></div>
       </div>
       <div class="card">
         <div class="card-section">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
-            <button class="btn btn-ghost" style="padding:7px 12px;font-size:12px;" id="svc-all" onclick="svcFilter('all')">All Services</button>
-            <button class="btn btn-ghost" style="padding:7px 12px;font-size:12px;" id="svc-elec" onclick="svcFilter('elec')">Electricity</button>
-            <button class="btn btn-ghost" style="padding:7px 12px;font-size:12px;" id="svc-water" onclick="svcFilter('water')">Water</button>
-          </div>
           <div class="table-wrap">
             <table>
               <thead><tr>
@@ -1325,20 +1319,19 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
                 <th>Bill Ref</th>
                 <th>Customer</th>
                 <th>Account No.</th>
-                <th>Type</th>
+                <th>Biller Code</th>
                 <th>Period</th>
-                <th class="th-right">Amount Due</th>
+                <th class="th-right">Amount Due (BND)</th>
                 <th>Due Date</th>
                 <th>Status</th>
               </tr></thead>
               <tbody>
-                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000001</td><td><div style="font-weight:600;">Al-Rashid Trading Co.</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10042</div></td><td class="td-mono" style="font-size:11px;">SA0380…167519</td><td><span class="chip chip-muted">Utility</span></td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">1,250.00</td><td>31 May 2024</td><td><span class="chip chip-green">Active</span></td></tr>
-                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000002</td><td><div style="font-weight:600;">Green Valley Properties</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10087</div></td><td class="td-mono" style="font-size:11px;">SA8480…167530</td><td><span class="chip chip-muted">Utility</span></td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">3,400.75</td><td>31 May 2024</td><td><span class="chip chip-green">Active</span></td></tr>
-                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000003</td><td><div style="font-weight:600;">Sunrise Medical Center</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10103</div></td><td class="td-mono" style="font-size:11px;">SA0380…167541</td><td><span class="chip chip-blue">Water</span></td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">780.50</td><td>31 May 2024</td><td><span class="chip chip-green">Active</span></td></tr>
-                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000004</td><td><div style="font-weight:600;">Horizon Logistics LLC</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10215</div></td><td class="td-mono" style="font-size:11px;">SA5480…167552</td><td><span class="chip chip-muted">Utility</span></td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">2,100.00</td><td>31 May 2024</td><td><span class="chip chip-amber">Partial</span></td></tr>
-                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000005</td><td><div style="font-weight:600;">Al-Baraka Supermarket</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10308</div></td><td class="td-mono" style="font-size:11px;">SA0380…167563</td><td><span class="chip chip-muted">Utility</span></td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">5,670.25</td><td>31 May 2024</td><td><span class="chip chip-green">Active</span></td></tr>
-                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000007</td><td><div style="font-weight:600;">Gulf Star Manufacturing</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10512</div></td><td class="td-mono" style="font-size:11px;">SA0380…167585</td><td><span class="chip chip-muted">Utility</span></td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">9,800.00</td><td>31 May 2024</td><td><span class="chip chip-green">Active</span></td></tr>
-                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000008</td><td><div style="font-weight:600;">Desert Rose Hotels</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10637</div></td><td class="td-mono" style="font-size:11px;">SA5480…167596</td><td><span class="chip chip-muted">Utility</span></td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">14,320.50</td><td>31 May 2024</td><td><span class="chip chip-amber">Partial</span></td></tr>
+                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000001</td><td><div style="font-weight:600;">Al-Rashid Trading Co.</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10042</div></td><td class="td-mono" style="font-size:11px;">SA0380…167519</td><td class="td-mono" style="font-size:11px;">BCT-ELEC-001</td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">1,250.00</td><td>31 May 2024</td><td><span class="chip chip-green">Active</span></td></tr>
+                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000002</td><td><div style="font-weight:600;">Green Valley Properties</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10087</div></td><td class="td-mono" style="font-size:11px;">SA8480…167530</td><td class="td-mono" style="font-size:11px;">BCT-ELEC-001</td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">3,400.75</td><td>31 May 2024</td><td><span class="chip chip-green">Active</span></td></tr>
+                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000004</td><td><div style="font-weight:600;">Horizon Logistics LLC</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10215</div></td><td class="td-mono" style="font-size:11px;">SA5480…167552</td><td class="td-mono" style="font-size:11px;">BCT-ELEC-001</td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">2,100.00</td><td>31 May 2024</td><td><span class="chip chip-amber">Partial</span></td></tr>
+                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000005</td><td><div style="font-weight:600;">Al-Baraka Supermarket</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10308</div></td><td class="td-mono" style="font-size:11px;">SA0380…167563</td><td class="td-mono" style="font-size:11px;">BCT-ELEC-001</td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">5,670.25</td><td>31 May 2024</td><td><span class="chip chip-green">Active</span></td></tr>
+                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000007</td><td><div style="font-weight:600;">Gulf Star Manufacturing</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10512</div></td><td class="td-mono" style="font-size:11px;">SA0380…167585</td><td class="td-mono" style="font-size:11px;">BCT-ELEC-001</td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">9,800.00</td><td>31 May 2024</td><td><span class="chip chip-green">Active</span></td></tr>
+                <tr><td><input type="checkbox"></td><td class="td-mono">BILL-000008</td><td><div style="font-weight:600;">Desert Rose Hotels</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10637</div></td><td class="td-mono" style="font-size:11px;">SA5480…167596</td><td class="td-mono" style="font-size:11px;">BCT-ELEC-001</td><td>Apr 2024</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">14,320.50</td><td>31 May 2024</td><td><span class="chip chip-amber">Partial</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -1387,7 +1380,7 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
     <div class="page" id="page-products">
       <div class="page-header">
         <div class="page-title">Products &amp; Pricing</div>
-        <div class="page-meta">Service categories and fee structures for BCT-ELEC-001 and BCT-WATER-002</div>
+        <div class="page-meta">Service category and fee structure for your biller account · BCT-ELEC-001</div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <div class="card">
@@ -1397,16 +1390,6 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
             <div class="summary-row"><div class="summary-label">Billing cycle</div><div class="summary-value">Monthly</div></div>
             <div class="summary-row"><div class="summary-label">Payment window</div><div class="summary-value">30 days</div></div>
             <div class="summary-row"><div class="summary-label">Late fee</div><div class="summary-value">2% per month</div></div>
-            <div class="summary-row"><div class="summary-label">Status</div><div><span class="chip chip-green">Active</span></div></div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-section">
-            <div class="section-label">BCT-WATER-002 · Water</div>
-            <div class="summary-row"><div class="summary-label">Service type</div><div class="summary-value">Utility — Water</div></div>
-            <div class="summary-row"><div class="summary-label">Billing cycle</div><div class="summary-value">Monthly</div></div>
-            <div class="summary-row"><div class="summary-label">Payment window</div><div class="summary-value">30 days</div></div>
-            <div class="summary-row"><div class="summary-label">Late fee</div><div class="summary-value">1.5% per month</div></div>
             <div class="summary-row"><div class="summary-label">Status</div><div><span class="chip chip-green">Active</span></div></div>
           </div>
         </div>
@@ -1420,8 +1403,8 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
         <div class="page-meta">Incoming payments confirmed by the Fulfilment Entity · 20 May 2024</div>
       </div>
       <div class="kpi-grid">
-        <div class="kpi-card"><div class="kpi-label">Total Collected</div><div class="kpi-value green">56,402</div><div class="kpi-sub">SAR · 12 payments</div></div>
-        <div class="kpi-card"><div class="kpi-label">Outstanding</div><div class="kpi-value amber">27,882</div><div class="kpi-sub">SAR · 3 partial</div></div>
+        <div class="kpi-card"><div class="kpi-label">Total Collected</div><div class="kpi-value green">18,321</div><div class="kpi-sub">BND · 5 payments</div></div>
+        <div class="kpi-card"><div class="kpi-label">Outstanding</div><div class="kpi-value amber">8,421</div><div class="kpi-sub">BND · 2 partial</div></div>
         <div class="kpi-card"><div class="kpi-label">Success Rate</div><div class="kpi-value blue">80%</div><div class="kpi-sub kpi-up">↑ from 74% last month</div></div>
         <div class="kpi-card"><div class="kpi-label">Payments Today</div><div class="kpi-value">15</div><div class="kpi-sub">As of 10:38 AM</div></div>
       </div>
@@ -1436,8 +1419,7 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
               <tbody>
                 <tr><td class="td-mono">PAY-0001</td><td class="td-mono">BILL-000001</td><td>Al-Rashid Trading</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">1,250.00</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">1,250.00</td><td>Portal</td><td>10:15</td><td><span class="chip chip-green">Full</span></td></tr>
                 <tr><td class="td-mono">PAY-0002</td><td class="td-mono">BILL-000002</td><td>Green Valley Prop.</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">3,400.75</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">3,400.75</td><td>Portal</td><td>10:17</td><td><span class="chip chip-green">Full</span></td></tr>
-                <tr><td class="td-mono">PAY-0003</td><td class="td-mono">BILL-000003</td><td>Sunrise Medical</td><td><span class="chip chip-blue">Water</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">780.50</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">780.50</td><td>Portal</td><td>10:18</td><td><span class="chip chip-green">Full</span></td></tr>
-                <tr><td class="td-mono">PAY-0004</td><td class="td-mono">BILL-000004</td><td>Horizon Logistics</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">1,000.00</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">2,100.00</td><td>Portal</td><td>10:20</td><td><span class="chip chip-amber">Partial</span></td></tr>
+<tr><td class="td-mono">PAY-0004</td><td class="td-mono">BILL-000004</td><td>Horizon Logistics</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">1,000.00</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">2,100.00</td><td>Portal</td><td>10:20</td><td><span class="chip chip-amber">Partial</span></td></tr>
                 <tr><td class="td-mono">PAY-0005</td><td class="td-mono">BILL-000005</td><td>Al-Baraka Supermt.</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">5,670.25</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">5,670.25</td><td>Portal</td><td>10:21</td><td><span class="chip chip-green">Full</span></td></tr>
                 <tr><td class="td-mono">PAY-0008</td><td class="td-mono">BILL-000008</td><td>Desert Rose Hotels</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">7,000.00</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">14,320.50</td><td>Portal</td><td>10:26</td><td><span class="chip chip-amber">Partial</span></td></tr>
               </tbody>
@@ -1939,7 +1921,7 @@ function closeSpecDialog(e) {
 
 // ── SERVICE FILTER ──
 function svcFilter(f) {
-  ['all','elec','water'].forEach(s => {
+  ['all','elec'].forEach(s => {
     const btn = document.getElementById('svc-' + s);
     if (btn) btn.classList.toggle('active', s === f);
   });
