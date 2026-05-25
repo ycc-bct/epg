@@ -1024,34 +1024,83 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
 
           <!-- ── HISTORY ── -->
           <div id="bm-history" style="display:none;">
-            <div class="filter-bar">
-              <input type="text" placeholder="Search batches…" style="width:200px;">
-              <span class="fchip">May 2024 <button onclick="this.parentElement.remove()">×</button></span>
-              <span class="fchip">BCT-ELEC-001 <button onclick="this.parentElement.remove()">×</button></span>
-              <div class="filter-bar-right">
-                <button class="btn btn-ghost" style="padding:8px 14px;font-size:13px;">
-                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:14px;height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+
+            <!-- Filter row -->
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+
+              <!-- Search -->
+              <div style="position:relative;display:flex;align-items:center;">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"
+                     style="position:absolute;left:10px;width:14px;height:14px;color:var(--text-subtle);pointer-events:none;">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+                </svg>
+                <input type="text" id="hist-search" placeholder="Search batch ID…"
+                       oninput="histFilter()"
+                       style="padding:8px 12px 8px 32px;font-size:13px;width:190px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);">
+              </div>
+
+              <!-- Time filter -->
+              <div class="select-wrap" style="min-width:155px;">
+                <select id="hist-time" onchange="histFilter()" style="padding:8px 32px 8px 10px;font-size:13px;">
+                  <option value="all">All Time</option>
+                  <option value="thismonth">This Month</option>
+                  <option value="last3">Last 3 Months</option>
+                  <option value="last6">Last 6 Months</option>
+                  <option value="thisyear">This Year</option>
+                </select>
+              </div>
+
+              <!-- Status filter -->
+              <div class="select-wrap" style="min-width:145px;">
+                <select id="hist-status" onchange="histFilter()" style="padding:8px 32px 8px 10px;font-size:13px;">
+                  <option value="all">All Status</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="processing">Processing</option>
+                  <option value="pending">Pending</option>
+                  <option value="failed">Failed</option>
+                </select>
+              </div>
+
+              <!-- Value filter -->
+              <div class="select-wrap" style="min-width:170px;">
+                <select id="hist-value" onchange="histFilter()" style="padding:8px 32px 8px 10px;font-size:13px;">
+                  <option value="all">All Values</option>
+                  <option value="lt10k">Under BND 10,000</option>
+                  <option value="10k50k">BND 10,000 – 50,000</option>
+                  <option value="gt50k">Over BND 50,000</option>
+                </select>
+              </div>
+
+              <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+                <button class="btn btn-ghost" style="padding:8px 14px;font-size:13px;" onclick="showSnack('Exporting filtered results…')">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:14px;height:14px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+                  </svg>
                   Export
                 </button>
               </div>
             </div>
+
+            <!-- Active filter chips -->
+            <div id="hist-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;min-height:0;"></div>
+
+            <!-- Result count -->
+            <div style="font-size:12px;color:var(--text-subtle);margin-bottom:8px;" id="hist-count"></div>
+
+            <!-- Table -->
             <div class="table-wrap">
               <table>
                 <thead><tr>
-                  <th class="th-check"><input type="checkbox"></th>
+                  <th class="th-check"><input type="checkbox" id="hist-cb-all" onchange="histToggleAll(this)"></th>
                   <th>Batch ID</th>
-                  <th>Date</th>
+                  <th>Submitted</th>
                   <th>Bills</th>
                   <th class="th-right">Total Value</th>
                   <th>FE Status</th>
                   <th>Confirmed At</th>
+                  <th style="width:90px;"></th>
                 </tr></thead>
-                <tbody>
-                  <tr><td><input type="checkbox"></td><td class="td-mono">BATCH-20240520</td><td>20 May 2024, 10:15</td><td>20</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">SAR 84,284.00</td><td><span class="chip chip-green">Confirmed</span></td><td>20 May 2024, 14:30</td></tr>
-                  <tr class="selected"><td><input type="checkbox" checked></td><td class="td-mono">BATCH-20240415</td><td>15 Apr 2024, 09:42</td><td>18</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">SAR 71,540.50</td><td><span class="chip chip-green">Confirmed</span></td><td>15 Apr 2024, 13:15</td></tr>
-                  <tr><td><input type="checkbox"></td><td class="td-mono">BATCH-20240310</td><td>10 Mar 2024, 10:05</td><td>22</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">SAR 96,720.25</td><td><span class="chip chip-green">Confirmed</span></td><td>10 Mar 2024, 15:00</td></tr>
-                  <tr><td><input type="checkbox"></td><td class="td-mono">BATCH-20240205</td><td>05 Feb 2024, 09:30</td><td>16</td><td class="td-right td-bold" style="font-family:ui-monospace,monospace;">SAR 58,930.00</td><td><span class="chip chip-green">Confirmed</span></td><td>05 Feb 2024, 14:45</td></tr>
-                </tbody>
+                <tbody id="hist-tbody"></tbody>
               </table>
             </div>
           </div>
@@ -1381,7 +1430,7 @@ function bmTab(t) {
     document.getElementById('bm-' + n).style.display = n === t ? 'block' : 'none';
     document.getElementById('bm-tab-' + n).classList.toggle('active', n === t);
   });
-  if (t === 'history') navTo('bill-mgmt', null);
+  if (t === 'history') { navTo('bill-mgmt', null); histFilter(); }
 }
 
 // ── UPLOAD SIMULATION ──
@@ -1489,6 +1538,100 @@ function bmReset() {
   document.getElementById('upload-progress').style.display = 'none';
   document.getElementById('progress-fill').style.width = '0%';
   bmGoStep(1);
+}
+
+// ── HISTORY DATA & FILTER ──
+const HIST_DATA = [
+  {id:'BATCH-20240520', date:'20 May 2024, 10:15', dateMs: new Date('2024-05-20').getTime(), bills:20, value:84284.00, status:'confirmed', confirmedAt:'20 May 2024, 14:30'},
+  {id:'BATCH-20240415', date:'15 Apr 2024, 09:42', dateMs: new Date('2024-04-15').getTime(), bills:18, value:71540.50, status:'confirmed', confirmedAt:'15 Apr 2024, 13:15'},
+  {id:'BATCH-20240310', date:'10 Mar 2024, 10:05', dateMs: new Date('2024-03-10').getTime(), bills:22, value:96720.25, status:'processing', confirmedAt:'—'},
+  {id:'BATCH-20240205', date:'05 Feb 2024, 09:30', dateMs: new Date('2024-02-05').getTime(), bills:16, value:58930.00, status:'confirmed', confirmedAt:'05 Feb 2024, 14:45'},
+  {id:'BATCH-20240115', date:'15 Jan 2024, 11:00', dateMs: new Date('2024-01-15').getTime(), bills:9,  value:23450.00, status:'failed',     confirmedAt:'—'},
+  {id:'BATCH-20231210', date:'10 Dec 2023, 09:15', dateMs: new Date('2023-12-10').getTime(), bills:7,  value:6800.00,  status:'confirmed', confirmedAt:'10 Dec 2023, 15:05'},
+  {id:'BATCH-20231115', date:'15 Nov 2023, 08:45', dateMs: new Date('2023-11-15').getTime(), bills:14, value:45100.75, status:'pending',    confirmedAt:'—'},
+];
+
+const HIST_STATUS_CHIP = {
+  confirmed:  'chip-green',
+  processing: 'chip-blue',
+  pending:    'chip-amber',
+  failed:     'chip-red',
+};
+const HIST_STATUS_LABEL = {
+  confirmed:'Confirmed', processing:'Processing', pending:'Pending', failed:'Failed'
+};
+
+function histFilter() {
+  const search = document.getElementById('hist-search').value.toLowerCase();
+  const time   = document.getElementById('hist-time').value;
+  const status = document.getElementById('hist-status').value;
+  const value  = document.getElementById('hist-value').value;
+
+  const now   = new Date('2024-05-20').getTime();
+  const m1    = new Date('2024-05-01').getTime();
+  const m3ago = new Date('2024-02-20').getTime();
+  const m6ago = new Date('2023-11-20').getTime();
+  const y1ago = new Date('2024-01-01').getTime();
+
+  const filtered = HIST_DATA.filter(r => {
+    if (search && !r.id.toLowerCase().includes(search)) return false;
+    if (time === 'thismonth' && r.dateMs < m1) return false;
+    if (time === 'last3'     && r.dateMs < m3ago) return false;
+    if (time === 'last6'     && r.dateMs < m6ago) return false;
+    if (time === 'thisyear'  && r.dateMs < y1ago) return false;
+    if (status !== 'all' && r.status !== status) return false;
+    if (value === 'lt10k'  && r.value >= 10000)  return false;
+    if (value === '10k50k' && (r.value < 10000 || r.value > 50000)) return false;
+    if (value === 'gt50k'  && r.value <= 50000)  return false;
+    return true;
+  });
+
+  // Render active chips
+  const timeLabels = {thismonth:'This Month',last3:'Last 3 Months',last6:'Last 6 Months',thisyear:'This Year'};
+  const valueLabels = {lt10k:'Under BND 10,000','10k50k':'BND 10K – 50K',gt50k:'Over BND 50,000'};
+  let chips = '';
+  if (time   !== 'all') chips += `<span class="fchip">${timeLabels[time]} <button onclick="document.getElementById('hist-time').value='all';histFilter()">×</button></span>`;
+  if (status !== 'all') chips += `<span class="fchip">${HIST_STATUS_LABEL[status]} <button onclick="document.getElementById('hist-status').value='all';histFilter()">×</button></span>`;
+  if (value  !== 'all') chips += `<span class="fchip">${valueLabels[value]} <button onclick="document.getElementById('hist-value').value='all';histFilter()">×</button></span>`;
+  const chipsEl = document.getElementById('hist-chips');
+  chipsEl.innerHTML = chips;
+  chipsEl.style.display = chips ? 'flex' : 'none';
+
+  // Result count
+  document.getElementById('hist-count').textContent =
+    `Showing ${filtered.length} of ${HIST_DATA.length} batches`;
+
+  // Render table
+  const tbody = document.getElementById('hist-tbody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-subtle);font-size:13px;">No batches match the selected filters.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(r => {
+    const chip = HIST_STATUS_CHIP[r.status] || 'chip-muted';
+    const label = HIST_STATUS_LABEL[r.status];
+    const canDownload = r.status === 'confirmed';
+    const dlBtn = canDownload
+      ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;" onclick="showSnack('Downloading ACK_${r.id}.csv…')">
+           <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:13px;height:13px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+           ACK
+         </button>`
+      : `<span style="font-size:12px;color:var(--text-subtle);">—</span>`;
+    return `<tr>
+      <td><input type="checkbox"></td>
+      <td class="td-mono">${r.id}</td>
+      <td>${r.date}</td>
+      <td>${r.bills}</td>
+      <td class="td-right td-bold" style="font-family:ui-monospace,monospace;">BND ${r.value.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td><span class="chip ${chip}">${label}</span></td>
+      <td style="color:var(--text-muted);font-size:13px;">${r.confirmedAt}</td>
+      <td style="text-align:center;">${dlBtn}</td>
+    </tr>`;
+  }).join('');
+}
+
+function histToggleAll(cb) {
+  document.querySelectorAll('#hist-tbody input[type="checkbox"]').forEach(c => c.checked = cb.checked);
 }
 
 // ── SPEC DIALOG ──
