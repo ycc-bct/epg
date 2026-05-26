@@ -207,7 +207,7 @@ body {
   justify-content: center;
   gap: 7px;
   transition: background var(--transition), box-shadow var(--transition), transform var(--transition);
-  margin-top: 8px;
+  margin-top: 24px;
 }
 .login-btn:hover {
   background: color-mix(in srgb, var(--accent) 85%, #000);
@@ -216,17 +216,93 @@ body {
 .login-btn:active { transform: scale(.98); }
 .login-btn svg { width: 16px; height: 16px; }
 
-.login-hint {
-  margin-top: 20px;
-  padding: 12px 14px;
+/* Remember Me */
+.remember-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+.remember-row input[type="checkbox"] {
+  width: 15px; height: 15px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.remember-row label {
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* FAB */
+.fab-wrap {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+.fab-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 40%, transparent);
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+  flex-shrink: 0;
+}
+.fab-btn:hover {
+  background: color-mix(in srgb, var(--accent) 85%, #000);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+.fab-btn:active { transform: scale(.93); }
+.fab-btn svg { width: 18px; height: 18px; transition: transform .2s; }
+.fab-btn.open svg { transform: rotate(45deg); }
+
+.fab-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 18px 20px 16px;
+  width: 300px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.8;
+  display: none;
+  transform-origin: bottom right;
+}
+.fab-panel.open { display: block; }
+.fab-panel-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--text-subtle);
+  margin-bottom: 8px;
+}
+.fab-panel-section { margin-bottom: 14px; }
+.fab-panel-section:last-child { margin-bottom: 0; }
+.fab-panel code {
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  font-size: 11.5px;
   background: var(--chip-bg);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  color: var(--text-muted);
-  line-height: 1.7;
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--text);
 }
-.login-hint strong { color: var(--text-subtle); font-weight: 600; }
 
 /* Sign Out button in header */
 .btn-logout {
@@ -470,10 +546,9 @@ body {
 }
 
 .card-section {
-  padding: 22px 24px;
-  border-bottom: 1px solid var(--border);
+  padding: 20px 24px;
 }
-.card-section:last-child { border-bottom: none; }
+.card-section + .card-section { padding-top: 0; }
 
 .section-label {
   font-size: 11px;
@@ -531,6 +606,52 @@ input:focus, select:focus {
   box-shadow: 0 0 0 3px var(--accent-dim);
 }
 input::placeholder { color: var(--text-subtle); opacity: .6; }
+
+/* Radio group (Search By) */
+.radio-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.radio-opt {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+  transition: all var(--transition);
+  user-select: none;
+}
+.radio-opt:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent-text);
+}
+.radio-opt input[type="radio"] {
+  accent-color: var(--accent);
+  width: 14px; height: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Results section (inline in panel-1) */
+.results-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0 -24px;
+}
+.results-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
 
 .input-wrap {
   position: relative;
@@ -642,7 +763,17 @@ input::placeholder { color: var(--text-subtle); opacity: .6; }
 .chip-online   { background: var(--blue-dim); color: var(--blue); border-color: color-mix(in srgb, var(--blue) 25%, white); }
 .chip-hybrid   { background: color-mix(in srgb, #7c3f00 8%, white); color: #7c3f00; border-color: color-mix(in srgb, #7c3f00 25%, white); }
 .chip-outstanding { background: color-mix(in srgb, #CA8A04 10%, white); color: #854D0E; border-color: color-mix(in srgb, #CA8A04 25%, white); }
-.chip-partial  { background: var(--green-dim); color: var(--green); border-color: color-mix(in srgb, var(--green) 25%, white); }
+.chip-partial {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--green-dim);
+  color: var(--green);
+  border: 1px solid color-mix(in srgb, var(--green) 25%, white);
+  letter-spacing: .02em;
+}
+.chip-hold        { background: var(--red-dim); color: var(--red); border-color: color-mix(in srgb, var(--red) 25%, white); }
 .chip-uc       { background: var(--accent-dim); color: var(--accent-text); border-color: var(--accent-border); font-family: ui-monospace, monospace; }
 .chip-id       { background: var(--chip-bg); color: var(--text-muted); border-color: var(--border-strong); font-family: ui-monospace, monospace; font-size: 10px; }
 
@@ -734,7 +865,6 @@ input::placeholder { color: var(--text-subtle); opacity: .6; }
   overflow-x: auto;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  margin-top: 16px;
 }
 
 table {
@@ -765,7 +895,8 @@ tbody tr {
 }
 tbody tr:last-child { border-bottom: none; }
 tbody tr:hover { background: var(--chip-bg); }
-tbody tr.selected { background: var(--accent-dim); }
+tbody tr.selected  { background: var(--accent-dim); }
+tbody tr.bill-hold { opacity: .5; cursor: default; pointer-events: none; }
 
 tbody td { padding: 12px 12px; vertical-align: middle; }
 tbody td.td-right { text-align: right; }
@@ -864,6 +995,34 @@ input[type="checkbox"] {
 .summary-row-label  { font-size: 13px; color: var(--text-muted); }
 .summary-row-sub    { font-size: 11px; color: var(--text-subtle); margin-top: 1px; }
 .summary-row-value  { font-size: 13px; font-weight: 600; font-family: ui-monospace, monospace; color: var(--text); text-align: right; }
+
+.partial-input-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.partial-input {
+  width: 110px;
+  padding: 5px 8px;
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+  color: var(--text);
+  background: var(--accent-dim);
+  text-align: right;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.partial-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+.partial-input.input-error {
+  border-color: var(--red);
+  background: var(--red-dim);
+  color: var(--red);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 15%, transparent);
+}
+.partial-max { font-size: 11px; color: var(--text-subtle); }
+.partial-max.error-hint { color: var(--red); font-weight: 600; }
 
 .total-row {
   display: flex;
@@ -1047,18 +1206,17 @@ input[type="checkbox"] {
       </div>
     </div>
 
+    <div class="remember-row">
+      <input type="checkbox" id="remember-me" />
+      <label for="remember-me">Remember me on this device</label>
+    </div>
+
     <button class="login-btn" onclick="doLogin()">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
       </svg>
       Sign In
     </button>
-
-    <div class="login-hint">
-      <strong>Demo credentials:</strong><br>
-      Employee ID: <strong>T-001</strong> &nbsp;/&nbsp; Password: <strong>1234</strong><br>
-      Employee ID: <strong>T-002</strong> &nbsp;/&nbsp; Password: <strong>1234</strong>
-    </div>
 
   </div>
 </div>
@@ -1104,178 +1262,126 @@ input[type="checkbox"] {
     <div class="step" id="step-2">
       <div class="step-circle">2</div>
       <div class="step-label">
-        <div class="step-label-main">Select Bills</div>
+        <div class="step-label-main">Payment Review</div>
       </div>
     </div>
     <div class="step" id="step-3">
       <div class="step-circle">3</div>
-      <div class="step-label">
-        <div class="step-label-main">Payment Review</div>
-      </div>
-    </div>
-    <div class="step" id="step-4">
-      <div class="step-circle">4</div>
       <div class="step-label">
         <div class="step-label-main">Confirmation</div>
       </div>
     </div>
   </div>
 
-  <!-- ── PANEL 1: Bill Enquiry Form ── -->
+  <!-- ── PANEL 1: Bill Enquiry + Results (merged) ── -->
   <div class="panel active" id="panel-1">
     <div class="card">
 
+      <!-- Form section -->
       <div class="card-section">
-        <div class="section-label">
-          Bill Enquiry
-        </div>
+        <div class="section-label">Bill Enquiry</div>
 
         <div class="field">
-          <label for="biller-select">Service Provider / Biller</label>
+          <label for="biller-select">Service Provider / Biller <span class="req">*</span></label>
           <div class="select-wrap">
             <select id="biller-select" onchange="onBillerChange()">
               <option value="">Select a Service Provider…</option>
-              <option value="HDD" data-mode="offline" data-short="HDD">Housing Development Department</option>
-              <option value="WEWA" data-mode="online" data-short="WEWA">Water Services Authority (WEWA)</option>
-              <option value="JPN" data-mode="hybrid" data-short="JPN">Jabatan Penerangan — e-Darussalam</option>
+              <option value="HDD"  data-mode="offline" data-short="HDD">Housing Development Department</option>
+              <option value="WEWA" data-mode="online"  data-short="WEWA">Water Services Authority (WEWA)</option>
+              <option value="JPN"  data-mode="hybrid"  data-short="JPN">Jabatan Penerangan — e-Darussalam</option>
               <option value="LMWD" data-mode="offline" data-short="LMWD">Land Management &amp; Water Department</option>
             </select>
           </div>
         </div>
 
-        <div id="mode-banner" class="mode-banner hidden">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-          </svg>
-          <span id="mode-banner-text"></span>
-        </div>
       </div>
 
       <div class="card-section">
-        <div class="field-row">
-          <div class="field">
-            <label for="search-type">Search By</label>
-            <div class="select-wrap">
-              <select id="search-type">
-                <option value="ic">IC Number</option>
-                <option value="account">Account / Service No.</option>
-                <option value="invoice">Invoice Reference No.</option>
-              </select>
-            </div>
-          </div>
-          <div class="field">
-            <label for="search-val">Reference Value <span class="req">*</span></label>
-            <div class="input-wrap">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z" />
-              </svg>
-              <input type="text" id="search-val" placeholder="e.g. ic-01-123456" autocomplete="off" onkeydown="if(event.key==='Enter')doSearch()" />
-            </div>
+        <div class="field">
+          <label>Search By <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-opt">
+              <input type="radio" name="search-type" value="ic" checked onchange="onSearchTypeChange()" />
+              IC Number
+            </label>
+            <label class="radio-opt">
+              <input type="radio" name="search-type" value="account" onchange="onSearchTypeChange()" />
+              Account / Service No.
+            </label>
+            <label class="radio-opt">
+              <input type="radio" name="search-type" value="invoice" onchange="onSearchTypeChange()" />
+              Invoice Reference No.
+            </label>
           </div>
         </div>
 
-        <div id="search-error" class="alert alert-error hidden">
+        <div class="field" style="margin-top:14px;">
+          <label for="search-val">Reference Value <span class="req">*</span></label>
+          <div class="input-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z" />
+            </svg>
+            <input type="text" id="search-val" placeholder="e.g. ic-01-123456" autocomplete="off"
+                   onkeydown="if(event.key==='Enter')doSearch()" />
+          </div>
+        </div>
+
+        <div id="search-error" class="alert alert-error hidden" style="margin-top:12px;">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
           </svg>
           <span id="search-error-msg"></span>
         </div>
-
-        <div class="demo-hint">
-          <div class="demo-hint-label">Demo References</div>
-          <p>
-            <code>ic-01-123456</code> — 2 HDD housing rent bills<br>
-            <code>WEWA-ACC-88821</code> — 1 water bill (partial payment allowed)<br>
-            <code>ABCDE-0001-WXYZ-0099</code> — 1 HDD bill by invoice reference
-          </p>
-        </div>
       </div>
 
-      <div class="card-section">
-        <button class="btn btn-primary btn-full" id="search-btn" onclick="doSearch()">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z" />
-          </svg>
-          <span id="search-btn-label">Look Up Bills</span>
-        </button>
+      <!-- Results section — hidden until search returns data -->
+      <div id="results-section" style="display:none;">
+        <div class="card-section">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th class="th-check"><input type="checkbox" id="check-all" onchange="toggleAll(this)"></th>
+                  <th>Bill Details</th>
+                  <th>Invoice Reference</th>
+                  <th>Period</th>
+                  <th>Due Date</th>
+                  <th class="th-right">Amount (BND)</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="bills-tbody"></tbody>
+            </table>
+          </div>
+
+        </div>
+
+        <div class="card-section">
+          <div class="btn-row">
+            <button class="btn btn-ghost" onclick="clearResults()">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+              New Search
+            </button>
+            <button class="btn btn-primary" id="proceed-btn" disabled onclick="goToReview()">
+              Proceed to Payment
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" class="arrow">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
 
     </div>
   </div>
 
-  <!-- ── PANEL 2: Bill Results ── -->
+  <!-- ── PANEL 2: Payment Review ── -->
   <div class="panel" id="panel-2">
     <div class="card">
       <div class="card-section">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
-          <span style="font-size:13px;font-weight:600;color:var(--text);">Bill Enquiry Results</span>
-          <span class="chip chip-id" id="result-enquiry-id" style="margin-left:auto;"></span>
-        </div>
-
-        <div class="biller-row" id="result-biller-row">
-          <div class="biller-avatar" id="result-biller-short"></div>
-          <div style="flex:1;min-width:0">
-            <div class="biller-name" id="result-biller-name"></div>
-            <div class="biller-meta" id="result-biller-meta"></div>
-          </div>
-          <span id="result-mode-chip"></span>
-        </div>
-      </div>
-
-      <div class="card-section">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th class="th-check"><input type="checkbox" id="check-all" onchange="toggleAll(this)"></th>
-                <th>Bill Details</th>
-                <th>Invoice Reference</th>
-                <th>Period</th>
-                <th>Due Date</th>
-                <th class="th-right">Amount (BND)</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="bills-tbody"></tbody>
-          </table>
-        </div>
-
-        <div class="selection-bar hidden" id="selection-bar">
-          <div>
-            <div class="sel-label" id="sel-label"></div>
-            <div class="sel-note">ePG service fee (0.5%) will be shown at payment review</div>
-          </div>
-          <div class="sel-total" id="sel-total"></div>
-        </div>
-      </div>
-
-      <div class="card-section">
-        <div class="btn-row">
-          <button class="btn btn-ghost" onclick="goTo(1)">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-            </svg>
-            New Search
-          </button>
-          <button class="btn btn-primary" id="proceed-btn" disabled onclick="goToReview()">
-            Proceed to Payment
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" class="arrow">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── PANEL 3: Payment Review ── -->
-  <div class="panel" id="panel-3">
-    <div class="card">
-      <div class="card-section">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span style="font-size:13px;font-weight:600;color:var(--text);">Payment Review</span>
-          <span class="chip chip-id" id="review-enquiry-id" style="margin-left:auto;"></span>
-        </div>
+        <span style="font-size:13px;font-weight:600;color:var(--text);">Payment Review</span>
       </div>
 
       <div class="card-section">
@@ -1305,13 +1411,20 @@ input[type="checkbox"] {
 
             <div class="field" style="margin-top:20px;">
               <div class="section-label" style="margin-bottom:10px;">Payment Method</div>
-              <label for="tender-type">Tender Type</label>
-              <div class="select-wrap">
-                <select id="tender-type">
-                  <option value="cash">Cash</option>
-                  <option value="cheque">Cheque</option>
-                  <option value="debit">Debit Card (Counter)</option>
-                </select>
+              <label>Tender Type <span class="req">*</span></label>
+              <div class="radio-group" style="margin-top:6px;">
+                <label class="radio-opt">
+                  <input type="radio" name="tender-type" value="cash" checked />
+                  Cash
+                </label>
+                <label class="radio-opt">
+                  <input type="radio" name="tender-type" value="cheque" />
+                  Cheque
+                </label>
+                <label class="radio-opt">
+                  <input type="radio" name="tender-type" value="debit" />
+                  Debit Card
+                </label>
               </div>
             </div>
           </div>
@@ -1338,7 +1451,7 @@ input[type="checkbox"] {
 
       <div class="card-section">
         <div class="btn-row">
-          <button class="btn btn-ghost" onclick="goTo(2)">
+          <button class="btn btn-ghost" onclick="goTo(1)">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
             </svg>
@@ -1355,8 +1468,8 @@ input[type="checkbox"] {
     </div>
   </div>
 
-  <!-- ── PANEL 4: Confirmation ── -->
-  <div class="panel" id="panel-4">
+  <!-- ── PANEL 3: Confirmation ── -->
+  <div class="panel" id="panel-3">
 
     <!-- Processing state (shown briefly) -->
     <div id="processing-state" class="card processing-state">
@@ -1373,6 +1486,15 @@ input[type="checkbox"] {
         </svg>
         <div>
           <strong>Payment Successful.</strong> Please print the receipt for the customer.
+        </div>
+      </div>
+
+      <div class="alert alert-info no-print hidden" id="saf-notice" style="margin-bottom:16px;">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+        </svg>
+        <div>
+          <strong>Offline SP — SAF Mode.</strong> This payment has been recorded in ePG. The Service Provider operates in offline mode and will be notified via the Store-and-Forward (SAF) batch process at the next scheduled run.
         </div>
       </div>
 
@@ -1425,7 +1547,48 @@ input[type="checkbox"] {
 
 </main>
 
+<!-- FAB — Demo Helper -->
+<div class="fab-wrap" id="fab-wrap">
+  <div class="fab-panel" id="fab-panel">
+
+    <div class="fab-panel-section">
+      <div class="fab-panel-title">Demo Credentials</div>
+      <code>T-001</code> / <code>1234</code> — Ahmad Zulhilmi, BSB<br>
+      <code>T-002</code> / <code>1234</code> — Nurul Ain, Kuala Belait
+    </div>
+
+    <div class="fab-panel-section">
+      <div class="fab-panel-title">Demo Bill References</div>
+      <code>ic-01-123456</code> — 2 HDD housing rent bills<br>
+      <code>wewa-acc-88821</code> — 1 water bill (partial pay)<br>
+      <code>abcde-0001-wxyz-0099</code> — 1 HDD bill by invoice ref
+    </div>
+
+  </div>
+
+  <button class="fab-btn" id="fab-btn" onclick="toggleFab()" title="Demo helper">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+    </svg>
+  </button>
+</div>
+
 <script>
+/* ─── FAB ─────────────────────────────────────────────── */
+function toggleFab() {
+  const panel = document.getElementById('fab-panel');
+  const btn   = document.getElementById('fab-btn');
+  const open  = panel.classList.toggle('open');
+  btn.classList.toggle('open', open);
+}
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('fab-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('fab-panel').classList.remove('open');
+    document.getElementById('fab-btn').classList.remove('open');
+  }
+});
+
 /* ─── AUTH ────────────────────────────────────────────── */
 const MOCK_USERS = {
   'T-001': { password: '1234', name: 'Ahmad Zulhilmi',  initials: 'AZ', branch: 'Bandar Seri Begawan' },
@@ -1437,6 +1600,7 @@ let currentUser = null;
 function doLogin() {
   const empId = document.getElementById('login-id').value.trim();
   const pw    = document.getElementById('login-pw').value;
+  const remember = document.getElementById('remember-me').checked;
   const errEl = document.getElementById('login-error');
   const errTx = document.getElementById('login-error-text');
   errEl.classList.remove('visible');
@@ -1455,6 +1619,15 @@ function doLogin() {
     return;
   }
 
+  // Remember Me
+  if (remember) {
+    localStorage.setItem('epg_saved_id', empId);
+    localStorage.setItem('epg_saved_pw', pw);
+  } else {
+    localStorage.removeItem('epg_saved_id');
+    localStorage.removeItem('epg_saved_pw');
+  }
+
   // Login success
   currentUser = { ...user, id: empId };
   document.getElementById('login-screen').classList.add('hidden');
@@ -1463,28 +1636,51 @@ function doLogin() {
   document.querySelector('.main').removeAttribute('style');
 }
 
+// Pre-fill saved credentials on page load
+(function initRememberMe() {
+  const savedId = localStorage.getItem('epg_saved_id');
+  const savedPw = localStorage.getItem('epg_saved_pw');
+  if (savedId && savedPw) {
+    document.getElementById('login-id').value = savedId;
+    document.getElementById('login-pw').value = savedPw;
+    document.getElementById('remember-me').checked = true;
+  }
+})();
+
 function doLogout() {
   currentUser = null;
   reset();
-  document.getElementById('login-id').value = '';
-  document.getElementById('login-pw').value = '';
+  // Restore saved credentials if remember me was set, else clear
+  const savedId = localStorage.getItem('epg_saved_id');
+  const savedPw = localStorage.getItem('epg_saved_pw');
+  document.getElementById('login-id').value = savedId || '';
+  document.getElementById('login-pw').value = savedPw || '';
+  document.getElementById('remember-me').checked = !!(savedId && savedPw);
   document.getElementById('login-error').classList.remove('visible');
   document.querySelector('.main').style.display = 'none';
   document.getElementById('login-screen').classList.remove('hidden');
-  document.getElementById('login-id').focus();
+  document.getElementById(savedId ? 'login-pw' : 'login-id').focus();
 }
 
 /* ─── MOCK DATA ───────────────────────────────────────── */
 const MOCK_BILLS = {
+  // IC Number lookup — HDD bills
   'ic-01-123456': [
-    { id:'HDD-2024-00891', ref:'ABCDE-0001-WXYZ-0023', desc:'Housing Rent — Q1 2025', sp:'HDD', amount:350.00, due:'2025-03-31', period:'Jan – Mar 2025', partial:false },
-    { id:'HDD-2024-00892', ref:'ABCDE-0002-WXYZ-0024', desc:'Housing Rent — Q2 2025', sp:'HDD', amount:350.00, due:'2025-06-30', period:'Apr – Jun 2025', partial:false },
+    { id:'HDD-2024-00891', ref:'ABCDE-0001-WXYZ-0023', desc:'Housing Rent — Q1 2025', sp:'HDD', amount:350.00, due:'2025-03-31', period:'Jan – Mar 2025', partial:false, hold:false },
+    { id:'HDD-2024-00892', ref:'ABCDE-0002-WXYZ-0024', desc:'Housing Rent — Q2 2025', sp:'HDD', amount:116.67, due:'2025-06-30', period:'Apr – Jun 2025', partial:true,  hold:false },
+    { id:'HDD-2024-00893', ref:'ABCDE-0003-WXYZ-0025', desc:'Housing Rent — Q3 2025', sp:'HDD', amount:350.00, due:'2025-09-30', period:'Jul – Sep 2025', partial:false, hold:true  },
   ],
+  // Account No. lookup — WEWA bills
   'wewa-acc-88821': [
-    { id:'WEWA-2025-10044', ref:'BFGHJ-0012-KLMN-0078', desc:'Water Bill — April 2025', sp:'WEWA', amount:42.80, due:'2025-05-15', period:'April 2025', partial:true },
+    { id:'WEWA-2025-10044', ref:'BFGHJ-0012-KLMN-0078', desc:'Water Bill — April 2025',  sp:'WEWA', amount:42.80,  due:'2025-05-15', period:'April 2025', partial:false, hold:false },
+    { id:'WEWA-2025-10045', ref:'BFGHJ-0013-KLMN-0079', desc:'Water Bill — March 2025',  sp:'WEWA', amount:38.50,  due:'2025-04-15', period:'March 2025', partial:true,  hold:false },
+    { id:'WEWA-2025-10046', ref:'BFGHJ-0014-KLMN-0080', desc:'Water Bill — February 2025', sp:'WEWA', amount:55.20, due:'2025-03-15', period:'February 2025', partial:false, hold:true  },
   ],
+  // Invoice Reference lookup — HDD bill
   'abcde-0001-wxyz-0099': [
-    { id:'HDD-2025-00011', ref:'ABCDE-0001-WXYZ-0099', desc:'Housing Rent — Mar 2025', sp:'HDD', amount:116.67, due:'2025-03-31', period:'March 2025', partial:false },
+    { id:'HDD-2025-00011', ref:'ABCDE-0001-WXYZ-0099', desc:'Housing Rent — Mar 2025',  sp:'HDD', amount:350.00, due:'2025-03-31', period:'March 2025', partial:false, hold:false },
+    { id:'HDD-2025-00012', ref:'ABCDE-0001-WXYZ-0100', desc:'Housing Maintenance — Q1', sp:'HDD', amount:85.00,  due:'2025-03-31', period:'Jan – Mar 2025', partial:true,  hold:false },
+    { id:'HDD-2025-00013', ref:'ABCDE-0001-WXYZ-0101', desc:'Housing Rent — Apr 2025',  sp:'HDD', amount:350.00, due:'2025-04-30', period:'April 2025', partial:false, hold:true  },
   ],
 };
 
@@ -1539,7 +1735,6 @@ function nowStr() {
 
 /* ─── STEP NAVIGATION ─────────────────────────────────── */
 function goTo(n) {
-  const prev = state.step;
   state.step = n;
 
   document.querySelectorAll('.panel').forEach((p, i) => {
@@ -1548,26 +1743,15 @@ function goTo(n) {
 
   document.querySelectorAll('.step').forEach((s, i) => {
     s.classList.remove('active', 'done');
-    if (i + 1 < n) s.classList.add('done');
+    if (i + 1 < n)  s.classList.add('done');
     if (i + 1 === n) s.classList.add('active');
   });
 
-  // Check icon in done steps
   document.querySelectorAll('.step.done .step-circle').forEach(c => {
-    if (!c.querySelector('svg')) {
-      c.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>`;
-    }
+    c.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>`;
   });
-  document.querySelectorAll('.step:not(.done) .step-circle').forEach((c, i) => {
-    const num = ['1','2','3','4'][i]; // approximate — we know 4 steps
-    c.innerHTML = (i + 1 < n) ? c.innerHTML : (i + 1 === n - 1 + 1 ? '' : '');
-  });
-
-  // Re-number undone circles
   document.querySelectorAll('.step').forEach((s, i) => {
-    if (!s.classList.contains('done')) {
-      s.querySelector('.step-circle').textContent = i + 1;
-    }
+    if (!s.classList.contains('done')) s.querySelector('.step-circle').textContent = i + 1;
   });
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1575,53 +1759,52 @@ function goTo(n) {
 
 /* ─── BILLER CHANGE ───────────────────────────────────── */
 function onBillerChange() {
-  const sel  = document.getElementById('biller-select');
-  const opt  = sel.options[sel.selectedIndex];
-  const mode = opt.dataset.mode;
-  const banner = document.getElementById('mode-banner');
+  // Auto-search if reference value already filled
+  if (document.getElementById('search-val').value.trim().length > 0) {
+    scheduleAutoSearch();
+  }
+}
 
-  if (!mode) { banner.classList.add('hidden'); return; }
+function onSearchTypeChange() {
+  document.getElementById('search-val').value = '';
+  document.getElementById('search-error').classList.add('hidden');
+  document.getElementById('results-section').style.display = 'none';
+}
 
-  document.getElementById('mode-banner-text').innerHTML =
-    `<span class="chip chip-${mode}" style="margin-right:8px;">${MODE_LABEL[mode]}</span>${MODE_TEXT[mode]}`;
-  banner.classList.remove('hidden');
+function scheduleAutoSearch() {
+  // biller change with existing value — no auto trigger, user must press Enter
 }
 
 /* ─── STEP 1: SEARCH ──────────────────────────────────── */
 function doSearch() {
-  const selEl   = document.getElementById('biller-select');
-  const billerId = selEl.value;
-  const val     = document.getElementById('search-val').value.trim();
-  const errEl   = document.getElementById('search-error');
-  const errMsg  = document.getElementById('search-error-msg');
-  const btn     = document.getElementById('search-btn');
-  const lbl     = document.getElementById('search-btn-label');
+  const billerId = document.getElementById('biller-select').value;
+  const val      = document.getElementById('search-val').value.trim();
+  const errEl    = document.getElementById('search-error');
+  const errMsg   = document.getElementById('search-error-msg');
+  const valInput = document.getElementById('search-val');
 
   errEl.classList.add('hidden');
 
   if (!billerId) { showError(errEl, errMsg, 'Please select a Service Provider.'); return; }
   if (!val)      { showError(errEl, errMsg, 'Please enter a reference value.'); return; }
 
-  const biller  = BILLER_INFO[billerId];
-  const delay   = biller.mode === 'online' ? 1800 : biller.mode === 'hybrid' ? 1300 : 700;
+  const biller = BILLER_INFO[billerId];
+  const delay  = biller.mode === 'online' ? 1800 : biller.mode === 'hybrid' ? 1300 : 700;
 
-  // Loading state
-  btn.disabled = true;
-  btn.innerHTML = `<div class="spinner"></div> ${
-    biller.mode === 'online'  ? 'Querying SP Bill Server…' :
-    biller.mode === 'hybrid'  ? 'Checking ePG Database…' :
-                                'Retrieving from ePG Database…'
-  }`;
+  // Loading state on input
+  valInput.disabled = true;
+  valInput.style.opacity = '.5';
 
   setTimeout(() => {
-    btn.disabled = false;
-    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z"/></svg> Look Up Bills`;
+    valInput.disabled = false;
+    valInput.style.opacity = '';
 
     const key   = val.toLowerCase();
     const bills = MOCK_BILLS[key];
 
     if (!bills || bills.length === 0) {
       showError(errEl, errMsg, 'No outstanding bills found. Please verify the reference and try again.');
+      document.getElementById('results-section').style.display = 'none';
       return;
     }
 
@@ -1631,8 +1814,20 @@ function doSearch() {
     state.enquiryId = genId('ENQ');
 
     renderResults();
-    goTo(2);
+    document.getElementById('results-section').style.display = '';
+    // Scroll to results
+    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, delay);
+}
+
+function clearResults() {
+  document.getElementById('results-section').style.display = 'none';
+  document.getElementById('search-val').value = '';
+  document.getElementById('search-error').classList.add('hidden');
+  document.getElementById('check-all').checked = false;
+  state.bills = [];
+  state.selected = new Set();
+  document.getElementById('search-val').focus();
 }
 
 function showError(el, msgEl, msg) {
@@ -1642,24 +1837,16 @@ function showError(el, msgEl, msg) {
 
 /* ─── STEP 2: RESULTS ─────────────────────────────────── */
 function renderResults() {
-  const b = state.biller;
-
-  document.getElementById('result-enquiry-id').textContent = 'ENQ: ' + state.enquiryId;
-  document.getElementById('result-biller-short').textContent = b.short;
-  document.getElementById('result-biller-name').textContent  = b.name;
-
-  const sv = document.getElementById('search-val').value.trim();
-  const st = document.getElementById('search-type');
-  document.getElementById('result-biller-meta').textContent =
-    st.options[st.selectedIndex].text + ': ' + sv;
-
-  document.getElementById('result-mode-chip').outerHTML =
-    `<span id="result-mode-chip" class="chip chip-${b.mode}">${MODE_LABEL[b.mode]}</span>`;
-
   const tbody = document.getElementById('bills-tbody');
-  tbody.innerHTML = state.bills.map(bill => `
-    <tr class="bill-row" data-id="${bill.id}" onclick="toggleBill('${bill.id}', this)">
-      <td class="td-check"><input type="checkbox" class="bill-check" data-id="${bill.id}" onclick="event.stopPropagation();toggleBill('${bill.id}',this.closest('tr'))" ></td>
+  tbody.innerHTML = state.bills.map(bill => {
+    const isHold = !!bill.hold;
+    return `
+    <tr class="bill-row${isHold ? ' bill-hold' : ''}" data-id="${bill.id}"
+        ${isHold ? '' : `onclick="toggleBill('${bill.id}', this)"`}>
+      <td class="td-check">
+        <input type="checkbox" class="bill-check" data-id="${bill.id}"
+          ${isHold ? 'disabled' : `onclick="event.stopPropagation();toggleBill('${bill.id}',this.closest('tr'))"`}>
+      </td>
       <td>
         <div class="bill-name">${bill.desc}</div>
         <div class="bill-id">${bill.id}</div>
@@ -1667,13 +1854,18 @@ function renderResults() {
       <td><div class="bill-ref">${bill.ref}</div></td>
       <td><span class="bill-period">${bill.period}</span></td>
       <td><span class="bill-due${isOverdue(bill.due) ? '-overdue' : ''}">${bill.due}</span></td>
-      <td class="td-right"><div class="bill-amount">${fmtBND(bill.amount)}</div></td>
-      <td>
-        <span class="chip chip-outstanding">Outstanding</span>
-        ${bill.partial ? '<br><span class="chip chip-partial" style="margin-top:4px;">Partial OK</span>' : ''}
+      <td class="td-right">
+        <div class="bill-amount">${fmtBND(bill.amount)}</div>
+        ${bill.partial ? '<div style="font-size:11px;color:var(--green);margin-top:3px;">Partial pay allowed</div>' : ''}
       </td>
-    </tr>
-  `).join('');
+      <td>
+        ${isHold
+          ? '<span class="chip chip-hold">Hold</span>'
+          : '<span class="chip chip-outstanding">Outstanding</span>'
+        }
+      </td>
+    </tr>`;
+  }).join('');
 
   updateSelectionBar();
 }
@@ -1704,21 +1896,8 @@ function toggleAll(cb) {
 }
 
 function updateSelectionBar() {
-  const sel      = [...state.selected];
-  const selBills = state.bills.filter(b => sel.includes(b.id));
-  const subtotal = selBills.reduce((s, b) => s + b.amount, 0);
-  const bar      = document.getElementById('selection-bar');
-  const procBtn  = document.getElementById('proceed-btn');
-
-  if (sel.length === 0) {
-    bar.classList.add('hidden');
-    procBtn.disabled = true;
-  } else {
-    bar.classList.remove('hidden');
-    document.getElementById('sel-label').textContent = sel.length + ' bill' + (sel.length > 1 ? 's' : '') + ' selected';
-    document.getElementById('sel-total').textContent = fmtBND(subtotal);
-    procBtn.disabled = false;
-  }
+  const procBtn = document.getElementById('proceed-btn');
+  procBtn.disabled = state.selected.size === 0;
 }
 
 /* ─── STEP 2 → 3 ──────────────────────────────────────── */
@@ -1730,10 +1909,17 @@ function goToReview() {
 
   state.subtotal   = subtotal;
   state.fee        = fee;
+
+  // Auto-fill customer name from logged-in teller if field is empty
+  const payerNameEl = document.getElementById('payer-name');
+  if (!payerNameEl.value && currentUser) {
+    payerNameEl.value = currentUser.name;
+  }
   state.grandTotal = grand;
 
-  // Populate review enquiry ID
-  document.getElementById('review-enquiry-id').textContent = 'ENQ: ' + state.enquiryId;
+  // Populate review enquiry ID (element may have been removed)
+  const reviewEnqEl = document.getElementById('review-enquiry-id');
+  if (reviewEnqEl) reviewEnqEl.textContent = 'ENQ: ' + state.enquiryId;
 
   // Bill lines in review
   const lines = selBills.map(b => `
@@ -1741,15 +1927,24 @@ function goToReview() {
       <div>
         <div class="summary-row-label" style="font-weight:600;">${b.desc}</div>
         <div class="summary-row-sub">${b.id}</div>
+        ${b.partial ? '<div style="font-size:11px;color:var(--green);margin-top:2px;">Partial pay allowed</div>' : ''}
       </div>
-      <div class="summary-row-value">${fmtBND(b.amount)}</div>
+      ${b.partial
+        ? `<div class="partial-input-wrap">
+             <input class="partial-input" type="number" data-id="${b.id}"
+               value="${b.amount.toFixed(2)}" min="0.01" max="${b.amount.toFixed(2)}" step="0.01"
+               oninput="recalcReviewTotal()" />
+             <div class="partial-max">max ${fmtBND(b.amount)}</div>
+           </div>`
+        : `<div class="summary-row-value">${fmtBND(b.amount)}</div>`
+      }
     </div>
   `).join('');
 
   const feeRow = `
     <div class="summary-row">
       <div class="summary-row-label">ePG Service Fee (0.5%)</div>
-      <div class="summary-row-value">${fmtBND(fee)}</div>
+      <div class="summary-row-value" id="review-fee-val">${fmtBND(fee)}</div>
     </div>
   `;
 
@@ -1757,10 +1952,54 @@ function goToReview() {
   document.getElementById('review-grand-total').textContent = fmtBND(grand);
   document.getElementById('confirm-btn-label').textContent = 'Confirm Payment — ' + fmtBND(grand);
 
-  goTo(3);
+  goTo(2);
 }
 
-/* ─── STEP 3: CONFIRM ─────────────────────────────────── */
+/* ─── RECALC TOTALS (partial payment inputs) ──────────── */
+function recalcReviewTotal() {
+  const selBills = state.bills.filter(b => state.selected.has(b.id));
+  let subtotal = 0;
+  let hasError = false;
+
+  selBills.forEach(b => {
+    if (b.partial) {
+      const input = document.querySelector(`.partial-input[data-id="${b.id}"]`);
+      const hintEl = input ? input.closest('.partial-input-wrap').querySelector('.partial-max') : null;
+      const raw = parseFloat(input ? input.value : b.amount) || 0;
+
+      if (raw <= 0) {
+        // Invalid — mark error state
+        if (input) input.classList.add('input-error');
+        if (hintEl) { hintEl.classList.add('error-hint'); hintEl.textContent = 'Amount must be > 0'; }
+        hasError = true;
+        // Still add 0 so totals show clearly broken
+      } else {
+        const clamped = Math.min(raw, b.amount);
+        if (input) input.classList.remove('input-error');
+        if (hintEl) { hintEl.classList.remove('error-hint'); hintEl.textContent = 'max ' + fmtBND(b.amount); }
+        subtotal += clamped;
+      }
+    } else {
+      subtotal += b.amount;
+    }
+  });
+
+  const fee   = subtotal * FEE_RATE;
+  const grand = subtotal + fee;
+  const feeEl   = document.getElementById('review-fee-val');
+  const grandEl = document.getElementById('review-grand-total');
+  const btnEl   = document.getElementById('confirm-btn-label');
+  const confirmBtn = document.getElementById('confirm-btn');
+  if (feeEl)   feeEl.textContent   = fmtBND(fee);
+  if (grandEl) grandEl.textContent = fmtBND(grand);
+  if (btnEl)   btnEl.textContent   = 'Confirm Payment — ' + fmtBND(grand);
+  if (confirmBtn) confirmBtn.disabled = hasError;
+  state.subtotal   = subtotal;
+  state.fee        = fee;
+  state.grandTotal = grand;
+}
+
+/* ─── STEP 2: CONFIRM ─────────────────────────────────── */
 function doConfirm() {
   const name = document.getElementById('payer-name').value.trim();
   const errEl  = document.getElementById('review-error');
@@ -1769,13 +2008,40 @@ function doConfirm() {
   errEl.classList.add('hidden');
   if (!name) { showError(errEl, errMsg, 'Customer name is required.'); return; }
 
+  // Snapshot partial amounts before leaving the review panel
+  recalcReviewTotal();
+  state.bills.forEach(b => {
+    if (b.partial && state.selected.has(b.id)) {
+      const input = document.querySelector(`.partial-input[data-id="${b.id}"]`);
+      if (input) {
+        const raw = parseFloat(input.value) || b.amount;
+        b.paidAmount = Math.max(0.01, Math.min(raw, b.amount));
+      }
+    } else {
+      b.paidAmount = b.amount;
+    }
+  });
+
+  // Bills paid partially → flip to Hold in mock data (outstanding balance remains)
+  state.bills.forEach(b => {
+    if (state.selected.has(b.id) && b.partial && b.paidAmount < b.amount) {
+      b.hold = true;
+      b.partial = false; // no longer partial — now on hold pending full settlement
+      // Mirror into MOCK_BILLS so re-search reflects the updated status
+      for (const key of Object.keys(MOCK_BILLS)) {
+        const match = MOCK_BILLS[key].find(m => m.id === b.id);
+        if (match) { match.hold = true; match.partial = false; }
+      }
+    }
+  });
+
   state.payerName  = name;
   state.payerIC    = document.getElementById('payer-ic').value.trim();
-  state.tenderType = document.getElementById('tender-type').value;
+  state.tenderType = (document.querySelector('input[name="tender-type"]:checked') || {}).value || 'cash';
   state.txnId      = genId('TXN');
   state.timestamp  = nowStr();
 
-  goTo(4);
+  goTo(3);
   document.getElementById('processing-state').style.display = 'block';
   document.getElementById('success-state').style.display    = 'none';
 
@@ -1794,6 +2060,10 @@ function doConfirm() {
 function buildReceipt() {
   const selBills = state.bills.filter(b => state.selected.has(b.id));
   const b        = state.biller;
+
+  // Show SAF notice only for offline SPs
+  const safNotice = document.getElementById('saf-notice');
+  if (safNotice) safNotice.classList.toggle('hidden', b.mode !== 'offline');
 
   // Meta grid
   const meta = [
@@ -1814,14 +2084,19 @@ function buildReceipt() {
     </div>
   `).join('');
 
-  // Bill lines
-  document.getElementById('receipt-tbody').innerHTML = selBills.map(b => `
+  // Bill lines (use paidAmount to reflect partial payments)
+  document.getElementById('receipt-tbody').innerHTML = selBills.map(b => {
+    const paid = b.paidAmount != null ? b.paidAmount : b.amount;
+    const partialNote = b.partial && paid < b.amount
+      ? `<br><span style="font-size:11px;color:var(--text-subtle);">Partial (full: ${fmtBND(b.amount)})</span>`
+      : '';
+    return `
     <tr>
-      <td>${b.desc}</td>
+      <td>${b.desc}${partialNote}</td>
       <td class="bill-ref">${b.ref}</td>
-      <td class="td-right bill-amount">${fmtBND(b.amount)}</td>
-    </tr>
-  `).join('');
+      <td class="td-right bill-amount">${fmtBND(paid)}</td>
+    </tr>`;
+  }).join('');
 
   // Totals
   document.getElementById('receipt-total-block').innerHTML = `
@@ -1838,10 +2113,17 @@ function reset() {
   document.getElementById('search-val').value    = '';
   document.getElementById('payer-name').value    = '';
   document.getElementById('payer-ic').value      = '';
-  document.getElementById('mode-banner').classList.add('hidden');
+  const modeBanner = document.getElementById('mode-banner');
+  if (modeBanner) modeBanner.classList.add('hidden');
   document.getElementById('search-error').classList.add('hidden');
   document.getElementById('review-error').classList.add('hidden');
-  document.getElementById('check-all').checked = false;
+  document.getElementById('saf-notice').classList.add('hidden');
+  document.getElementById('results-section').style.display = 'none';
+  document.getElementById('check-all').checked  = false;
+  const firstSearchRadio = document.querySelector('input[name="search-type"]');
+  if (firstSearchRadio) firstSearchRadio.checked = true;
+  const firstTenderRadio = document.querySelector('input[name="tender-type"]');
+  if (firstTenderRadio) firstTenderRadio.checked = true;
   goTo(1);
 }
 </script>
