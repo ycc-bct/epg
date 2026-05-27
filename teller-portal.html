@@ -541,7 +541,6 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  overflow: hidden;
   transition: box-shadow var(--transition);
 }
 
@@ -795,6 +794,7 @@ input::placeholder { color: var(--text-subtle); opacity: .6; }
 .btn:hover svg.arrow { transform: translateX(2px); }
 .btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: .45; pointer-events: none; }
+.btn-sm { padding: 6px 12px; font-size: 12px; gap: 5px; }
 
 .btn-primary {
   background: var(--accent);
@@ -885,6 +885,7 @@ input::placeholder { color: var(--text-subtle); opacity: .6; }
    ============================================================ */
 .alert {
   display: flex;
+  align-items: center;
   gap: 10px;
   padding: 12px 14px;
   border-radius: var(--radius-sm);
@@ -893,11 +894,12 @@ input::placeholder { color: var(--text-subtle); opacity: .6; }
   margin-top: 14px;
   border: 1px solid transparent;
 }
-.alert svg { flex-shrink: 0; width: 16px; height: 16px; margin-top: 1px; }
+.alert svg { flex-shrink: 0; width: 16px; height: 16px; }
 .alert.hidden { display: none; }
-.alert-error   { background: var(--red-dim);   color: var(--red);   border-color: color-mix(in srgb, var(--red) 25%, white); }
-.alert-success { background: var(--green-dim); color: var(--green); border-color: color-mix(in srgb, var(--green) 25%, white); }
-.alert-info    { background: var(--blue-dim);  color: var(--blue);  border-color: color-mix(in srgb, var(--blue) 25%, white); }
+.alert-error   { background: var(--red-dim);    color: var(--red);    border-color: color-mix(in srgb, var(--red) 25%, white); }
+.alert-success { background: var(--green-dim);  color: var(--green);  border-color: color-mix(in srgb, var(--green) 25%, white); }
+.alert-info    { background: var(--blue-dim);   color: var(--blue);   border-color: color-mix(in srgb, var(--blue) 25%, white); }
+.alert-warning { background: color-mix(in srgb, #CA8A04 10%, white); color: #854D0E; border-color: color-mix(in srgb, #CA8A04 30%, white); }
 
 /* ============================================================
    DEMO HINT
@@ -1422,10 +1424,16 @@ input[type="checkbox"] {
         </div>
 
         <div id="search-error" class="alert alert-error hidden" style="margin-top:12px;">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+          <svg id="search-error-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
           </svg>
-          <span id="search-error-msg"></span>
+          <span id="search-error-msg" style="flex:1;"></span>
+          <button id="search-retry-btn" class="btn btn-sm" onclick="doSearch()" style="display:none;flex-shrink:0;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:13px;height:13px;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+            Retry
+          </button>
         </div>
       </div>
 
@@ -1653,10 +1661,20 @@ input[type="checkbox"] {
     </div>
 
     <div class="fab-panel-section">
-      <div class="fab-panel-title">Demo Bill References</div>
-      <code>ic-01-123456</code> — 2 HDD housing rent bills<br>
-      <code>wewa-acc-88821</code> — 1 water bill (partial pay)<br>
-      <code>abcde-0001-wxyz-0099</code> — 1 HDD bill by invoice ref
+      <div class="fab-panel-title">Offline SP — HDD</div>
+      <code>ic-01-123456</code> IC No. · 3 bills (outstanding, partial, hold)<br>
+      <code>abcde-0001-wxyz-0099</code> Invoice Ref · 3 bills
+    </div>
+
+    <div class="fab-panel-section">
+      <div class="fab-panel-title">Online SP — WEWA</div>
+      <code>wewa-acc-88821</code> Account No. · 3 bills (outstanding, partial, hold)
+    </div>
+
+    <div class="fab-panel-section">
+      <div class="fab-panel-title">Hybrid SP — JPN</div>
+      <code>jpn-ref-00441</code> · 3 bills (DB hit, normal flow)<br>
+      <code>__hybrid_timeout__</code> · simulates SP server unreachable
     </div>
 
   </div>
@@ -1777,6 +1795,14 @@ const MOCK_BILLS = {
     { id:'HDD-2025-00012', ref:'ABCDE-0001-WXYZ-0100', desc:'Housing Maintenance — Q1', sp:'HDD', amount:85.00,  due:'2025-03-31', period:'Jan – Mar 2025', partial:true,  hold:false },
     { id:'HDD-2025-00013', ref:'ABCDE-0001-WXYZ-0101', desc:'Housing Rent — Apr 2025',  sp:'HDD', amount:350.00, due:'2025-04-30', period:'April 2025', partial:false, hold:true  },
   ],
+  // JPN (Hybrid) — normal bills found in ePG DB
+  'jpn-ref-00441': [
+    { id:'JPN-2025-00441', ref:'JPN-REF-00441', desc:'e-Darussalam Portal Fee — Apr 2025', sp:'JPN', amount:15.00, due:'2025-04-30', period:'April 2025', partial:false, hold:false },
+    { id:'JPN-2025-00442', ref:'JPN-REF-00442', desc:'e-Darussalam SMS Service — Q1 2025', sp:'JPN', amount:8.50,  due:'2025-03-31', period:'Jan – Mar 2025', partial:true,  hold:false },
+    { id:'JPN-2025-00443', ref:'JPN-REF-00443', desc:'e-Darussalam Registration Fee',      sp:'JPN', amount:25.00, due:'2025-05-15', period:'2025',          partial:false, hold:true  },
+  ],
+  // Sentinel key — triggers Hybrid SP server timeout scenario (DB miss + API unreachable)
+  '__hybrid_timeout__': null,
 };
 
 const BILLER_INFO = {
@@ -1868,7 +1894,6 @@ function renderBillerList(filter) {
   list.innerHTML = items.map(([id, b]) => `
     <div class="biller-option${current === id ? ' active' : ''}" onclick="selectBiller('${id}')">
       <span class="biller-option-name">${b.name}</span>
-      <span class="biller-option-short">${b.short}</span>
       <span class="chip chip-${b.mode}" style="flex-shrink:0;">${b.mode.charAt(0).toUpperCase() + b.mode.slice(1)}</span>
     </div>
   `).join('');
@@ -1937,48 +1962,91 @@ function scheduleAutoSearch() {
 }
 
 /* ─── STEP 1: SEARCH ──────────────────────────────────── */
+function showSearchWarning(errEl, msg) {
+  errEl.className = 'alert alert-warning';
+  errEl.style.marginTop = '12px';
+  document.getElementById('search-error-icon').innerHTML =
+    '<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />';
+  document.getElementById('search-error-msg').textContent = msg;
+  document.getElementById('search-retry-btn').style.display = 'inline-flex';
+  errEl.classList.remove('hidden');
+}
+
+function showSearchError(errEl, msg) {
+  errEl.className = 'alert alert-error';
+  errEl.style.marginTop = '12px';
+  document.getElementById('search-error-icon').innerHTML =
+    '<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />';
+  document.getElementById('search-error-msg').textContent = msg;
+  document.getElementById('search-retry-btn').style.display = 'none';
+  errEl.classList.remove('hidden');
+}
+
 function doSearch() {
   const billerId = document.getElementById('biller-select').value;
   const val      = document.getElementById('search-val').value.trim();
   const errEl    = document.getElementById('search-error');
-  const errMsg   = document.getElementById('search-error-msg');
   const valInput = document.getElementById('search-val');
 
   errEl.classList.add('hidden');
+  document.getElementById('search-retry-btn').style.display = 'none';
 
-  if (!billerId) { showError(errEl, errMsg, 'Please select a Service Provider.'); return; }
-  if (!val)      { showError(errEl, errMsg, 'Please enter a reference value.'); return; }
+  if (!billerId) { showSearchError(errEl, 'Please select a Service Provider.'); return; }
+  if (!val)      { showSearchError(errEl, 'Please enter a reference value.'); return; }
 
   const biller = BILLER_INFO[billerId];
-  const delay  = biller.mode === 'online' ? 1800 : biller.mode === 'hybrid' ? 1300 : 700;
+  const key    = val.toLowerCase();
+  const dbHit  = MOCK_BILLS[key]; // null = explicit timeout sentinel, undefined = not in mock data
 
-  // Loading state on input
+  // Phase 1: DB lookup
+  const dbDelay = biller.mode === 'offline' ? 700 : 600;
   valInput.disabled = true;
   valInput.style.opacity = '.5';
 
   setTimeout(() => {
+    // Hybrid SP + DB miss → attempt bill server
+    if (biller.mode === 'hybrid' && (dbHit === undefined || dbHit === null)) {
+      // Show intermediate state: querying SP server
+      valInput.style.opacity = '.3';
+
+      const spDelay = 2200; // simulate slower SP server round-trip
+      setTimeout(() => {
+        valInput.disabled = false;
+        valInput.style.opacity = '';
+
+        if (dbHit === null) {
+          // Sentinel key — simulate timeout / unreachable
+          showSearchWarning(errEl,
+            'Unable to reach the biller server. Bill data may not have been synced yet. Please try again or contact the Service Provider.');
+          document.getElementById('results-section').style.display = 'none';
+        } else {
+          // DB miss + SP also has no data
+          showSearchError(errEl, 'No outstanding bills found. Please verify the reference and try again.');
+          document.getElementById('results-section').style.display = 'none';
+        }
+      }, spDelay);
+      return;
+    }
+
+    // Normal path: offline / online / hybrid DB hit
     valInput.disabled = false;
     valInput.style.opacity = '';
 
-    const key   = val.toLowerCase();
-    const bills = MOCK_BILLS[key];
-
-    if (!bills || bills.length === 0) {
-      showError(errEl, errMsg, 'No outstanding bills found. Please verify the reference and try again.');
+    if (!dbHit || dbHit.length === 0) {
+      showSearchError(errEl, 'No outstanding bills found. Please verify the reference and try again.');
       document.getElementById('results-section').style.display = 'none';
       return;
     }
 
     state.biller    = biller;
-    state.bills     = bills;
+    state.bills     = dbHit;
     state.selected  = new Set();
     state.enquiryId = genId('ENQ');
 
     renderResults();
     document.getElementById('results-section').style.display = '';
-    // Scroll to results
     document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, delay);
+  }, dbDelay);
 }
 
 function clearResults() {
@@ -2129,16 +2197,18 @@ function recalcReviewTotal() {
       const raw = parseFloat(input ? input.value : b.amount) || 0;
 
       if (raw <= 0) {
-        // Invalid — mark error state
         if (input) input.classList.add('input-error');
         if (hintEl) { hintEl.classList.add('error-hint'); hintEl.textContent = 'Amount must be > 0'; }
         hasError = true;
-        // Still add 0 so totals show clearly broken
+      } else if (raw > b.amount) {
+        if (input) input.classList.add('input-error');
+        if (hintEl) { hintEl.classList.add('error-hint'); hintEl.textContent = `Cannot exceed ${fmtBND(b.amount)}`; }
+        hasError = true;
+        subtotal += b.amount; // still count max so totals remain meaningful
       } else {
-        const clamped = Math.min(raw, b.amount);
         if (input) input.classList.remove('input-error');
         if (hintEl) { hintEl.classList.remove('error-hint'); hintEl.textContent = 'max ' + fmtBND(b.amount); }
-        subtotal += clamped;
+        subtotal += raw;
       }
     } else {
       subtotal += b.amount;
@@ -2280,6 +2350,7 @@ function reset() {
   const modeBanner = document.getElementById('mode-banner');
   if (modeBanner) modeBanner.classList.add('hidden');
   document.getElementById('search-error').classList.add('hidden');
+  document.getElementById('search-retry-btn').style.display = 'none';
   document.getElementById('review-error').classList.add('hidden');
   document.getElementById('saf-notice').classList.add('hidden');
   document.getElementById('results-section').style.display = 'none';
