@@ -1,0 +1,3635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ePG Admin — Entity Management</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+/* ============================================================
+   DESIGN TOKENS — aligned with teller-portal.html / index.html
+   Admin accent: #2E75B6 (blue)
+   ============================================================ */
+:root {
+  --bg:            #F0F4F8;
+  --surface:       #FFFFFF;
+  --border:        #E2E8F0;
+  --border-strong: #CBD5E1;
+  --text:          #0F172A;
+  --text-muted:    #475569;
+  --text-subtle:   #64748B;
+  --chip-bg:       #F1F5F9;
+
+  /* Admin accent (blue) */
+  --accent:        #2E75B6;
+  --accent-dim:    color-mix(in srgb, #2E75B6 10%, white);
+  --accent-border: color-mix(in srgb, #2E75B6 25%, white);
+  --accent-text:   color-mix(in srgb, #2E75B6 80%, #0F172A);
+  --accent-strong: #1a5fa0;
+
+  /* Semantic */
+  --green:         #1D7A4E;
+  --green-dim:     color-mix(in srgb, #1D7A4E 10%, white);
+  --red:           #C8102E;
+  --red-dim:       color-mix(in srgb, #C8102E 10%, white);
+  --amber:         #CA8A04;
+  --amber-dim:     color-mix(in srgb, #CA8A04 10%, white);
+
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+
+  --shadow-sm:  0 1px 2px rgba(15,23,42,.04);
+  --shadow-md:  0 4px 12px rgba(15,23,42,.06);
+  --shadow-lg:  0 16px 40px rgba(15,23,42,.10);
+
+  --transition: .2s cubic-bezier(.2,.8,.2,1);
+}
+
+/* ============================================================
+   RESET + BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+#app { display: flex; min-height: 100vh; }
+
+/* ============================================================
+   SIDEBAR — light surface, blue admin accent
+   ============================================================ */
+.sidebar {
+  width: 240px;
+  min-width: 240px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 50;
+  overflow-y: auto;
+}
+.sb-logo {
+  padding: 18px 18px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sb-logo-mark {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent) 0%, #1a5fa0 100%);
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .03em;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.sb-logo-text { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.2; letter-spacing: -.01em; }
+.sb-logo-sub  { font-size: 10.5px; color: var(--text-subtle); letter-spacing: .12em; text-transform: uppercase; margin-top: 2px; font-weight: 600; }
+
+.sb-section {
+  padding: 18px 18px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  color: var(--text-subtle);
+  text-transform: uppercase;
+}
+.sb-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 18px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  border-left: 3px solid transparent;
+  transition: background var(--transition), color var(--transition);
+  user-select: none;
+  gap: 8px;
+}
+.sb-item:hover { background: var(--chip-bg); color: var(--text); }
+.sb-item.active-parent { background: var(--accent-dim); color: var(--accent-text); }
+.sb-item.sb-item-disabled,
+.sb-sub-item.sb-sub-item-disabled {
+  color: var(--text-subtle);
+  cursor: not-allowed;
+  opacity: .5;
+  pointer-events: none;
+}
+.sb-item-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.sb-sub { background: color-mix(in srgb, var(--bg) 60%, white); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.sb-sub-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 18px 8px 38px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  border-left: 3px solid transparent;
+  transition: background var(--transition), color var(--transition);
+  user-select: none;
+}
+.sb-sub-item:hover { background: var(--chip-bg); color: var(--text); }
+.sb-sub-item.active {
+  color: var(--accent);
+  font-weight: 600;
+  border-left-color: var(--accent);
+  background: var(--accent-dim);
+}
+.sb-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; background: var(--border-strong); }
+.sb-dot.on { background: var(--accent); }
+.sb-chevron { flex-shrink: 0; opacity: .55; transition: transform var(--transition); display: flex; }
+.sb-chevron.open { transform: rotate(180deg); }
+.sb-footer {
+  margin-top: auto;
+  padding: 16px 18px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sb-footer svg { color: var(--text-subtle); }
+.sb-footer-txt { font-size: 11.5px; color: var(--text-subtle); }
+.sb-footer-txt strong { display: block; color: var(--text); font-size: 12.5px; margin-top: 1px; font-weight: 600; }
+
+/* ============================================================
+   MAIN LAYOUT
+   ============================================================ */
+.main-wrapper {
+  margin-left: 240px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Topbar — sticky translucent header pattern from teller-portal */
+.topbar {
+  background: rgba(255,255,255,.85);
+  backdrop-filter: saturate(140%) blur(10px);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  min-height: 56px;
+}
+.breadcrumb {
+  font-size: 13px;
+  color: var(--text-subtle);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+}
+.bc-link {
+  color: var(--text-subtle);
+  cursor: pointer;
+  text-decoration: none;
+  transition: color var(--transition);
+}
+.bc-link:hover { color: var(--text); }
+.bc-sep { margin: 0 8px; opacity: .4; }
+.bc-cur { color: var(--text); font-weight: 600; }
+.topbar-right {
+  font-size: 12px;
+  color: var(--text-subtle);
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+.page-header { padding: 32px 32px 0; }
+.page-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+  letter-spacing: -.02em;
+}
+.page-chip {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-text);
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  margin-top: 10px;
+}
+.main-content {
+  padding: 20px 32px 64px;
+  flex: 1;
+  max-width: 1280px;
+  width: 100%;
+}
+
+/* ============================================================
+   STEPPER
+   ============================================================ */
+.stepper-wrap {
+  display: flex;
+  align-items: flex-start;
+  padding: 8px 0 28px;
+  overflow-x: auto;
+}
+.step-item { display: flex; align-items: flex-start; flex: 1; min-width: 0; }
+.step-node { display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; width: 84px; }
+.step-circle {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-subtle);
+  flex-shrink: 0;
+  transition: all var(--transition);
+}
+.step-circle.done {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+.step-circle.done:hover { filter: brightness(.95); box-shadow: 0 0 0 4px var(--accent-dim); }
+.step-circle.active {
+  background: var(--surface);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-dim);
+}
+.step-circle.pending {
+  background: var(--surface);
+  border-color: var(--border-strong);
+  color: var(--text-subtle);
+  cursor: default;
+}
+.step-lbl {
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.3;
+  max-width: 80px;
+  white-space: pre-line;
+  color: var(--text-subtle);
+  transition: color var(--transition);
+}
+.step-lbl.done   { color: var(--text); }
+.step-lbl.active { color: var(--text); font-weight: 700; }
+.step-lbl.pending{ color: var(--text-subtle); opacity: .7; }
+.step-conn {
+  flex: 1;
+  height: 2px;
+  margin: 16px 4px 0;
+  min-width: 6px;
+  background: var(--border-strong);
+  transition: background var(--transition);
+}
+.step-conn.done    { background: var(--accent); }
+.step-conn.pending { background: var(--border-strong); }
+
+/* ============================================================
+   TABS
+   ============================================================ */
+.tab-bar {
+  display: flex;
+  align-items: flex-end;
+  border-bottom: 1px solid var(--border);
+}
+.tab-item {
+  padding: 11px 18px;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-subtle);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color var(--transition), border-color var(--transition);
+  user-select: none;
+  white-space: nowrap;
+}
+.tab-item:hover { color: var(--text); }
+.tab-item.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-bar-actions { margin-left: auto; padding: 6px 0 8px; }
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 24px 26px;
+  margin-bottom: 16px;
+  transition: box-shadow var(--transition);
+}
+.card-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; letter-spacing: -.01em; }
+.card-sub   { font-size: 13px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.55; }
+.card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.step-content { animation: fadeUp .22s ease both; padding-bottom: 80px; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Optional section label accent (matches teller-portal section-label vibe) */
+.card-title-accent {
+  position: relative;
+  padding-left: 12px;
+}
+.card-title-accent::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 3px; height: 14px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+.tbl-wrap {
+  overflow-x: auto;
+  margin: 0 -26px;
+  padding: 0 26px;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.data-table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-subtle);
+  background: var(--chip-bg);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.data-table td {
+  padding: 12px 14px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tbody tr { transition: background var(--transition); }
+.data-table tbody tr:hover td { background: var(--chip-bg); }
+.tbl-name  { font-weight: 600; color: var(--text); }
+.tbl-name-link {
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  display: inline-block;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  border-radius: 4px;
+  transition: background var(--transition);
+}
+.tbl-name-link:hover { background: var(--chip-bg); }
+
+/* Bill Data Mode pill badge */
+.bdm-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 100px;
+  letter-spacing: .02em;
+}
+.bdm-badge.bdm-offline { background: #F1F5F9; color: #475569; }
+.bdm-badge.bdm-online  { background: #EFF6FF; color: #2E75B6; }
+.bdm-badge.bdm-hybrid  { background: #F3F0FF; color: #6D28D9; }
+
+/* Fee Structure pill badge */
+.fs-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 100px;
+  letter-spacing: .02em;
+}
+.fs-badge.fs-tiered     { background: #F0FDF4; color: #166534; }
+.fs-badge.fs-percentage { background: #FFF7ED; color: #9A3412; }
+.fs-badge.fs-fixed      { background: #F8FAFC; color: #475569; }
+
+/* Service / channel tag chips for table cells — all tags shown with wrapping */
+.svc-tags {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.svc-tag {
+  font-size: 11px;
+  background: var(--chip-bg);
+  border: 0.5px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Detail page header — entity name + meta + Edit button */
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+.detail-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.detail-entity-id {
+  font-size: 12px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--text-subtle);
+  letter-spacing: .03em;
+}
+.detail-proposed-tag {
+  font-size: 11px;
+  color: var(--text-subtle);
+  font-style: italic;
+}
+.detail-back-link {
+  margin-top: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.svc-disabled .si-name { color: var(--text-subtle); }
+.svc-disabled .si-desc { color: var(--text-subtle); opacity: .7; }
+.svc-disabled .chk    { opacity: .5; }
+.tbl-mono  { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--text-muted); }
+.tbl-muted { color: var(--text-subtle); font-size: 12.5px; }
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 56px 20px 48px;
+  text-align: center;
+}
+.empty-icon  { font-size: 52px; margin-bottom: 14px; line-height: 1; opacity: .85; }
+.empty-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.empty-desc  { font-size: 13px; color: var(--text-muted); max-width: 380px; line-height: 1.65; margin-bottom: 20px; }
+
+/* ============================================================
+   BADGES & TAGS
+   ============================================================ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  border: 1px solid transparent;
+}
+.badge-active   { background: var(--green-dim); color: var(--green); border-color: color-mix(in srgb, var(--green) 25%, white); }
+.badge-inactive { background: var(--chip-bg); color: var(--text-muted); border-color: var(--border-strong); }
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  border: 1px solid transparent;
+}
+.tag-blue   { background: var(--accent-dim); color: var(--accent-text); border-color: var(--accent-border); }
+.tag-green  { background: var(--green-dim); color: var(--green); border-color: color-mix(in srgb, var(--green) 25%, white); }
+.tag-purple { background: color-mix(in srgb, #7C3AED 10%, white); color: #5B21B6; border-color: color-mix(in srgb, #7C3AED 25%, white); }
+
+/* ============================================================
+   TOOLBAR
+   ============================================================ */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.search-box {
+  padding: 9px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  width: 260px;
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.search-box::placeholder { color: var(--text-subtle); opacity: .7; }
+.search-box:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+.filter-sel {
+  padding: 9px 30px 9px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748B' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.filter-sel:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+/* ============================================================
+   FORMS
+   ============================================================ */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 22px;
+}
+.fg { display: flex; flex-direction: column; gap: 6px; position: relative; }
+.fg.full { grid-column: 1/-1; }
+/* Demo auto-fill: hover hint shown on required fields */
+.demo-hint {
+  position: absolute;
+  top: 1px;
+  right: 0;
+  font-size: 10px;
+  color: var(--text-subtle);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s ease;
+  font-style: italic;
+  letter-spacing: .01em;
+}
+.fg:hover .demo-hint { opacity: .6; }
+/* Demo auto-fill: green flash after dblclick fills the input */
+.fi.demo-filled, .fsel.demo-filled {
+  border-color: #1D7A4E !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #1D7A4E 18%, transparent) !important;
+  transition: border-color .25s ease, box-shadow .25s ease;
+}
+.fl {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.req { color: var(--red); margin-left: 2px; }
+.fi, .fsel {
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  background: var(--surface);
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.fi::placeholder { color: var(--text-subtle); opacity: .6; }
+.fi:focus, .fsel:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+.fi.err { border-color: var(--red); }
+.fi.err:focus { box-shadow: 0 0 0 3px var(--red-dim); }
+.fsel {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748B' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+  cursor: pointer;
+}
+.fsel.err { border-color: var(--red); }
+.ferr  { font-size: 12px; color: var(--red); margin-top: 2px; font-weight: 500; }
+.fhint { font-size: 12px; color: var(--text-subtle); line-height: 1.5; margin-top: 2px; }
+.val-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--red-dim);
+  border: 1px solid color-mix(in srgb, var(--red) 25%, white);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--red);
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+/* ============================================================
+   INLINE RADIO BUTTONS (simple non-card variant)
+   ============================================================ */
+.radio-group { display: flex; }
+.radio-group-row { flex-direction: row;    flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 4px; }
+.radio-group-col { flex-direction: column; gap: 12px; margin-top: 4px; }
+.radio-opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+.radio-opt input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0; height: 0;
+}
+.radio-opt-dot {
+  width: 16px; height: 16px;
+  border: 2px solid var(--border-strong);
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 2px;
+  position: relative;
+  background: var(--surface);
+  transition: border-color var(--transition);
+}
+.radio-opt:hover .radio-opt-dot { border-color: var(--accent-border); }
+.radio-opt.selected .radio-opt-dot { border-color: var(--accent); }
+.radio-opt.selected .radio-opt-dot::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.radio-opt-label { font-size: 14px; color: var(--text); line-height: 1.4; font-weight: 500; }
+.radio-opt-desc  { font-size: 12px; color: var(--text-subtle); margin-top: 3px; line-height: 1.5; }
+
+/* ============================================================
+   RADIO CARDS (e.g. Bill Data Mode selector)
+   ============================================================ */
+.section-hint {
+  font-size: 13px;
+  color: var(--text-subtle);
+  line-height: 1.55;
+  margin-bottom: 12px;
+}
+.radio-card-group {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.radio-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
+  user-select: none;
+}
+.radio-card:hover {
+  border-color: var(--accent-border);
+  background: color-mix(in srgb, var(--accent) 4%, white);
+}
+.radio-card.selected {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.radio-card-dot {
+  width: 18px; height: 18px;
+  border: 2px solid var(--border-strong);
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 2px;
+  position: relative;
+  background: var(--surface);
+  transition: border-color var(--transition);
+}
+.radio-card.selected .radio-card-dot { border-color: var(--accent); }
+.radio-card.selected .radio-card-dot::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.radio-card-body { min-width: 0; }
+.radio-card-title   { font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 4px; letter-spacing: -.005em; }
+.radio-card-desc    { font-size: 12.5px; color: var(--text-muted); line-height: 1.55; }
+.radio-card-subdesc { font-size: 12px; color: var(--text-subtle); line-height: 1.55; margin-top: 6px; }
+.radio-card:hover { box-shadow: var(--shadow-sm); }
+@media (max-width: 720px) { .radio-card-group { grid-template-columns: 1fr; } }
+
+/* ============================================================
+   SERVICES / CHANNELS
+   ============================================================ */
+/* ─── Step 1 section grouping ─── */
+.section-block { margin-bottom: 4px; }
+.section-header {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  color: var(--text-subtle);
+  text-transform: uppercase;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.section-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 24px 0;
+}
+.contact-sub-header {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  color: var(--text-subtle);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+/* Hierarchy Level Names sub-block (right column) */
+.level-names-block {
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  max-height: 260px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.level-names-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* Generic collapsible wrapper (for Step 3 inline paths) */
+.collapsible {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .2s ease;
+}
+.collapsible.open { grid-template-rows: 1fr; }
+.collapsible > .collapsible-content { overflow: hidden; min-height: 0; }
+
+/* Inline paths block under Bulk File Upload */
+.inline-paths-block {
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin: 8px 0 8px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.svc-group { margin-bottom: 22px; }
+.svc-group-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--text-subtle);
+  margin-bottom: 6px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.svc-group-desc {
+  font-size: 13px;
+  color: var(--text-subtle);
+  line-height: 1.55;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+.svc-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition);
+  user-select: none;
+}
+.svc-item:hover { background: var(--chip-bg); }
+.chk {
+  width: 18px; height: 18px;
+  border: 2px solid var(--border-strong);
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  transition: background var(--transition), border-color var(--transition);
+}
+.chk.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.si-name { font-size: 13.5px; font-weight: 600; color: var(--text); }
+.si-desc { font-size: 12px; color: var(--text-subtle); margin-top: 2px; line-height: 1.5; }
+.tbc-tag {
+  font-size: 11px;
+  color: #F59E0B;
+  font-weight: 500;
+  margin-left: 6px;
+  letter-spacing: .03em;
+}
+
+/* ============================================================
+   BANK ACCOUNTS
+   ============================================================ */
+.acct-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  margin-bottom: 14px;
+  background: color-mix(in srgb, var(--bg) 50%, white);
+}
+.acct-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.acct-num { font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: -.01em; }
+
+/* ============================================================
+   FEE TIERS
+   ============================================================ */
+.tier-row { display: grid; grid-template-columns: 1fr 1fr 1fr 32px; gap: 12px; align-items: end; margin-bottom: 10px; }
+
+/* ============================================================
+   REVIEW BLOCKS
+   ============================================================ */
+.rv-block {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: 14px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.rv-block-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--chip-bg);
+  border-bottom: 1px solid var(--border);
+}
+.rv-block-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-subtle);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rv-block-title::before {
+  content: "";
+  width: 3px; height: 14px;
+  border-radius: 2px;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+.rv-block-body { padding: 16px; }
+.rv-edit {
+  font-size: 12.5px;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 600;
+  background: none;
+  border: none;
+  font-family: inherit;
+  padding: 0;
+  transition: color var(--transition);
+}
+.rv-edit:hover { color: var(--accent-strong); text-decoration: underline; }
+.rv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 24px; }
+.rv-row  { display: flex; flex-direction: column; gap: 3px; }
+.rv-lbl {
+  font-size: 10px;
+  color: var(--text-subtle);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+.rv-val { font-size: 13.5px; color: var(--text); font-weight: 600; }
+.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  transition: filter var(--transition), transform var(--transition), box-shadow var(--transition), background var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: .45; pointer-events: none; }
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text-muted);
+  border: 1px solid var(--border-strong);
+}
+.btn-secondary:hover { background: var(--chip-bg); color: var(--text); border-color: var(--accent-border); }
+.btn-success {
+  background: var(--green);
+  color: #fff;
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--green) 40%, transparent);
+}
+.btn-success:hover { filter: brightness(1.08); box-shadow: 0 4px 12px color-mix(in srgb, var(--green) 30%, transparent); }
+.btn-ghost-danger {
+  background: none;
+  border: none;
+  color: var(--red);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  transition: opacity var(--transition);
+}
+.btn-ghost-danger:hover { text-decoration: underline; opacity: .8; }
+.btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--accent-dim);
+  color: var(--accent-text);
+  border: 1px dashed var(--accent-border);
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+  font-family: inherit;
+}
+.btn-add:hover { background: color-mix(in srgb, var(--accent) 16%, white); border-color: var(--accent); }
+
+/* Text-style add button — no border, just blue text with underline on hover */
+.btn-add-text {
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  padding: 4px 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color var(--transition);
+}
+.btn-add-text:hover { color: var(--accent-strong); text-decoration: underline; }
+.btn-add-text:focus-visible { outline: none; color: var(--accent-strong); text-decoration: underline; }
+
+/* Solid outline button — blue border + blue text on transparent */
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--transition), color var(--transition), box-shadow var(--transition);
+}
+.btn-outline:hover { background: var(--accent-dim); }
+.btn-outline:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent-dim); }
+
+/* Disabled ghost-danger (for last Remove button) */
+.btn-ghost-danger:disabled,
+.btn-ghost-danger[disabled] {
+  color: var(--text-subtle);
+  opacity: .6;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+.btn-ghost-danger:disabled:hover { text-decoration: none; }
+.remove-hint {
+  font-size: 11.5px;
+  color: var(--text-subtle);
+  font-style: italic;
+}
+/* Sticky bottom action bar — spans the card edges via negative horizontal margin,
+   stays anchored to the viewport bottom while scrolling long forms. */
+.step-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  bottom: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 16px 24px;
+  margin: 24px -26px -24px;
+  border-bottom-left-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
+  z-index: 10;
+}
+.tbl-btn {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-weight: 500;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+.tbl-btn:hover { background: var(--chip-bg); color: var(--text); border-color: var(--accent-border); }
+
+/* ============================================================
+   SUCCESS SCREEN
+   ============================================================ */
+.success-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 20px;
+  text-align: center;
+  animation: fadeUp .3s ease;
+}
+.success-icon {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: var(--green-dim);
+  border: 1px solid color-mix(in srgb, var(--green) 25%, white);
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+.success-title { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 6px; letter-spacing: -.02em; }
+.eid-badge {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  padding: 8px 22px;
+  border-radius: var(--radius-sm);
+  margin: 12px 0;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  letter-spacing: .1em;
+}
+.success-desc { font-size: 13.5px; color: var(--text-muted); max-width: 540px; line-height: 1.75; margin: 8px 0 24px; }
+.success-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+/* ============================================================
+   PORTAL OWNER
+   ============================================================ */
+.po-saved-banner {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: var(--green-dim);
+  border: 1px solid color-mix(in srgb, var(--green) 25%, white);
+  border-radius: var(--radius-sm);
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.po-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 24px; margin-top: 4px; }
+.empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 36px 20px;
+  text-align: center;
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  gap: 10px;
+  margin-bottom: 20px;
+  background: color-mix(in srgb, var(--bg) 50%, white);
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: #fff;
+  padding: 12px 22px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 500;
+  z-index: 9999;
+  box-shadow: var(--shadow-lg);
+  animation: toastIn .22s ease;
+}
+@keyframes toastIn {
+  from { transform: translateX(-50%) translateY(10px); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  .sidebar { width: 220px; min-width: 220px; }
+  .main-wrapper { margin-left: 220px; }
+  .page-header { padding: 24px 24px 0; }
+  .main-content { padding: 16px 24px 56px; }
+  .topbar { padding: 12px 24px; }
+  .form-grid, .po-grid, .rv-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+/* ════════════════════════════════
+   SVG ICONS
+   ════════════════════════════════ */
+const CheckSVG = ({ s = 12 }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+);
+const ChevronSVG = ({ open }) => (
+  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+    <polyline points={open ? "18 15 12 9 6 15" : "6 9 12 15 18 9"}/>
+  </svg>
+);
+const NavIco = ({ d }) => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0, opacity: .85 }}>
+    <path d={d}/>
+  </svg>
+);
+
+/* ════════════════════════════════
+   SIDEBAR
+   ════════════════════════════════ */
+const NAV_ITEMS = [
+  { id: 'dashboard', label: 'Dashboard',          disabled: true, d: 'M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z' },
+  { id: 'entity',    label: 'Entity Management',  d: 'M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z',
+    sub: [{ id: 'billers', label: 'Billers' }, { id: 'fe', label: 'Fulfillments' }] },
+  { id: 'gl',        label: 'GL Mapping',         disabled: true, d: 'M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z' },
+  { id: 'recon',     label: 'Reconciliation',     disabled: true, d: 'M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z' },
+  { id: 'audit',     label: 'Audit Log',          disabled: true, d: 'M9 5H7c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2h-2c0-1.1-.9-2-2-2s-2 .9-2 2zm2 0c0-.55.45-1 1-1s1 .45 1 1v1H11V5zM7 9h10v10H7V9z' },
+  { id: 'settings',  label: 'System Settings',    disabled: true, d: 'M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z',
+    sub: [{ id: 'portal-owner', label: 'Portal Owner', disabled: true }, { id: 'floating', label: 'Floating Period', disabled: true }, { id: 'holidays', label: 'Holidays', disabled: true }] },
+];
+
+const Sidebar = ({ page, tab, onNav, expanded, onToggle }) => {
+  const isSubActive = (sid) => {
+    if (sid === 'billers')       return page === 'list' && tab === 'billers';
+    if (sid === 'fe')            return page === 'list' && tab === 'fe';
+    if (sid === 'portal-owner')  return page === 'portal';
+    return false;
+  };
+  const isParentActive = (nid) => {
+    if (nid === 'entity')   return page === 'list' || page === 'biller' || page === 'fe'
+                                || page === 'biller-detail' || page === 'fe-detail'
+                                || page === 'biller-edit'   || page === 'fe-edit';
+    if (nid === 'settings') return page === 'portal';
+    return false;
+  };
+  return (
+    <div className="sidebar">
+      <div className="sb-logo">
+        <div className="sb-logo-mark">e</div>
+        <div>
+          <div className="sb-logo-text">PG Admin</div>
+          <div className="sb-logo-sub">Portal</div>
+        </div>
+      </div>
+      <div className="sb-section">Navigation</div>
+      {NAV_ITEMS.map(n => (
+        <div key={n.id}>
+          <div className={`sb-item${isParentActive(n.id) ? ' active-parent' : ''}${n.disabled ? ' sb-item-disabled' : ''}`}
+            onClick={n.disabled ? undefined : () => {
+              if (n.sub) onToggle(n.id);
+              if (n.id === 'entity') onNav('list');
+            }}>
+            <div className="sb-item-left">
+              <NavIco d={n.d}/>
+              {n.label}
+            </div>
+            {n.sub && !n.disabled && <span className={`sb-chevron${expanded[n.id] ? ' open' : ''}`}><ChevronSVG open={expanded[n.id]}/></span>}
+          </div>
+          {n.sub && expanded[n.id] && !n.disabled && (
+            <div className="sb-sub">
+              {n.sub.map(s => (
+                <div key={s.id} className={`sb-sub-item${isSubActive(s.id) ? ' active' : ''}${s.disabled ? ' sb-sub-item-disabled' : ''}`}
+                  onClick={s.disabled ? undefined : () => {
+                    if (s.id === 'billers')      onNav('list', 'billers');
+                    if (s.id === 'fe')           onNav('list', 'fe');
+                    if (s.id === 'portal-owner') onNav('portal');
+                  }}>
+                  <span className={`sb-dot${isSubActive(s.id) ? ' on' : ''}`}/>
+                  {s.label}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+      <div className="sb-footer">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="rgba(255,255,255,0.45)">
+          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        </svg>
+        <div className="sb-footer-txt">Logged in as<strong>ePG Administrator</strong></div>
+      </div>
+    </div>
+  );
+};
+
+/* ════════════════════════════════
+   TOPBAR & PAGE HEADER
+   ════════════════════════════════ */
+const Topbar = ({ crumbs }) => (
+  <div className="topbar">
+    <div className="breadcrumb">
+      {crumbs.map((c, i) => (
+        <span key={i} style={{ display: 'flex', alignItems: 'center' }}>
+          {i > 0 && <span className="bc-sep">›</span>}
+          {c.onClick
+            ? <span className="bc-link" onClick={c.onClick}>{c.label}</span>
+            : <span className="bc-cur">{c.label}</span>}
+        </span>
+      ))}
+    </div>
+    <div className="topbar-right">ePG Admin System v2.6</div>
+  </div>
+);
+
+/* ════════════════════════════════
+   STEPPER
+   ════════════════════════════════ */
+const Stepper = ({ steps, current, maxReached = Infinity, onStepClick }) => (
+  <div className="stepper-wrap">
+    {steps.map((lbl, i) => {
+      const st = i < current ? 'done' : i === current ? 'active' : 'pending';
+      // Click is allowed for any step the user has previously reached
+      // (regardless of visual class — pending steps the user has visited
+      // can still be revisited). Visuals stay identical to spec.
+      const clickable = i <= maxReached && i !== current;
+      return (
+        <div key={i} className="step-item">
+          <div className="step-node">
+            <div className={`step-circle ${st}`}
+              onClick={clickable ? () => onStepClick(i) : undefined}
+              style={{ cursor: clickable ? 'pointer' : 'default' }}
+              title={clickable ? `Go to ${lbl.replace('\n', ' ')}` : ''}>
+              {st === 'done' ? <CheckSVG s={12}/> : i + 1}
+            </div>
+            <div className={`step-lbl ${st}`}>{lbl}</div>
+          </div>
+          {i < steps.length - 1 && <div className={`step-conn ${st === 'done' ? 'done' : 'pending'}`}/>}
+        </div>
+      );
+    })}
+  </div>
+);
+
+/* ════════════════════════════════
+   SHARED FORM ATOMS
+   ════════════════════════════════ */
+const FI = ({ label, req: required, type = 'text', value, onChange, error, placeholder, hint, id, name }) => (
+  <div className="fg">
+    <label className="fl" htmlFor={id}>{label}{required && <span className="req">*</span>}</label>
+    {required && <span className="demo-hint">double-click to fill</span>}
+    <input type={type} value={value || ''} placeholder={placeholder || ''}
+      id={id} name={name || id}
+      className={`fi${error ? ' err' : ''}`}
+      onChange={e => onChange(e.target.value)}/>
+    {error && <span className="ferr">{error}</span>}
+    {hint  && <span className="fhint">{hint}</span>}
+  </div>
+);
+const FS = ({ label, req: required, value, onChange, error, options, id, name, tbc }) => (
+  <div className="fg">
+    <label className="fl" htmlFor={id}>
+      {label}{tbc && <span className="tbc-tag">(TBC)</span>}{required && <span className="req">*</span>}
+    </label>
+    {required && <span className="demo-hint">double-click to fill</span>}
+    <select value={value || ''} id={id} name={name || id} className={`fsel${error ? ' err' : ''}`} onChange={e => onChange(e.target.value)}>
+      <option value="">— Select —</option>
+      {options.map(o => typeof o === 'string'
+        ? <option key={o}>{o}</option>
+        : <option key={o.v} value={o.v} title={o.title}>{o.l}</option>)}
+    </select>
+    {error && <span className="ferr">{error}</span>}
+  </div>
+);
+/* Inline radio-button group. Options accept string or {v,l,desc}.
+   direction: "row" (default) or "col". */
+const RadioInline = ({ label, req: required, tbc, name, value, options, onChange, direction = 'row', error }) => (
+  <div className="fg">
+    <label className="fl">
+      {label}{tbc && <span className="tbc-tag">(TBC)</span>}{required && <span className="req">*</span>}
+    </label>
+    <div className={`radio-group radio-group-${direction === 'col' ? 'col' : 'row'}`}>
+      {options.map(o => {
+        const v    = typeof o === 'string' ? o : o.v;
+        const lbl  = typeof o === 'string' ? o : o.l;
+        const desc = typeof o === 'string' ? null : o.desc;
+        return (
+          <label key={v} className={`radio-opt${value === v ? ' selected' : ''}`}>
+            <input type="radio" name={name} value={v}
+              checked={value === v}
+              onChange={() => onChange(v)}/>
+            <div className="radio-opt-dot"/>
+            <div>
+              <div className="radio-opt-label">{lbl}</div>
+              {desc && <div className="radio-opt-desc">{desc}</div>}
+            </div>
+          </label>
+        );
+      })}
+    </div>
+    {error && <span className="ferr">{error}</span>}
+  </div>
+);
+
+const SvcItem = ({ name, desc, tbc, checked, onToggle }) => (
+  <div className="svc-item" onClick={onToggle}>
+    <div className={`chk${checked ? ' on' : ''}`}>{checked && <CheckSVG/>}</div>
+    <div>
+      <div className="si-name">{name}{tbc && <span className="tbc-tag">(TBC)</span>}</div>
+      <div className="si-desc">{desc}</div>
+    </div>
+  </div>
+);
+const ValBanner = () => (
+  <div className="val-banner">⚠️ Please fill in all required fields before proceeding.</div>
+);
+const StepActions = ({ onBack, onNext, nextLabel = 'Next →', nextCls = 'btn-primary', showBack = true }) => (
+  <div className="step-actions">
+    {showBack ? <button className="btn btn-secondary" onClick={onBack}>← Back</button> : <span/>}
+    <button className={`btn ${nextCls}`} onClick={onNext}>{nextLabel}</button>
+  </div>
+);
+
+/* ════════════════════════════════
+   BANK ACCOUNT SETUP (shared)
+   ════════════════════════════════ */
+const mkAcct = () => ({ id: Date.now() + Math.random(), currency: 'BND', accountName: '', accountNumber: '', bankName: '', accountType: 'Settlement' });
+const AcctCard = ({ acct, idx, canDel, errs = {}, onChange, onDelete, onAccountNumberBlur }) => {
+  const s = (k, v) => onChange({ ...acct, [k]: v });
+  // Clearing a field-level error as the user types
+  const sClear = (k, v) => { s(k, v); };
+  return (
+    <div className="acct-card" data-card-idx={idx}>
+      <div className="acct-hdr">
+        <span className="acct-num">Account #{idx + 1}</span>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          {!canDel && <span className="remove-hint">At least one account is required</span>}
+          <button className="btn-ghost-danger" onClick={onDelete} disabled={!canDel}>✕ Remove</button>
+        </div>
+      </div>
+      <div className="form-grid">
+        <RadioInline label="Currency" req direction="row"
+          name={`currency_${acct.id}`}
+          value={acct.currency}
+          onChange={v => s('currency', v)}
+          options={['BND','USD','SGD']}/>
+        <RadioInline label="Account Type" req direction="row"
+          name={`accountType_${acct.id}`}
+          value={acct.accountType}
+          onChange={v => s('accountType', v)}
+          options={['Settlement','Reconciliation','Both']}/>
+        <div className="fg">
+          <label className="fl">Account Name <span className="req">*</span></label>
+          <span className="demo-hint">double-click to fill</span>
+          <input type="text" id="accountName" name="accountName" className={`fi${errs.accountName ? ' err' : ''}`} value={acct.accountName || ''} placeholder="Account holder name" onChange={e => sClear('accountName', e.target.value)}/>
+          {errs.accountName && <span className="ferr">{errs.accountName}</span>}
+        </div>
+        <div className="fg">
+          <label className="fl">Account Number <span className="req">*</span></label>
+          <span className="demo-hint">double-click to fill</span>
+          <input type="text" id="accountNumber" name="accountNumber" className={`fi${errs.accountNumber ? ' err' : ''}`} value={acct.accountNumber || ''} placeholder="e.g. 0012345678" onChange={e => sClear('accountNumber', e.target.value)} onBlur={e => onAccountNumberBlur?.(e.target.value)}/>
+          {errs.accountNumber && <span className="ferr">{errs.accountNumber}</span>}
+        </div>
+        <div className="fg full">
+          <label className="fl">Bank Name <span className="req">*</span></label>
+          <span className="demo-hint">double-click to fill</span>
+          <input type="text" id="bankName" name="bankName" className={`fi${errs.bankName ? ' err' : ''}`} value={acct.bankName || ''} placeholder="e.g. Baiduri Bank" onChange={e => sClear('bankName', e.target.value)}/>
+          {errs.bankName && <span className="ferr">{errs.bankName}</span>}
+        </div>
+      </div>
+    </div>
+  );
+};
+const BankAccountStep = ({ value, onChange, subtitle, onNext, onBack }) => {
+  const [errsMap, setErrsMap] = useState({});
+  const add = () => onChange([...value, mkAcct()]);
+  const upd = (id, u) => {
+    onChange(value.map(a => a.id === id ? u : a));
+    // Clear per-card field errors as the user edits
+    if (errsMap[id]) setErrsMap(p => ({ ...p, [id]: undefined }));
+  };
+  const del = (id) => {
+    if (value.length <= 1) return;
+    onChange(value.filter(a => a.id !== id));
+    setErrsMap(p => { const np = { ...p }; delete np[id]; return np; });
+  };
+  // Defensive: if state ever becomes empty, restore a default account so the user can't get stuck.
+  const list = value.length === 0 ? [mkAcct()] : value;
+  const dupMsg = 'This account number is already added. Please enter a different account number.';
+  const checkDuplicate = (id, num) => {
+    if (!num) { setErrsMap(p => ({ ...p, [id]: { ...(p[id] || {}), accountNumber: undefined } })); return; }
+    const isDup = list.some(a => a.id !== id && (a.accountNumber || '').trim() === num.trim());
+    if (isDup) setErrsMap(p => ({ ...p, [id]: { ...(p[id] || {}), accountNumber: dupMsg } }));
+  };
+  const validate = () => {
+    const m = {};
+    let ok = true;
+    list.forEach(a => {
+      const e = {};
+      if (!a.accountName?.trim())   { e.accountName   = 'Account Name is required'; ok = false; }
+      if (!a.accountNumber?.trim()) { e.accountNumber = 'Account Number is required'; ok = false; }
+      else {
+        const isDup = list.some(o => o.id !== a.id && (o.accountNumber || '').trim() === a.accountNumber.trim());
+        if (isDup) { e.accountNumber = dupMsg; ok = false; }
+      }
+      if (!a.bankName?.trim())      { e.bankName      = 'Bank Name is required'; ok = false; }
+      m[a.id] = e;
+    });
+    setErrsMap(m);
+    if (!ok) scrollToFirstError();
+    return ok;
+  };
+  return (
+    <div className="step-content">
+      <div className="card">
+        <div className="card-title">Bank Account Setup</div>
+        <div className="card-sub">{subtitle}</div>
+        {list.map((a, i) => (
+          <AcctCard key={a.id} acct={a} idx={i}
+            canDel={list.length > 1}
+            errs={errsMap[a.id] || {}}
+            onChange={u => upd(a.id, u)}
+            onDelete={() => del(a.id)}
+            onAccountNumberBlur={(num) => checkDuplicate(a.id, num)}/>
+        ))}
+        <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-start' }}>
+          <button className="btn-add-text" onClick={add}>＋ Add Another Account</button>
+        </div>
+        <StepActions onBack={onBack} onNext={() => { if (validate()) onNext(); }}/>
+      </div>
+    </div>
+  );
+};
+
+/* ════════════════════════════════
+   BASIC INFO STEP (shared)
+   ════════════════════════════════ */
+const INIT_BI = { entityName:'', contractRefNo:'', contractDate:'', primaryContactName:'', primaryContactEmail:'', primaryContactPhone:'', secondaryContactName:'', secondaryContactEmail:'', secondaryContactPhone:'', hierarchyLevels:'', levelNames:[], languageSetting:'English' };
+const LEVEL_NAME_PLACEHOLDERS = ['e.g. Region', 'e.g. Branch', 'e.g. Counter', 'e.g. Cashier', 'e.g. Operator', 'e.g. Team', 'e.g. Unit', 'e.g. Section', 'e.g. Group', 'e.g. Cluster'];
+const BasicInfoStep = ({ value, onChange, onNext, onBack, showBack = true, entityType = 'biller' }) => {
+  const [errs, setErrs] = useState({});
+  const s = (k, v) => { onChange({ ...value, [k]: v }); if (errs[k]) setErrs(p => ({ ...p, [k]: undefined })); };
+
+  // Hierarchy levels — optional, clamp 0–10; sync levelNames array length
+  const levelCount = Math.min(10, Math.max(0, parseInt(value.hierarchyLevels) || 0));
+  const levelNames = Array.from({ length: levelCount }, (_, i) => value.levelNames?.[i] || '');
+
+  // Auto-scroll: when the level count INCREASES, smoothly scroll the newly
+  // added Level Name input into view inside the right-column scroll container.
+  const levelBlockRef = useRef(null);
+  const prevCountRef  = useRef(levelCount);
+  useEffect(() => {
+    if (levelCount > prevCountRef.current && levelBlockRef.current) {
+      const id = window.setTimeout(() => {
+        const block = levelBlockRef.current;
+        const inputs = block?.querySelectorAll('input.fi');
+        if (!block || !inputs || inputs.length === 0) return;
+        const last = inputs[inputs.length - 1];
+        const lastFg = last.closest('.fg') || last;
+        const blockRect = block.getBoundingClientRect();
+        const fgRect    = lastFg.getBoundingClientRect();
+        const overflow  = fgRect.bottom - blockRect.bottom + 12 /* breathing room */;
+        if (overflow <= 0) return;
+        // rAF-based smooth scroll (~250ms) — works reliably for inner containers
+        const start    = block.scrollTop;
+        const target   = start + overflow;
+        const duration = 250;
+        const t0       = performance.now();
+        const ease     = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        const step = now => {
+          const t = Math.min(1, (now - t0) / duration);
+          block.scrollTop = start + (target - start) * ease(t);
+          if (t < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      }, 0);
+      prevCountRef.current = levelCount;
+      return () => window.clearTimeout(id);
+    }
+    prevCountRef.current = levelCount;
+  }, [levelCount]);
+
+  const setHierarchy = v => {
+    if (v === '' || v == null) {
+      onChange({ ...value, hierarchyLevels: '', levelNames: [] });
+      setErrs(p => {
+        const np = { ...p, hierarchyLevels: undefined };
+        Object.keys(np).forEach(k => { if (/^levelName_/.test(k)) delete np[k]; });
+        return np;
+      });
+      return;
+    }
+    let n = parseInt(v);
+    if (isNaN(n)) return;
+    n = Math.max(0, Math.min(10, n));
+    const cur = value.levelNames || [];
+    const nextNames = Array.from({ length: n }, (_, i) => cur[i] || '');
+    setErrs(p => {
+      const np = { ...p, hierarchyLevels: undefined };
+      Object.keys(np).forEach(k => { const m = k.match(/^levelName_(\d+)$/); if (m && +m[1] >= n) delete np[k]; });
+      return np;
+    });
+    onChange({ ...value, hierarchyLevels: n === 0 ? '' : String(n), levelNames: nextNames });
+  };
+  const setLevelName = (i, v) => {
+    const arr = Array.from({ length: levelCount }, (_, idx) => idx === i ? v : (value.levelNames?.[idx] || ''));
+    onChange({ ...value, levelNames: arr });
+    const k = `levelName_${i}`;
+    if (errs[k]) setErrs(p => ({ ...p, [k]: undefined }));
+  };
+
+  const validate = () => {
+    const e = {};
+    const req = (k, lbl) => { if (!value[k]?.toString().trim()) e[k] = `${lbl} is required`; };
+    req('entityName',           'Entity Name');
+    req('contractRefNo',        'Contract Reference No.');
+    req('contractDate',         'Contract Date');
+    req('languageSetting',      'Language Setting');
+    req('primaryContactName',   'Primary Contact Name');
+    if (!value.primaryContactEmail?.trim())        e.primaryContactEmail = 'Primary Contact Email is required';
+    else if (!/\S+@\S+\.\S+/.test(value.primaryContactEmail)) e.primaryContactEmail = 'Invalid email format';
+    // Secondary Email becomes required when Secondary Name is filled
+    if (value.secondaryContactName?.trim()) {
+      if (!value.secondaryContactEmail?.trim()) e.secondaryContactEmail = 'Secondary Contact Email is required';
+      else if (!/\S+@\S+\.\S+/.test(value.secondaryContactEmail)) e.secondaryContactEmail = 'Invalid email format';
+    } else if (value.secondaryContactEmail?.trim() && !/\S+@\S+\.\S+/.test(value.secondaryContactEmail)) {
+      e.secondaryContactEmail = 'Invalid email format';
+    }
+    // Level names: only required when hierarchy is set
+    levelNames.forEach((n, i) => { if (!n.trim()) e[`levelName_${i}`] = `Level ${i+1} Name is required`; });
+    setErrs(e);
+    if (Object.keys(e).length > 0) scrollToFirstError();
+    return Object.keys(e).length === 0;
+  };
+  return (
+    <div className="step-content">
+      <div className="card">
+        <div className="card-title">Basic Information</div>
+        <div className="card-sub">Enter the entity's basic details and contact information.</div>
+        {Object.values(errs).some(Boolean) && <ValBanner/>}
+
+        {/* ── ENTITY INFORMATION ── */}
+        <div className="section-block">
+          <div className="section-header">Entity Information</div>
+          <div className="form-grid">
+            <FI id="entityName"     label="Entity Name"            req value={value.entityName}          onChange={v=>s('entityName',v)}          error={errs.entityName}          placeholder="e.g. Telekom Brunei Berhad"/>
+            <FI id="contractRefNo"  label="Contract Reference No." req value={value.contractRefNo}        onChange={v=>s('contractRefNo',v)}        error={errs.contractRefNo}        placeholder="e.g. CONTRACT-2026-001"/>
+            <FI id="contractDate"   label="Contract Date"          req type="date" value={value.contractDate} onChange={v=>s('contractDate',v)}    error={errs.contractDate}/>
+            <RadioInline label="Language Setting" req
+              name="languageSetting"
+              value={value.languageSetting}
+              onChange={v=>s('languageSetting',v)}
+              error={errs.languageSetting}
+              options={['English','Malay','Both']}
+              direction="row"/>
+            <FI id="hierarchyLevels" label="Number of Hierarchy Levels" type="number"
+              value={value.hierarchyLevels}
+              onChange={setHierarchy}
+              error={errs.hierarchyLevels}
+              placeholder="0–10"
+              hint={`Leave blank if this ${entityType} does not require organisational hierarchy.`}/>
+            <div>
+              {levelCount > 0 && (
+                <div className="level-names-block" ref={levelBlockRef}>
+                  <div className="level-names-title">Hierarchy Level Names</div>
+                  {levelNames.map((name, i) => (
+                    <FI key={i} id={`level${i+1}Name`} label={`Level ${i+1} Name`} req
+                      value={name}
+                      onChange={v => setLevelName(i, v)}
+                      error={errs[`levelName_${i}`]}
+                      placeholder={LEVEL_NAME_PLACEHOLDERS[i] || `e.g. Sub-unit ${i+1}`}/>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <hr className="section-divider"/>
+
+        {/* ── CONTACT INFORMATION ── */}
+        <div className="section-block">
+          <div className="section-header">Contact Information</div>
+
+          <div className="contact-sub-header">Primary Contact</div>
+          <div className="form-grid">
+            <FI id="primaryContactName"  label="Name"  req value={value.primaryContactName}  onChange={v=>s('primaryContactName',v)}  error={errs.primaryContactName}  placeholder="Full name"/>
+            <FI id="primaryContactEmail" label="Email" req type="email" value={value.primaryContactEmail} onChange={v=>s('primaryContactEmail',v)} error={errs.primaryContactEmail} placeholder="email@example.com"/>
+            <FI id="primaryContactPhone" label="Phone" value={value.primaryContactPhone}  onChange={v=>s('primaryContactPhone',v)}  placeholder="+673 xxx xxxx (optional)"/>
+            <div/>
+          </div>
+
+          <div className="contact-sub-header" style={{ marginTop: 20 }}>Secondary Contact</div>
+          <div className="form-grid">
+            <FI id="secondaryContactName"  label="Name"  value={value.secondaryContactName}  onChange={v=>s('secondaryContactName',v)}  placeholder="Full name (optional)"/>
+            <FI id="secondaryContactEmail" label="Email" req={!!value.secondaryContactName?.trim()} type="email" value={value.secondaryContactEmail} onChange={v=>s('secondaryContactEmail',v)} error={errs.secondaryContactEmail} placeholder={value.secondaryContactName?.trim() ? 'email@example.com' : 'email@example.com (optional)'}/>
+            <FI id="secondaryContactPhone" label="Phone" value={value.secondaryContactPhone} onChange={v=>s('secondaryContactPhone',v)} placeholder="+673 xxx xxxx (optional)"/>
+            <div/>
+          </div>
+        </div>
+
+        <StepActions showBack={showBack} onBack={onBack} onNext={() => { if (validate()) onNext(); }}/>
+      </div>
+    </div>
+  );
+};
+
+/* ════════════════════════════════
+   REVIEW BLOCK
+   ════════════════════════════════ */
+const RvBlock = ({ icon, title, onEdit, children }) => (
+  <div className="rv-block">
+    <div className="rv-block-hdr">
+      <div className="rv-block-title">{icon} {title}</div>
+      {onEdit && <button className="rv-edit" onClick={onEdit}>Edit</button>}
+    </div>
+    <div className="rv-block-body">{children}</div>
+  </div>
+);
+const RvRow = ({ label, val }) => (
+  <div className="rv-row"><div className="rv-lbl">{label}</div><div className="rv-val">{val || '—'}</div></div>
+);
+
+/* ════════════════════════════════
+   ── BILLER REGISTRATION ──
+   ════════════════════════════════ */
+const BILLER_SVCS = [
+  { group: 'Bill Acquisition',
+    desc:  'Configure how bills are loaded into the ePG system.',
+    items: [
+      { id: 'billEnquiry',     name: 'Bill Enquiry',     desc: "Allow enquiry of biller's bills" },
+      { id: 'onlineBillLoad',  name: 'Online Bill Load', desc: 'Load bills directly to ePG in real-time (UC12)' },
+      { id: 'bulkFileUpload',  name: 'Bulk File Upload', desc: 'Upload bills via batch file (UC1)' },
+    ]},
+  { group: 'Payment Processing',
+    desc:  'Configure payment methods accepted for this biller.',
+    items: [
+      { id: 'billPayment',    name: 'Bill Payment',    desc: 'Accept bill payments' },
+      { id: 'adHocPayment',   name: 'Ad-hoc Payment',  desc: 'Accept additional or partial payments', tbc: true },
+      { id: 'safProcessing',  name: 'SAF Processing',  desc: 'Store-and-forward payment processing' },
+    ]},
+  { group: 'Notifications',
+    desc:  'Configure notification and presentment services.',
+    items: [
+      { id: 'paymentNotification',   name: 'Payment Notification',    desc: 'Receive payment status notifications (UC7)' },
+      { id: 'onlineBillPresentment', name: 'Online Bill Presentment', desc: 'Display bills to customers online', tbc: true },
+    ]},
+];
+const INIT_BSVCS = { billDataMode:'Offline', billEnquiry:false, onlineBillLoad:false, bulkFileUpload:false, uploadPath:'', downloadPath:'', billPayment:false, adHocPayment:false, safProcessing:false, paymentNotification:false, onlineBillPresentment:false };
+const ALL_BSVCS = BILLER_SVCS.flatMap(g => g.items);
+const BILL_DATA_MODES = [
+  { id:'Offline', title:'Offline',
+    desc:'Bill data stored in ePG database.',
+    subDesc:'Updated via bulk file upload. Teller Portal will show: Offline SP tag',
+    tellerTag:'Offline SP' },
+  { id:'Online',  title:'Online',
+    desc:"Bill data queried in real-time from biller's server.",
+    subDesc:'Requires biller server connection. Teller Portal will show: Online SP tag',
+    tellerTag:'Online SP' },
+  { id:'Hybrid',  title:'Hybrid',
+    desc:'ePG database first, real-time fallback if not found.',
+    subDesc:'Best of both modes. Teller Portal will show: Hybrid SP tag',
+    tellerTag:'Hybrid SP' },
+];
+const BILL_DATA_MODE_BY_ID = Object.fromEntries(BILL_DATA_MODES.map(m => [m.id, m]));
+
+const RadioCard = ({ title, desc, subDesc, selected, onSelect }) => (
+  <div className={`radio-card${selected ? ' selected' : ''}`} onClick={onSelect}>
+    <div className="radio-card-dot"/>
+    <div className="radio-card-body">
+      <div className="radio-card-title">{title}</div>
+      <div className="radio-card-desc">{desc}</div>
+      {subDesc && <div className="radio-card-subdesc">{subDesc}</div>}
+    </div>
+  </div>
+);
+
+const BillerServiceStep = ({ value, onChange, onNext, onBack }) => {
+  const [showErr, setShowErr] = useState(false);
+  const [showModeErr, setShowModeErr] = useState(false);
+  const [pathErrs, setPathErrs] = useState({});
+  const svcAny = ALL_BSVCS.some(s => value[s.id]);
+  const tog = id => {
+    setShowErr(false);
+    const next = { ...value, [id]: !value[id] };
+    // When toggling OFF Bulk File Upload, clear the path values & errors
+    if (id === 'bulkFileUpload' && !next.bulkFileUpload) {
+      next.uploadPath = '';
+      next.downloadPath = '';
+      setPathErrs({});
+    }
+    onChange(next);
+  };
+  const selMode = m => { setShowModeErr(false); onChange({ ...value, billDataMode: m }); };
+  const setPath = (k, v) => {
+    onChange({ ...value, [k]: v });
+    if (pathErrs[k]) setPathErrs(p => ({ ...p, [k]: undefined }));
+  };
+  const validatePaths = () => {
+    if (!value.bulkFileUpload) return true;
+    const e = {};
+    if (!value.uploadPath?.trim())   e.uploadPath   = 'Upload Path is required';
+    if (!value.downloadPath?.trim()) e.downloadPath = 'Download Path is required';
+    setPathErrs(e);
+    return Object.keys(e).length === 0;
+  };
+  return (
+    <div className="step-content">
+      <div className="card">
+        <div className="card-title">Service Mapping</div>
+        <div className="card-sub">Select the services this biller will use in the ePG system.</div>
+        {(showErr || showModeErr) && <div className="val-banner">⚠️ {showModeErr ? 'Please select a bill data mode.' : 'At least one service must be selected.'}</div>}
+
+        <div className="svc-group">
+          <div className="svc-group-title">Bill Data Mode <span className="req">*</span></div>
+          <div className="section-hint">Configure how bill data is retrieved when Teller or Fulfillment Entity queries this biller's bills.</div>
+          <div className="radio-card-group">
+            {BILL_DATA_MODES.map(m => (
+              <RadioCard key={m.id} title={m.title} desc={m.desc} subDesc={m.subDesc}
+                selected={value.billDataMode === m.id} onSelect={() => selMode(m.id)}/>
+            ))}
+          </div>
+        </div>
+
+        {BILLER_SVCS.map(g => (
+          <div key={g.group} className="svc-group">
+            <div className="svc-group-title">{g.group}</div>
+            {g.desc && <div className="svc-group-desc">{g.desc}</div>}
+            {g.items.map(s => (
+              <React.Fragment key={s.id}>
+                <SvcItem name={s.name} desc={s.desc} tbc={s.tbc} checked={value[s.id]} onToggle={() => tog(s.id)}/>
+                {s.id === 'bulkFileUpload' && (
+                  <div className={`collapsible${value.bulkFileUpload ? ' open' : ''}`}>
+                    <div className="collapsible-content">
+                      <div className="inline-paths-block">
+                        <FI id="uploadPath"   label="Upload Path" req
+                          value={value.uploadPath || ''}
+                          onChange={v => setPath('uploadPath', v)}
+                          error={pathErrs.uploadPath}
+                          placeholder="sftp://example.com/upload/"
+                          hint="File path for bulk bill uploads."/>
+                        <FI id="downloadPath" label="Download Path" req
+                          value={value.downloadPath || ''}
+                          onChange={v => setPath('downloadPath', v)}
+                          error={pathErrs.downloadPath}
+                          placeholder="sftp://example.com/download/"
+                          hint="File path for confirmation and notification files. Contact IT team for the correct path format."/>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        ))}
+        <StepActions onBack={onBack} onNext={() => {
+          if (!value.billDataMode) { setShowModeErr(true); return; }
+          if (!svcAny)             { setShowErr(true); return; }
+          if (!validatePaths())    { return; }
+          onNext();
+        }}/>
+      </div>
+    </div>
+  );
+};
+
+/* ════════════════════════════════
+   BILLER FEE CONFIGURATION (Step 4 — BCONFIG_UC3)
+   ════════════════════════════════ */
+const INIT_BFEE = { structure:'Tiered', tiers:[{ id:1, from:'0.00', to:'', fee:'' }], pct:'', minFee:'', maxFee:'', fixedAmt:'', currency:'BND', chargedTo:'Biller', appliedPer:'Per Transaction' };
+const FEE_STRUCTURE_OPTIONS = [
+  { id:'Tiered',       title:'Tiered',       desc:'Fees calculated by transaction amount range.' },
+  { id:'Percentage',   title:'Percentage',   desc:'Fees calculated as a percentage of transaction amount.' },
+  { id:'Fixed Amount', title:'Fixed Amount', desc:'A flat fee charged per transaction or bill.' },
+];
+const BillerFeeStep = ({ value, onChange, onNext, onBack }) => {
+  const [errs, setErrs] = useState({});
+  const s = (k, v) => { onChange({ ...value, [k]: v }); if (errs[k]) setErrs(p => ({ ...p, [k]: undefined })); };
+  const updTier = (id, k, v) => {
+    const idx = value.tiers.findIndex(t => t.id === id);
+    s('tiers', value.tiers.map(t => t.id === id ? { ...t, [k]: v } : t));
+    const errKey = `tier_${idx}_${k}`;
+    if (errs[errKey]) setErrs(p => ({ ...p, [errKey]: undefined }));
+  };
+  const validate = () => {
+    const e = {};
+    if (!value.structure)  e.structure  = 'Fee Structure is required';
+    if (!value.currency)   e.currency   = 'Fee Currency is required';
+    if (!value.chargedTo)  e.chargedTo  = 'Fee Charged To is required';
+    if (!value.appliedPer) e.appliedPer = 'Fee Applied Per is required';
+    if (value.structure === 'Percentage'   && !value.pct)      e.pct      = 'Fee Percentage is required';
+    if (value.structure === 'Fixed Amount' && !value.fixedAmt) e.fixedAmt = 'Fee Amount is required';
+    if (value.structure === 'Tiered') {
+      value.tiers.forEach((t, i) => {
+        if (!t.from) e[`tier_${i}_from`] = true;
+        if (!t.to)   e[`tier_${i}_to`]   = true;
+        if (!t.fee)  e[`tier_${i}_fee`]  = true;
+      });
+    }
+    setErrs(e);
+    if (Object.keys(e).length > 0) scrollToFirstError();
+    return Object.keys(e).length === 0;
+  };
+  return (
+    <div className="step-content">
+      <div className="card">
+        <div className="card-title">Fee Configuration</div>
+        <div className="card-sub">Configure ePG fee rules for this biller.</div>
+        {Object.values(errs).some(Boolean) && <ValBanner/>}
+
+        {/* Fee Structure — card-style radio buttons (3 across, like Bill Data Mode) */}
+        <div className="svc-group">
+          <div className="svc-group-title">Fee Structure <span className="req">*</span></div>
+          <div className="radio-card-group">
+            {FEE_STRUCTURE_OPTIONS.map(fs => (
+              <RadioCard key={fs.id} title={fs.title} desc={fs.desc}
+                selected={value.structure === fs.id}
+                onSelect={() => s('structure', fs.id)}/>
+            ))}
+          </div>
+        </div>
+
+        {/* Currency + Charged To side by side (each is a vertical radio stack) */}
+        <div className="form-grid" style={{ marginTop: 6, marginBottom: 18 }}>
+          <RadioInline label="Fee Currency" req direction="col"
+            name="currency"
+            value={value.currency}
+            onChange={v => s('currency', v)}
+            error={errs.currency}
+            options={[
+              { v:'Transaction Currency', l:'Transaction Currency', desc:'Fee collected in transaction currency' },
+              { v:'BND',                  l:'BND',                  desc:'Fee always collected in Brunei Dollar' },
+            ]}/>
+          <RadioInline label="Fee Charged To" req direction="col"
+            name="chargedTo"
+            value={value.chargedTo}
+            onChange={v => s('chargedTo', v)}
+            error={errs.chargedTo}
+            options={[
+              { v:'Biller',             l:'Biller (Service Provider)' },
+              { v:'Fulfillment Entity', l:'Fulfillment Entity' },
+              { v:'Customer',           l:'Customer' },
+              { v:'ePG System',         l:'ePG System' },
+            ]}/>
+        </div>
+
+        {/* Applied Per — horizontal */}
+        <div style={{ marginBottom: 18 }}>
+          <RadioInline label="Fee Applied Per" req tbc direction="row"
+            name="appliedPer"
+            value={value.appliedPer}
+            onChange={v => s('appliedPer', v)}
+            error={errs.appliedPer}
+            options={['Per Transaction','Per Bill']}/>
+        </div>
+
+        {/* ── Dynamic block: depends on Fee Structure (always at bottom) ── */}
+        {value.structure && (
+          <div className="svc-group">
+            <div className="svc-group-title">
+              {value.structure === 'Tiered'       && 'Tier Rules'}
+              {value.structure === 'Percentage'   && 'Percentage Settings'}
+              {value.structure === 'Fixed Amount' && 'Fixed Amount Settings'}
+            </div>
+
+            {value.structure === 'Tiered' && (
+              <>
+                {value.tiers.map((t, i) => {
+                  const canDel = value.tiers.length > 1;
+                  return (
+                    <div key={t.id} className="acct-card">
+                      <div className="acct-hdr">
+                        <span className="acct-num">Tier {i + 1}</span>
+                        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                          {!canDel && <span className="remove-hint">At least one tier is required</span>}
+                          <button className="btn-ghost-danger"
+                            onClick={() => s('tiers', value.tiers.filter(x => x.id !== t.id))}
+                            disabled={!canDel}>✕ Remove</button>
+                        </div>
+                      </div>
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'14px 22px' }}>
+                        <div className="fg">
+                          <label className="fl">From (BND) <span className="req">*</span></label>
+                          <span className="demo-hint">double-click to fill</span>
+                          <input type="number" id={i === 0 ? 'feeFromAmount' : undefined} name="feeFromAmount" className={`fi${errs[`tier_${i}_from`] ? ' err' : ''}`} value={t.from||''} placeholder="0.00" onChange={e => updTier(t.id,'from',e.target.value)}/>
+                        </div>
+                        <div className="fg">
+                          <label className="fl">To (BND) <span className="req">*</span></label>
+                          <span className="demo-hint">double-click to fill</span>
+                          <input type="number" id={i === 0 ? 'feeToAmount' : undefined} name="feeToAmount" className={`fi${errs[`tier_${i}_to`] ? ' err' : ''}`} value={t.to||''} placeholder="100.00" onChange={e => updTier(t.id,'to',e.target.value)}/>
+                        </div>
+                        <div className="fg">
+                          <label className="fl">Fee (BND) <span className="req">*</span></label>
+                          <span className="demo-hint">double-click to fill</span>
+                          <input type="number" id={i === 0 ? 'feeAmount' : undefined} name="feeAmount" className={`fi${errs[`tier_${i}_fee`] ? ' err' : ''}`} value={t.fee||''} placeholder="0.25" onChange={e => updTier(t.id,'fee',e.target.value)}/>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div style={{ marginTop: 4, display: 'flex', justifyContent: 'flex-start' }}>
+                  <button className="btn-add-text" onClick={() => s('tiers', [...value.tiers, mkTier()])}>＋ Add Another Tier</button>
+                </div>
+              </>
+            )}
+            {value.structure === 'Percentage' && (
+              <div className="form-grid">
+                <FI id="feePercentage" label="Fee Percentage (%)" req value={value.pct}    onChange={v => s('pct',v)}    error={errs.pct}    type="number" placeholder="e.g. 1.5"/>
+                <FI id="feeMinimum"    label="Minimum Fee (BND)"      value={value.minFee} onChange={v => s('minFee',v)} type="number" placeholder="Optional"/>
+                <FI id="feeMaximum"    label="Maximum Fee (BND)"      value={value.maxFee} onChange={v => s('maxFee',v)} type="number" placeholder="Optional"/>
+              </div>
+            )}
+            {value.structure === 'Fixed Amount' && (
+              <div className="form-grid">
+                <FI id="feeFixed" label="Fee Amount (BND)" req value={value.fixedAmt} onChange={v => s('fixedAmt',v)} error={errs.fixedAmt} type="number" placeholder="e.g. 2.00"/>
+              </div>
+            )}
+          </div>
+        )}
+
+        <StepActions onBack={onBack} onNext={() => { if (validate()) onNext(); }}/>
+      </div>
+    </div>
+  );
+};
+
+/* ════════════════════════════════
+   BILLER NOTIFICATIONS (Step 5 — BCONFIG_UC4)
+   ════════════════════════════════ */
+const NOTIF_EVENTS = [
+  { id:'billUploadConfirmed',    label:'Bill Upload Confirmed' },
+  { id:'paymentReceived',        label:'Payment Received' },
+  { id:'paymentFailed',          label:'Payment Failed' },
+  { id:'reconciliationCompleted',label:'Reconciliation Completed' },
+  { id:'systemError',            label:'System Error' },
+];
+const INIT_EVENTS  = { billUploadConfirmed:false, paymentReceived:false, paymentFailed:false, reconciliationCompleted:false, systemError:false };
+const mkContact    = () => ({ id: Date.now() + Math.random(), name:'', email:'', phone:'', events:{ ...INIT_EVENTS } });
+const isEmail      = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v || '');
+
+const NotifContactCard = ({ contact, idx, canDel, errs, onChange, onDelete }) => {
+  const s = (k, v) => onChange({ ...contact, [k]: v });
+  const togEvent = id => onChange({ ...contact, events: { ...contact.events, [id]: !contact.events[id] } });
+  return (
+    <div className="acct-card" data-card-idx={idx}>
+      <div className="acct-hdr">
+        <span className="acct-num">Contact #{idx + 1}</span>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          {!canDel && <span className="remove-hint">At least one contact is required</span>}
+          <button className="btn-ghost-danger" onClick={onDelete} disabled={!canDel}>✕ Remove</button>
+        </div>
+      </div>
+      <div className="form-grid">
+        <div className="fg">
+          <label className="fl">Contact Name <span className="req">*</span></label>
+          <span className="demo-hint">double-click to fill</span>
+          <input type="text" id="notifContactName" name="notifContactName" className={`fi${errs.name ? ' err' : ''}`} value={contact.name} placeholder="Full name" onChange={e => s('name', e.target.value)}/>
+          {errs.name && <span className="ferr">{errs.name}</span>}
+        </div>
+        <div className="fg">
+          <label className="fl">Email Address <span className="req">*</span></label>
+          <span className="demo-hint">double-click to fill</span>
+          <input type="email" id="notifEmail" name="notifEmail" className={`fi${errs.email ? ' err' : ''}`} value={contact.email} placeholder="email@example.com" onChange={e => s('email', e.target.value)}/>
+          {errs.email && <span className="ferr">{errs.email}</span>}
+        </div>
+        <div className="fg full">
+          <label className="fl">Phone Number</label>
+          <input type="text" id="notifPhone" name="notifPhone" className="fi" value={contact.phone} placeholder="+673 1234567 (optional)" onChange={e => s('phone', e.target.value)}/>
+        </div>
+        <div className="fg full">
+          <label className="fl">Notification Events <span className="req">*</span></label>
+          {errs.events && <span className="ferr" style={{ marginTop: 0, marginBottom: 4 }}>{errs.events}</span>}
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'4px 10px', marginTop:4 }}>
+            {NOTIF_EVENTS.map(ev => (
+              <div key={ev.id} className="svc-item" style={{ padding:'7px 10px' }} onClick={() => togEvent(ev.id)}>
+                <div className={`chk${contact.events[ev.id] ? ' on' : ''}`}>{contact.events[ev.id] && <CheckSVG/>}</div>
+                <div className="si-name" style={{ paddingTop:1 }}>{ev.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const BillerNotificationsStep = ({ value, onChange, onNext, onBack }) => {
+  const [errsMap, setErrsMap] = useState({});
+  const add = () => onChange([...value, mkContact()]);
+  const upd = (id, u) => onChange(value.map(c => c.id === id ? u : c));
+  const del = (id) => { if (value.length <= 1) return; onChange(value.filter(c => c.id !== id)); };
+  // Defensive: if state ever becomes empty, restore a default so the user can't get stuck.
+  const list = value.length === 0 ? [mkContact()] : value;
+  const validate = () => {
+    const m = {};
+    let ok = true;
+    list.forEach(c => {
+      const e = {};
+      if (!c.name?.trim())             { e.name = 'Required'; ok = false; }
+      if (!c.email?.trim())            { e.email = 'Required'; ok = false; }
+      else if (!isEmail(c.email))      { e.email = 'Invalid email'; ok = false; }
+      if (!Object.values(c.events).some(Boolean)) { e.events = 'Select at least one event'; ok = false; }
+      m[c.id] = e;
+    });
+    setErrsMap(m);
+    if (!ok) scrollToFirstError();
+    return ok;
+  };
+  return (
+    <div className="step-content">
+      <div className="card">
+        <div className="card-title">Contact List</div>
+        <div className="card-sub">Add contacts who will receive system notifications for this biller.</div>
+        {list.map((c, i) => (
+          <NotifContactCard key={c.id} contact={c} idx={i}
+            canDel={list.length > 1}
+            errs={errsMap[c.id] || {}}
+            onChange={u => upd(c.id, u)}
+            onDelete={() => del(c.id)}/>
+        ))}
+        <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-start' }}>
+          <button className="btn-add-text" onClick={add}>＋ Add Another Contact</button>
+        </div>
+        <StepActions onBack={onBack} onNext={() => { if (validate()) onNext(); }}/>
+      </div>
+    </div>
+  );
+};
+
+/* ════════════════════════════════
+   BILLER REVIEW (Step 6)
+   ════════════════════════════════ */
+const formatFeeSummary = fee => {
+  if (fee.structure === 'Tiered')       return `Tiered — ${fee.tiers.length} tier${fee.tiers.length !== 1 ? 's' : ''}`;
+  if (fee.structure === 'Percentage')   return `${fee.pct || '?'}%${fee.minFee ? `, min ${fee.currency} ${fee.minFee}` : ''}${fee.maxFee ? `, max ${fee.currency} ${fee.maxFee}` : ''}`;
+  if (fee.structure === 'Fixed Amount') return `${fee.currency} ${fee.fixedAmt || '?'} flat`;
+  return '—';
+};
+
+const BillerReviewStep = ({ bi, accts, svcs, fee, notifs, onBack, onSubmit, onEdit, mode = 'add', onCancel }) => {
+  const selSvcs = ALL_BSVCS.filter(s => svcs[s.id]);
+  return (
+    <div className="step-content">
+      <div className="card">
+        <div className="card-title">Review &amp; Submit</div>
+        <div className="card-sub">Review all information before submitting the biller registration.</div>
+        <RvBlock icon="📋" title="Basic Information" onEdit={() => onEdit(0)}>
+          <div className="rv-grid">
+            <RvRow label="Entity Name"      val={bi.entityName}/>
+            <RvRow label="Contract Ref No." val={bi.contractRefNo}/>
+            <RvRow label="Contract Date"    val={bi.contractDate}/>
+            <RvRow label="Language"         val={bi.languageSetting}/>
+            <RvRow label="Hierarchy Levels" val={bi.hierarchyLevels || '—'}/>
+            {bi.levelNames?.length > 0 && (
+              <RvRow label="Level Names"
+                val={bi.levelNames.map((n, i) => `L${i+1}: ${n || '—'}`).join('  ·  ')}/>
+            )}
+            <RvRow label="Primary Contact"  val={bi.primaryContactName}/>
+            <RvRow label="Primary Email"    val={bi.primaryContactEmail}/>
+            <RvRow label="Primary Phone"    val={bi.primaryContactPhone}/>
+            {bi.secondaryContactName  && <RvRow label="Secondary Contact" val={bi.secondaryContactName}/>}
+            {bi.secondaryContactEmail && <RvRow label="Secondary Email"   val={bi.secondaryContactEmail}/>}
+            {bi.secondaryContactPhone && <RvRow label="Secondary Phone"   val={bi.secondaryContactPhone}/>}
+          </div>
+        </RvBlock>
+        <RvBlock icon="🏦" title={`Bank Accounts (${accts.length})`} onEdit={() => onEdit(1)}>
+          <div className="tbl-wrap" style={{ margin: 0, padding: 0 }}>
+            <table className="data-table">
+              <thead><tr>{['#','Account Name','Acct No.','Bank','Ccy','Type'].map(h => <th key={h}>{h}</th>)}</tr></thead>
+              <tbody>{accts.map((a, i) => (
+                <tr key={a.id}>
+                  <td className="tbl-muted">{i+1}</td>
+                  <td>{a.accountName||'—'}</td>
+                  <td className="tbl-mono">{a.accountNumber||'—'}</td>
+                  <td>{a.bankName||'—'}</td>
+                  <td>{a.currency}</td>
+                  <td>{a.accountType}</td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+        </RvBlock>
+        <RvBlock icon="🔧" title={`Services (${selSvcs.length})`} onEdit={() => onEdit(2)}>
+          <div className="rv-grid" style={{ marginBottom: 12 }}>
+            <RvRow label="Bill Data Mode"
+              val={svcs.billDataMode
+                ? `${svcs.billDataMode} — Teller Portal will show: ${BILL_DATA_MODE_BY_ID[svcs.billDataMode]?.tellerTag || svcs.billDataMode}`
+                : '—'}/>
+          </div>
+          {BILLER_SVCS.map(g => {
+            const sel = g.items.filter(s => svcs[s.id]);
+            if (!sel.length) return null;
+            return (
+              <div key={g.group} style={{ marginBottom: 10 }}>
+                <div style={{ fontSize:10.5, fontWeight:700, textTransform:'uppercase', letterSpacing:'.07em', color:'var(--text-subtle)', marginBottom:7 }}>{g.group}</div>
+                <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+                  {sel.map(s => <span key={s.id} className="tag tag-blue">{s.name}</span>)}
+                </div>
+              </div>
+            );
+          })}
+          {selSvcs.length === 0 && <p style={{ color:'var(--text-subtle)', fontSize:13 }}>No services selected.</p>}
+          {svcs.bulkFileUpload && (
+            <div style={{ marginTop:14, padding:'12px 14px', background:'var(--chip-bg)', border:'1px solid var(--border)', borderRadius:'var(--radius-sm)' }}>
+              <div style={{ fontSize:10.5, fontWeight:700, textTransform:'uppercase', letterSpacing:'.07em', color:'var(--text-subtle)', marginBottom:8 }}>Bulk File Upload Paths</div>
+              <div className="rv-grid">
+                <RvRow label="Upload Path"   val={svcs.uploadPath}/>
+                <RvRow label="Download Path" val={svcs.downloadPath}/>
+              </div>
+            </div>
+          )}
+        </RvBlock>
+        <RvBlock icon="💰" title="Fee Configuration" onEdit={() => onEdit(3)}>
+          <div className="rv-grid">
+            <RvRow label="Fee Structure"   val={fee.structure}/>
+            <RvRow label="Fee Amount"      val={formatFeeSummary(fee)}/>
+            <RvRow label="Currency"        val={fee.currency}/>
+            <RvRow label="Charged To"      val={fee.chargedTo}/>
+            <RvRow label="Applied Per"     val={fee.appliedPer}/>
+          </div>
+          {fee.structure === 'Tiered' && fee.tiers.length > 0 && (
+            <div className="tbl-wrap" style={{ margin: '12px 0 0', padding: 0 }}>
+              <table className="data-table">
+                <thead><tr>{['Tier','From','To','Fee'].map(h => <th key={h}>{h}</th>)}</tr></thead>
+                <tbody>{fee.tiers.map((t, i) => (
+                  <tr key={t.id}>
+                    <td className="tbl-muted">#{i+1}</td>
+                    <td className="tbl-mono">{fee.currency} {t.from || '—'}</td>
+                    <td className="tbl-mono">{fee.currency} {t.to || '—'}</td>
+                    <td className="tbl-mono">{fee.currency} {t.fee || '—'}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+          )}
+        </RvBlock>
+        <RvBlock icon="🔔" title={`Contact List (${notifs.length} contact${notifs.length !== 1 ? 's' : ''})`} onEdit={() => onEdit(4)}>
+          {notifs.map((c, i) => {
+            const selEvts = NOTIF_EVENTS.filter(ev => c.events[ev.id]);
+            return (
+              <div key={c.id} style={{ paddingTop: i > 0 ? 12 : 0, borderTop: i > 0 ? '1px solid var(--border)' : 'none', marginTop: i > 0 ? 12 : 0 }}>
+                <div className="rv-grid" style={{ marginBottom: 8 }}>
+                  <RvRow label={`Contact #${i+1}`} val={c.name}/>
+                  <RvRow label="Email"             val={c.email}/>
+                  {c.phone && <RvRow label="Phone" val={c.phone}/>}
+                </div>
+                <div>
+                  <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase', letterSpacing:'.07em', color:'var(--text-subtle)', marginBottom:6 }}>Events</div>
+                  <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+                    {selEvts.length === 0
+                      ? <span style={{ color:'var(--text-subtle)', fontSize:13 }}>No events selected</span>
+                      : selEvts.map(ev => <span key={ev.id} className="tag tag-blue">{ev.label}</span>)}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </RvBlock>
+        <div className="step-actions">
+          {mode === 'edit' ? (
+            <>
+              <button className="btn btn-secondary" onClick={onCancel}>Cancel</button>
+              <button className="btn btn-primary" onClick={onSubmit}>Save Changes</button>
+            </>
+          ) : (
+            <>
+              <button className="btn btn-secondary" onClick={onBack}>← Back</button>
+              <button className="btn btn-success" onClick={onSubmit}>Submit Registration</button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const BILLER_STEPS = ['Basic\nInfo', 'Bank\nAccount', 'Service\nMapping', 'Fee\nConfig', 'Contacts', 'Review &\nSubmit'];
+const BillerRegPage = ({ onSuccess, onCancel, mode = 'add', initial, onSave }) => {
+  const isEdit = mode === 'edit';
+  const [step, setStep]       = useState(0);
+  // In edit mode start with all steps reachable so the user can jump around freely
+  const [maxStep, setMaxStep] = useState(isEdit ? 5 : 0);
+  const [done, setDone] = useState(false);
+  const [entId, setEntId] = useState(isEdit ? (initial?.id || '') : '');
+  const [bi, setBi]         = useState(isEdit && initial ? { ...initial.bi }                    : { ...INIT_BI });
+  const [accts, setAccts]   = useState(isEdit && initial ? initial.accts.map(a => ({ ...a })) : [mkAcct()]);
+  const [svcs, setSvcs]     = useState(isEdit && initial ? { ...initial.svcs }                  : { ...INIT_BSVCS });
+  const [fee, setFee]       = useState(isEdit && initial ? { ...initial.fee, tiers: initial.fee.tiers.map(t => ({...t})) } : { ...INIT_BFEE });
+  const [notifs, setNotifs] = useState(isEdit && initial ? initial.notifs.map(n => ({ ...n, events: { ...n.events } })) : [mkContact()]);
+  const next = () => { const ns = step + 1; setStep(ns); setMaxStep(m => Math.max(m, ns)); };
+  const back = () => setStep(s => s - 1);
+  const submit = () => {
+    if (isEdit) {
+      onSave({ ...initial, bi, accts, svcs, fee, notifs });
+      return;
+    }
+    const id = `ENT-BILL-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    setEntId(id);
+    setDone(true);
+    onSuccess({ type:'biller', bi, accts, svcs, fee, notifs, id, date:'2026-05-21', status:'Active' });
+  };
+  const reset = () => {
+    setStep(0); setMaxStep(0); setDone(false);
+    setBi({...INIT_BI}); setAccts([mkAcct()]); setSvcs({...INIT_BSVCS});
+    setFee({...INIT_BFEE}); setNotifs([mkContact()]);
+  };
+  if (done) return (
+    <div className="step-content">
+      <div className="card">
+        <div className="success-screen">
+          <div className="success-icon">
+            <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <div className="success-title">Biller Onboarding Complete</div>
+          <div className="eid-badge">{entId}</div>
+          <div className="success-desc">
+            <strong>{bi.entityName || 'This biller'}</strong> has been successfully registered in the ePG system.
+            Fee configuration and notification settings have been saved.
+            The biller is now ready to upload bills.
+          </div>
+          <div className="success-actions">
+            <button className="btn btn-secondary" onClick={reset}>Register Another Biller</button>
+            <button className="btn btn-primary" onClick={() => onCancel('billers')}>Back to Entity List</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+  return (
+    <>
+      <Stepper steps={BILLER_STEPS} current={step} maxReached={maxStep} onStepClick={i => setStep(i)}/>
+      {step === 0 && <BasicInfoStep value={bi} onChange={setBi} onNext={next} showBack={false}/>}
+      {step === 1 && <BankAccountStep value={accts} onChange={setAccts} onNext={next} onBack={back} subtitle="Configure settlement and reconciliation bank accounts for this biller."/>}
+      {step === 2 && <BillerServiceStep value={svcs} onChange={setSvcs} onNext={next} onBack={back}/>}
+      {step === 3 && <BillerFeeStep value={fee} onChange={setFee} onNext={next} onBack={back}/>}
+      {step === 4 && <BillerNotificationsStep value={notifs} onChange={setNotifs} onNext={next} onBack={back}/>}
+      {step === 5 && <BillerReviewStep bi={bi} accts={accts} svcs={svcs} fee={fee} notifs={notifs} onBack={back} onSubmit={submit} onEdit={i => setStep(i)} mode={mode} onCancel={onCancel}/>}
+    </>
+  );
+};
+
+/* ════════════════════════════════
+   ── FULFILLMENT ENTITY REGISTRATION ──
+   ════════════════════════════════ */
+const FE_SVCS = [
+  { group: 'Payment Services', items: [
+    { id: 'onlineBillPayment',   name: 'Online Bill Payment',   desc: 'Process online bill payments' },
+    { id: 'bulkBillPayment',     name: 'Bulk Bill Payment',     desc: 'Process batch bill payments' },
+    { id: 'adHocPayment',        name: 'Ad-hoc Payment',        desc: 'Process additional payments', tbc: true },
+    { id: 'branchTellerPayment', name: 'Branch Teller Payment', desc: 'Process payments via ePG Portal teller' },
+  ]},
+  { group: 'Processing Services', items: [
+    { id: 'safProcessing',  name: 'SAF Processing',  desc: 'Store-and-forward processing' },
+    { id: 'reconciliation', name: 'Reconciliation',  desc: 'Daily reconciliation processing' },
+    { id: 'settlement',     name: 'Settlement',      desc: 'Fund settlement processing' },
+  ]},
+];
+const INIT_FESVCS = { onlineBillPayment:false, bulkBillPayment:false, uploadPath:'', downloadPath:'', adHocPayment:false, branchTellerPayment:false, safProcessing:false, reconciliation:false, settlement:false };
+const ALL_FESVCS = FE_SVCS.flatMap(g => g.items);
+
+const FEServiceStep = ({ value, onChange, onNext, onBack }) => {
+  const [showErr, setShowErr] = useState(false);
+  const [pathErrs, setPathErrs] = useState({});
+  const any = ALL_FESVCS.some(s => value[s.id]);
+  const tog = id => {
+    setShowErr(false);
+    const next = { ...value, [id]: !value[id] };
+    // When toggling OFF Bulk Bill Payment, clear path values & errors
+    if (id === 'bulkBillPayment' && !next.bulkBillPayment) {
+      next.uploadPath = '';
+      next.downloadPath = '';
+      setPathErrs({});
+    }
+    onChange(next);
+  };
+  const setPath = (k, v) => {
+    onChange({ ...value, [k]: v });
+    if (pathErrs[k]) setPathErrs(p => ({ ...p, [k]: undefined }));
+  };
+  const validatePaths = () => {
+    if (!value.bulkBillPayment) return true;
+    const e = {};
+    if (!value.uploadPath?.trim())   e.uploadPath   = 'Upload Path is required';
+    if (!value.downloadPath?.trim()) e.downloadPath = 'Download Path is required';
+    setPathErrs(e);
+    return Object.keys(e).length === 0;
+  };
+  return (
+    <div className="step-content">
+      <div className="card">
+        <div className="card-title">Service Mapping</div>
+        <div className="card-sub">Select the services this fulfillment entity will provide.</div>
+        {showErr && <div className="val-banner">⚠️ At least one service must be selected.</div>}
+        {FE_SVCS.map(g => (
+          <div key={g.group} className="svc-group">
+            <div className="svc-group-title">{g.group}</div>
+            {g.items.map(s => (
+              <React.Fragment key={s.id}>
+                <SvcItem name={s.name} desc={s.desc} tbc={s.tbc} checked={value[s.id]} onToggle={() => tog(s.id)}/>
+                {s.id === 'bulkBillPayment' && (
+                  <div className={`collapsible${value.bulkBillPayment ? ' open' : ''}`}>
+                    <div className="collapsible-content">
+                      <div className="inline-paths-block">
+                        <FI id="feUploadPath"   label="Upload Path" req
+                          value={value.uploadPath || ''}
+                          onChange={v => setPath('uploadPath', v)}
+                          error={pathErrs.uploadPath}
+                          placeholder="sftp://example.com/upload/"
+                          hint="File path for bulk bill payment uploads."/>
+                        <FI id="feDownloadPath" label="Download Path" req
+                          value={value.downloadPath || ''}
+                          onChange={v => setPath('downloadPath', v)}
+                          error={pathErrs.downloadPath}
+                          placeholder="sftp://example.com/download/"
+                          hint="File path for payment response and notification files. Contact IT team for the correct path format."/>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        ))}
+        <StepActions onBack={onBack} onNext={() => {
+          if (!any)             { setShowErr(true); return; }
+          if (!validatePaths()) { return; }
+          onNext();
+        }}/>
+      </div>
+    </div>
+  );
+};
+
+/* Fee Preference Step */
+const INIT_FEE = { structure:'Tiered', tiers:[{ id:1, from:'0.00', to:'', fee:'' }], pct:'', minFee:'', maxFee:'', fixedAmt:'', currency:'BND', chargedTo:'Biller', appliedPer:'Per Transaction' };
+const mkTier  = () => ({ id: Date.now() + Math.random(), from:'0.00', to:'', fee:'' });
+
+const FeePreferenceStep = ({ value, onChange, onNext, onBack }) => {
+  const [errs, setErrs] = useState({});
+  const s = (k, v) => { onChange({ ...value, [k]: v }); if (errs[k]) setErrs(p => ({ ...p, [k]: undefined })); };
+  const updTier = (id, k, v) => {
+    const idx = value.tiers.findIndex(t => t.id === id);
+    s('tiers', value.tiers.map(t => t.id === id ? { ...t, [k]: v } : t));
+    const errKey = `tier_${idx}_${k}`;
+    if (errs[errKey]) setErrs(p => ({ ...p, [errKey]: undefined }));
+  };
+  const validate = () => {
+    const e = {};
+    if (!value.structure)   e.structure  = 'Fee Structure is required';
+    if (!value.currency)    e.currency   = 'Fee Currency is required';
+    if (!value.chargedTo)   e.chargedTo  = 'Fee Charged To is required';
+    if (!value.appliedPer)  e.appliedPer = 'Fee Applied Per is required';
+    if (value.structure === 'Percentage'   && !value.pct)      e.pct      = 'Fee Percentage is required';
+    if (value.structure === 'Fixed Amount' && !value.fixedAmt) e.fixedAmt = 'Fee Amount is required';
+    if (value.structure === 'Tiered') {
+      value.tiers.forEach((t, i) => {
+        if (!t.from) e[`tier_${i}_from`] = true;
+        if (!t.to)   e[`tier_${i}_to`]   = true;
+        if (!t.fee)  e[`tier_${i}_fee`]  = true;
+      });
+    }
+    setErrs(e);
+    if (Object.keys(e).length > 0) scrollToFirstError();
+    return Object.keys(e).length === 0;
+  };
+  return (
+    <div className="step-content">
+      <div className="card">
+        <div className="card-title">Fee Preference</div>
+        <div className="card-sub">Configure how ePG fees will be applied for this fulfillment entity.</div>
+        {Object.values(errs).some(Boolean) && <ValBanner/>}
+
+        {/* Fee Structure — card-style radios (3 across) */}
+        <div className="svc-group">
+          <div className="svc-group-title">Fee Structure <span className="req">*</span></div>
+          <div className="radio-card-group">
+            {FEE_STRUCTURE_OPTIONS.map(fs => (
+              <RadioCard key={fs.id} title={fs.title} desc={fs.desc}
+                selected={value.structure === fs.id}
+                onSelect={() => s('structure', fs.id)}/>
+            ))}
+          </div>
+        </div>
+
+        {/* Currency + Charged To side by side */}
+        <div className="form-grid" style={{ marginTop: 6, marginBottom: 18 }}>
+          <RadioInline label="Fee Currency" req direction="col"
+            name="currency"
+            value={value.currency}
+            onChange={v => s('currency', v)}
+            error={errs.currency}
+            options={[
+              { v:'Transaction Currency', l:'Transaction Currency', desc:'Fee collected in transaction currency' },
+              { v:'BND',                  l:'BND',                  desc:'Fee always collected in Brunei Dollar' },
+            ]}/>
+          <RadioInline label="Fee Charged To" req direction="col"
+            name="chargedTo"
+            value={value.chargedTo}
+            onChange={v => s('chargedTo', v)}
+            error={errs.chargedTo}
+            options={[
+              { v:'Biller',             l:'Biller (Service Provider)' },
+              { v:'Fulfillment Entity', l:'Fulfillment Entity' },
+              { v:'Customer',           l:'Customer' },
+              { v:'ePG System',         l:'ePG System' },
+            ]}/>
+        </div>
+
+        {/* Applied Per — horizontal */}
+        <div style={{ marginBottom: 18 }}>
+          <RadioInline label="Fee Applied Per" req tbc direction="row"
+            name="appliedPer"
+            value={value.appliedPer}
+            onChange={v => s('appliedPer', v)}
+            error={errs.appliedPer}
+            options={['Per Transaction','Per Bill']}/>
+        </div>
+
+        {/* Dynamic block: depends on Fee Structure (always at bottom) */}
+        {value.structure && (
+          <div className="svc-group">
+            <div className="svc-group-title">
+              {value.structure === 'Tiered'       && 'Tier Rules'}
+              {value.structure === 'Percentage'   && 'Percentage Settings'}
+              {value.structure === 'Fixed Amount' && 'Fixed Amount Settings'}
+            </div>
+
+            {value.structure === 'Tiered' && (
+              <>
+                {value.tiers.map((t, i) => {
+                  const canDel = value.tiers.length > 1;
+                  return (
+                    <div key={t.id} className="acct-card">
+                      <div className="acct-hdr">
+                        <span className="acct-num">Tier {i + 1}</span>
+                        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                          {!canDel && <span className="remove-hint">At least one tier is required</span>}
+                          <button className="btn-ghost-danger"
+                            onClick={() => s('tiers', value.tiers.filter(x => x.id !== t.id))}
+                            disabled={!canDel}>✕ Remove</button>
+                        </div>
+                      </div>
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'14px 22px' }}>
+                        <div className="fg">
+                          <label className="fl">From (BND) <span className="req">*</span></label>
+                          <span className="demo-hint">double-click to fill</span>
+                          <input type="number" id={i === 0 ? 'feeFromAmount' : undefined} name="feeFromAmount" className={`fi${errs[`tier_${i}_from`] ? ' err' : ''}`} value={t.from||''} placeholder="0.00" onChange={e => updTier(t.id,'from',e.target.value)}/>
+                        </div>
+                        <div className="fg">
+                          <label className="fl">To (BND) <span className="req">*</span></label>
+                          <span className="demo-hint">double-click to fill</span>
+                          <input type="number" id={i === 0 ? 'feeToAmount' : undefined} name="feeToAmount" className={`fi${errs[`tier_${i}_to`] ? ' err' : ''}`} value={t.to||''} placeholder="100.00" onChange={e => updTier(t.id,'to',e.target.value)}/>
+                        </div>
+                        <div className="fg">
+                          <label className="fl">Fee (BND) <span className="req">*</span></label>
+                          <span className="demo-hint">double-click to fill</span>
+                          <input type="number" id={i === 0 ? 'feeAmount' : undefined} name="feeAmount" className={`fi${errs[`tier_${i}_fee`] ? ' err' : ''}`} value={t.fee||''} placeholder="0.25" onChange={e => updTier(t.id,'fee',e.target.value)}/>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div style={{ marginTop: 4, display: 'flex', justifyContent: 'flex-start' }}>
+                  <button className="btn-add-text" onClick={() => s('tiers', [...value.tiers, mkTier()])}>＋ Add Another Tier</button>
+                </div>
+              </>
+            )}
+            {value.structure === 'Percentage' && (
+              <div className="form-grid">
+                <FI id="feePercentage" label="Fee Percentage (%)" req value={value.pct}    onChange={v => s('pct',v)}    error={errs.pct}    type="number" placeholder="e.g. 1.5"/>
+                <FI id="feeMinimum"    label="Minimum Fee (BND)"      value={value.minFee} onChange={v => s('minFee',v)} type="number" placeholder="Optional"/>
+                <FI id="feeMaximum"    label="Maximum Fee (BND)"      value={value.maxFee} onChange={v => s('maxFee',v)} type="number" placeholder="Optional"/>
+              </div>
+            )}
+            {value.structure === 'Fixed Amount' && (
+              <div className="form-grid">
+                <FI id="feeFixed" label="Fee Amount (BND)" req value={value.fixedAmt} onChange={v => s('fixedAmt',v)} error={errs.fixedAmt} type="number" placeholder="e.g. 2.00"/>
+              </div>
+            )}
+          </div>
+        )}
+
+        <StepActions onBack={onBack} onNext={() => { if (validate()) onNext(); }}/>
+      </div>
+    </div>
+  );
+};
+
+/* Channel Config Step */
+const FE_CHANNELS = [
+  { id:'atm',             name:'ATM',                       desc:'Automated Teller Machine' },
+  { id:'internetBanking', name:'Internet Banking',           desc:'Online banking portal' },
+  { id:'mobileBanking',   name:'Mobile Banking',             desc:'Mobile banking application' },
+  { id:'kiosk',           name:'Kiosk',                     desc:'Self-service payment kiosk' },
+  { id:'branchTeller',    name:'Branch Teller',             desc:'In-branch teller via ePG Portal' },
+  { id:'ivr',             name:'IVR',                       desc:'Interactive Voice Response' },
+  { id:'smsBanking',      name:'SMS Banking',               desc:'SMS-based payment' },
+];
+const INIT_CHNL = { atm:false, internetBanking:false, mobileBanking:false, kiosk:false, branchTeller:false, ivr:false, smsBanking:false };
+const ChannelStep = ({ value, onChange, onNext, onBack }) => {
+  const [showErr, setShowErr] = useState(false);
+  const any = Object.values(value).some(Boolean);
+  const tog = id => { setShowErr(false); onChange({ ...value, [id]: !value[id] }); };
+  return (
+    <div className="step-content">
+      <div className="card">
+        <div className="card-title">Channel Configuration</div>
+        <div className="card-sub">Select the payment channels this fulfillment entity will support. At least one is required.</div>
+        {showErr && <div className="val-banner">⚠️ At least one channel must be selected.</div>}
+        <div className="svc-group">
+          {FE_CHANNELS.map(c => <SvcItem key={c.id} name={c.name} desc={c.desc} checked={value[c.id]} onToggle={() => tog(c.id)}/>)}
+        </div>
+        <StepActions onBack={onBack} onNext={() => { if (!any) { setShowErr(true); return; } onNext(); }}/>
+      </div>
+    </div>
+  );
+};
+
+/* FE Review */
+const FEReviewStep = ({ bi, accts, svcs, fee, chnl, onBack, onSubmit, onEdit, mode = 'add', onCancel }) => {
+  const selSvcs = ALL_FESVCS.filter(s => svcs[s.id]);
+  const selChnl = FE_CHANNELS.filter(c => chnl[c.id]);
+  const feeDesc = fee.structure === 'Tiered'       ? `Tiered — ${fee.tiers.length} tier${fee.tiers.length !== 1 ? 's' : ''}`
+                : fee.structure === 'Percentage'   ? `${fee.pct || '?'}% per transaction`
+                : fee.structure === 'Fixed Amount' ? `BND ${fee.fixedAmt || '?'} flat`
+                : '—';
+  return (
+    <div className="step-content">
+      <div className="card">
+        <div className="card-title">Review &amp; Submit</div>
+        <div className="card-sub">Review all information before submitting the fulfillment entity registration.</div>
+        <RvBlock icon="📋" title="Basic Information" onEdit={() => onEdit(0)}>
+          <div className="rv-grid">
+            <RvRow label="Entity Name"      val={bi.entityName}/> <RvRow label="Contract Ref No." val={bi.contractRefNo}/>
+            <RvRow label="Contract Date"    val={bi.contractDate}/> <RvRow label="Language"       val={bi.languageSetting}/>
+            <RvRow label="Hierarchy Levels" val={bi.hierarchyLevels || '—'}/> <RvRow label="Primary Contact" val={bi.primaryContactName}/>
+            <RvRow label="Primary Email"    val={bi.primaryContactEmail}/> <RvRow label="Primary Phone" val={bi.primaryContactPhone}/>
+            {bi.levelNames?.length > 0 && (
+              <RvRow label="Level Names"
+                val={bi.levelNames.map((n, i) => `L${i+1}: ${n || '—'}`).join('  ·  ')}/>
+            )}
+            {bi.secondaryContactName  && <RvRow label="Secondary Contact" val={bi.secondaryContactName}/>}
+            {bi.secondaryContactEmail && <RvRow label="Secondary Email"   val={bi.secondaryContactEmail}/>}
+            {bi.secondaryContactPhone && <RvRow label="Secondary Phone"   val={bi.secondaryContactPhone}/>}
+          </div>
+        </RvBlock>
+        <RvBlock icon="🏦" title={`Bank Accounts (${accts.length})`} onEdit={() => onEdit(1)}>
+          <div style={{ display:'flex', flexWrap:'wrap', gap:7 }}>
+            {accts.map((a, i) => <span key={a.id} className="tag tag-blue">#{i+1} {a.bankName || 'Bank'} — {a.currency}</span>)}
+          </div>
+        </RvBlock>
+        <RvBlock icon="🔧" title={`Services (${selSvcs.length})`} onEdit={() => onEdit(2)}>
+          <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+            {selSvcs.map(s => <span key={s.id} className="tag tag-blue">{s.name}</span>)}
+            {selSvcs.length === 0 && <span style={{ color:'#9E9E9E', fontSize:13 }}>None selected</span>}
+          </div>
+        </RvBlock>
+        <RvBlock icon="💰" title="Fee Preference" onEdit={() => onEdit(3)}>
+          <div className="rv-grid">
+            <RvRow label="Structure"    val={fee.structure}/>
+            <RvRow label="Fee Amount"   val={feeDesc}/>
+            <RvRow label="Currency"     val={fee.currency}/>
+            <RvRow label="Charged To"   val={fee.chargedTo}/>
+          </div>
+        </RvBlock>
+        <RvBlock icon="📡" title={`Channels (${selChnl.length})`} onEdit={() => onEdit(4)}>
+          <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+            {selChnl.map(c => <span key={c.id} className="tag tag-green">{c.name}</span>)}
+            {selChnl.length === 0 && <span style={{ color:'#9E9E9E', fontSize:13 }}>None selected</span>}
+          </div>
+        </RvBlock>
+        <div className="step-actions">
+          {mode === 'edit' ? (
+            <>
+              <button className="btn btn-secondary" onClick={onCancel}>Cancel</button>
+              <button className="btn btn-primary" onClick={onSubmit}>Save Changes</button>
+            </>
+          ) : (
+            <>
+              <button className="btn btn-secondary" onClick={onBack}>← Back</button>
+              <button className="btn btn-success" onClick={onSubmit}>Submit Registration</button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const FE_STEPS = ['Basic\nInformation', 'Bank Account\nSetup', 'Service\nMapping', 'Fee\nPreference', 'Channel\nConfig.', 'Review &\nSubmit'];
+const FERegPage = ({ onSuccess, onCancel, mode = 'add', initial, onSave }) => {
+  const isEdit = mode === 'edit';
+  const [step, setStep]       = useState(0);
+  const [maxStep, setMaxStep] = useState(isEdit ? 5 : 0);
+  const [done, setDone]   = useState(false);
+  const [entId, setEntId] = useState(isEdit ? (initial?.id || '') : '');
+  const [bi, setBi]       = useState(isEdit && initial ? { ...initial.bi }                    : { ...INIT_BI });
+  const [accts, setAccts] = useState(isEdit && initial ? initial.accts.map(a => ({ ...a })) : [mkAcct()]);
+  const [svcs, setSvcs]   = useState(isEdit && initial ? { ...initial.svcs }                  : { ...INIT_FESVCS });
+  const [fee, setFee]     = useState(isEdit && initial ? { ...initial.fee, tiers: initial.fee.tiers ? initial.fee.tiers.map(t => ({...t})) : [{ id:1, from:'0.00', to:'', fee:'' }] } : { ...INIT_FEE });
+  const [chnl, setChnl]   = useState(isEdit && initial ? { ...initial.chnl }                  : { ...INIT_CHNL });
+  const next = () => { const ns = step + 1; setStep(ns); setMaxStep(m => Math.max(m, ns)); };
+  const back = () => setStep(s => s - 1);
+  const submit = () => {
+    if (isEdit) {
+      onSave({ ...initial, bi, accts, svcs, fee, chnl });
+      return;
+    }
+    const id = `ENT-FE-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    setEntId(id);
+    setDone(true);
+    onSuccess({ type:'fe', bi, accts, svcs, fee, chnl, id, date:'2026-05-21', status:'Active' });
+  };
+  const reset = () => { setStep(0); setMaxStep(0); setDone(false); setBi({...INIT_BI}); setAccts([mkAcct()]); setSvcs({...INIT_FESVCS}); setFee({...INIT_FEE}); setChnl({...INIT_CHNL}); };
+  if (done) return (
+    <div className="step-content">
+      <div className="card">
+        <div className="success-screen">
+          <div className="success-icon">
+            <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#43A047" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <div className="success-title">Fulfillment Registered Successfully</div>
+          <div className="eid-badge">{entId}</div>
+          <div className="success-desc">
+            Next steps: Map GL accounts in <code style={{background:'#E8F0FE',padding:'1px 6px',borderRadius:3,fontSize:12}}>GL &amp; CoA Mapping (BCONFIG_UC8)</code> and configure notifications in <code style={{background:'#E8F0FE',padding:'1px 6px',borderRadius:3,fontSize:12}}>Contact List (BCONFIG_UC4)</code>.
+          </div>
+          <div className="success-actions">
+            <button className="btn btn-secondary" onClick={reset}>Register Another FE</button>
+            <button className="btn btn-primary" onClick={() => onCancel('fe')}>Back to Entity List</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+  return (
+    <>
+      <Stepper steps={FE_STEPS} current={step} maxReached={maxStep} onStepClick={i => setStep(i)}/>
+      {step === 0 && <BasicInfoStep value={bi} onChange={setBi} onNext={next} showBack={false} entityType="fulfillment entity"/>}
+      {step === 1 && <BankAccountStep value={accts} onChange={setAccts} onNext={next} onBack={back} subtitle="Configure settlement and reconciliation accounts. Note: Reconciliation and settlement accounts may differ for fulfillment entities."/>}
+      {step === 2 && <FEServiceStep value={svcs} onChange={setSvcs} onNext={next} onBack={back}/>}
+      {step === 3 && <FeePreferenceStep value={fee} onChange={setFee} onNext={next} onBack={back}/>}
+      {step === 4 && <ChannelStep value={chnl} onChange={setChnl} onNext={next} onBack={back}/>}
+      {step === 5 && <FEReviewStep bi={bi} accts={accts} svcs={svcs} fee={fee} chnl={chnl} onBack={back} onSubmit={submit} onEdit={i => setStep(i)} mode={mode} onCancel={onCancel}/>}
+    </>
+  );
+};
+
+/* ════════════════════════════════
+   ENTITY DETAIL PAGES (view-only summary, reuses RvBlock layout)
+   ════════════════════════════════ */
+const DetailHeader = ({ entity, onEdit }) => (
+  <div className="detail-header">
+    <div>
+      <div className="page-title">{entity.bi.entityName}</div>
+      <div className="detail-header-meta">
+        <span className="detail-entity-id">{entity.id}</span>
+      </div>
+    </div>
+    <button className="btn btn-primary" onClick={onEdit}>Edit</button>
+  </div>
+);
+
+const BillerDetailPage = ({ entity, onEdit, onBack }) => {
+  if (!entity) return <div style={{ padding: 32 }}>Entity not found.</div>;
+  const { bi, accts, svcs, fee, notifs } = entity;
+  const selSvcs = ALL_BSVCS.filter(s => svcs[s.id]);
+  const mode = BILL_DATA_MODE_BY_ID[svcs.billDataMode];
+  return (
+    <div className="step-content">
+      <DetailHeader entity={entity} onEdit={onEdit}/>
+      <div className="card" style={{ marginTop: 16 }}>
+        <RvBlock icon="📋" title="Basic Information">
+          <div className="rv-grid">
+            <RvRow label="Entity ID"        val={entity.id}/>
+            <RvRow label="Entity Name"      val={bi.entityName}/>
+            <RvRow label="Contract Ref No." val={bi.contractRefNo}/>
+            <RvRow label="Contract Date"    val={bi.contractDate}/>
+            <RvRow label="Language"         val={bi.languageSetting}/>
+            <RvRow label="Hierarchy Levels" val={bi.hierarchyLevels || '—'}/>
+            {bi.levelNames?.length > 0 && (
+              <RvRow label="Level Names" val={bi.levelNames.map((n, i) => `L${i+1}: ${n || '—'}`).join('  ·  ')}/>
+            )}
+            <RvRow label="Primary Contact"  val={bi.primaryContactName}/>
+            <RvRow label="Primary Email"    val={bi.primaryContactEmail}/>
+            <RvRow label="Primary Phone"    val={bi.primaryContactPhone}/>
+            {bi.secondaryContactName  && <RvRow label="Secondary Contact" val={bi.secondaryContactName}/>}
+            {bi.secondaryContactEmail && <RvRow label="Secondary Email"   val={bi.secondaryContactEmail}/>}
+            {bi.secondaryContactPhone && <RvRow label="Secondary Phone"   val={bi.secondaryContactPhone}/>}
+          </div>
+        </RvBlock>
+
+        <RvBlock icon="🏦" title={`Bank Accounts (${accts.length})`}>
+          <div className="tbl-wrap" style={{ margin: 0, padding: 0 }}>
+            <table className="data-table">
+              <thead><tr>{['#','Currency','Account Type','Account Name','Account Number','Bank Name'].map(h => <th key={h}>{h}</th>)}</tr></thead>
+              <tbody>{accts.map((a, i) => (
+                <tr key={a.id}>
+                  <td className="tbl-muted">{i+1}</td>
+                  <td>{a.currency}</td>
+                  <td>{a.accountType}</td>
+                  <td>{a.accountName || '—'}</td>
+                  <td className="tbl-mono">{a.accountNumber || '—'}</td>
+                  <td>{a.bankName || '—'}</td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+        </RvBlock>
+
+        <RvBlock icon="🔧" title={`Service Mapping`}>
+          <div className="rv-grid" style={{ marginBottom: 14 }}>
+            <RvRow label="Bill Data Mode"
+              val={svcs.billDataMode ? `${svcs.billDataMode} — Teller Portal will show: ${mode?.tellerTag || svcs.billDataMode}` : '—'}/>
+          </div>
+          {BILLER_SVCS.map(g => (
+            <div key={g.group} style={{ marginBottom: 12 }}>
+              <div style={{ fontSize:10.5, fontWeight:700, textTransform:'uppercase', letterSpacing:'.07em', color:'var(--text-subtle)', marginBottom:8 }}>{g.group}</div>
+              {g.items.map(s => (
+                <div key={s.id} className={`svc-item${svcs[s.id] ? '' : ' svc-disabled'}`} style={{ cursor: 'default' }}>
+                  <div className={`chk${svcs[s.id] ? ' on' : ''}`}>{svcs[s.id] && <CheckSVG/>}</div>
+                  <div>
+                    <div className="si-name">{s.name}{s.tbc && <span className="tbc-tag">(TBC)</span>}</div>
+                    <div className="si-desc">{s.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+          {svcs.bulkFileUpload && (
+            <div style={{ marginTop:14, padding:'12px 14px', background:'var(--chip-bg)', border:'1px solid var(--border)', borderRadius:'var(--radius-sm)' }}>
+              <div style={{ fontSize:10.5, fontWeight:700, textTransform:'uppercase', letterSpacing:'.07em', color:'var(--text-subtle)', marginBottom:8 }}>Bulk File Upload Paths</div>
+              <div className="rv-grid">
+                <RvRow label="Upload Path"   val={svcs.uploadPath}/>
+                <RvRow label="Download Path" val={svcs.downloadPath}/>
+              </div>
+            </div>
+          )}
+        </RvBlock>
+
+        <RvBlock icon="💰" title="Fee Configuration">
+          <div className="rv-grid">
+            <RvRow label="Fee Structure"   val={fee.structure}/>
+            <RvRow label="Fee Amount"      val={formatFeeSummary(fee)}/>
+            <RvRow label="Currency"        val={fee.currency}/>
+            <RvRow label="Charged To"      val={fee.chargedTo}/>
+            <RvRow label="Applied Per"     val={fee.appliedPer}/>
+          </div>
+          {fee.structure === 'Tiered' && fee.tiers?.length > 0 && (
+            <div className="tbl-wrap" style={{ margin: '12px 0 0', padding: 0 }}>
+              <table className="data-table">
+                <thead><tr>{['Tier','From','To','Fee'].map(h => <th key={h}>{h}</th>)}</tr></thead>
+                <tbody>{fee.tiers.map((t, i) => (
+                  <tr key={t.id}>
+                    <td className="tbl-muted">#{i+1}</td>
+                    <td className="tbl-mono">{fee.currency} {t.from || '—'}</td>
+                    <td className="tbl-mono">{fee.currency} {t.to || '—'}</td>
+                    <td className="tbl-mono">{fee.currency} {t.fee || '—'}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+          )}
+        </RvBlock>
+
+        <RvBlock icon="🔔" title={`Contact List (${notifs?.length || 0} contact${(notifs?.length || 0) !== 1 ? 's' : ''})`}>
+          {!notifs || notifs.length === 0
+            ? <p style={{ color:'var(--text-subtle)', fontSize:13 }}>No contacts configured.</p>
+            : (
+              <div className="tbl-wrap" style={{ margin: 0, padding: 0 }}>
+                <table className="data-table">
+                  <thead><tr>{['#','Name','Email','Phone','Notification Events'].map(h => <th key={h}>{h}</th>)}</tr></thead>
+                  <tbody>{notifs.map((c, i) => {
+                    const evts = NOTIF_EVENTS.filter(ev => c.events?.[ev.id]).map(ev => ev.label).join(', ');
+                    return (
+                      <tr key={c.id}>
+                        <td className="tbl-muted">{i+1}</td>
+                        <td>{c.name || '—'}</td>
+                        <td>{c.email || '—'}</td>
+                        <td>{c.phone || '—'}</td>
+                        <td><span className="tbl-muted">{evts || '—'}</span></td>
+                      </tr>
+                    );
+                  })}</tbody>
+                </table>
+              </div>
+            )}
+        </RvBlock>
+      </div>
+      <div className="detail-back-link">
+        <button className="btn-add-text" onClick={onBack}>← Back to Entity Management</button>
+      </div>
+    </div>
+  );
+};
+
+const FEDetailPage = ({ entity, onEdit, onBack }) => {
+  if (!entity) return <div style={{ padding: 32 }}>Entity not found.</div>;
+  const { bi, accts, svcs, fee, chnl } = entity;
+  const selChnl = FE_CHANNELS.filter(c => chnl?.[c.id]);
+  const feeDesc = fee.structure === 'Tiered'       ? `Tiered — ${fee.tiers.length} tier${fee.tiers.length !== 1 ? 's' : ''}`
+                : fee.structure === 'Percentage'   ? `${fee.pct || '?'}% per transaction`
+                : fee.structure === 'Fixed Amount' ? `${fee.currency || 'BND'} ${fee.fixedAmt || '?'} flat`
+                : '—';
+  return (
+    <div className="step-content">
+      <DetailHeader entity={entity} onEdit={onEdit}/>
+      <div className="card" style={{ marginTop: 16 }}>
+        <RvBlock icon="📋" title="Basic Information">
+          <div className="rv-grid">
+            <RvRow label="Entity ID"        val={entity.id}/>
+            <RvRow label="Entity Name"      val={bi.entityName}/>
+            <RvRow label="Contract Ref No." val={bi.contractRefNo}/>
+            <RvRow label="Contract Date"    val={bi.contractDate}/>
+            <RvRow label="Language"         val={bi.languageSetting}/>
+            <RvRow label="Hierarchy Levels" val={bi.hierarchyLevels || '—'}/>
+            {bi.levelNames?.length > 0 && (
+              <RvRow label="Level Names" val={bi.levelNames.map((n, i) => `L${i+1}: ${n || '—'}`).join('  ·  ')}/>
+            )}
+            <RvRow label="Primary Contact"  val={bi.primaryContactName}/>
+            <RvRow label="Primary Email"    val={bi.primaryContactEmail}/>
+            <RvRow label="Primary Phone"    val={bi.primaryContactPhone}/>
+            {bi.secondaryContactName  && <RvRow label="Secondary Contact" val={bi.secondaryContactName}/>}
+            {bi.secondaryContactEmail && <RvRow label="Secondary Email"   val={bi.secondaryContactEmail}/>}
+            {bi.secondaryContactPhone && <RvRow label="Secondary Phone"   val={bi.secondaryContactPhone}/>}
+          </div>
+        </RvBlock>
+
+        <RvBlock icon="🏦" title={`Bank Accounts (${accts.length})`}>
+          <div className="tbl-wrap" style={{ margin: 0, padding: 0 }}>
+            <table className="data-table">
+              <thead><tr>{['#','Currency','Account Type','Account Name','Account Number','Bank Name'].map(h => <th key={h}>{h}</th>)}</tr></thead>
+              <tbody>{accts.map((a, i) => (
+                <tr key={a.id}>
+                  <td className="tbl-muted">{i+1}</td>
+                  <td>{a.currency}</td>
+                  <td>{a.accountType}</td>
+                  <td>{a.accountName || '—'}</td>
+                  <td className="tbl-mono">{a.accountNumber || '—'}</td>
+                  <td>{a.bankName || '—'}</td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+        </RvBlock>
+
+        <RvBlock icon="🔧" title="Service Mapping">
+          {FE_SVCS.map(g => (
+            <div key={g.group} style={{ marginBottom: 12 }}>
+              <div style={{ fontSize:10.5, fontWeight:700, textTransform:'uppercase', letterSpacing:'.07em', color:'var(--text-subtle)', marginBottom:8 }}>{g.group}</div>
+              {g.items.map(s => (
+                <div key={s.id} className={`svc-item${svcs[s.id] ? '' : ' svc-disabled'}`} style={{ cursor: 'default' }}>
+                  <div className={`chk${svcs[s.id] ? ' on' : ''}`}>{svcs[s.id] && <CheckSVG/>}</div>
+                  <div>
+                    <div className="si-name">{s.name}{s.tbc && <span className="tbc-tag">(TBC)</span>}</div>
+                    <div className="si-desc">{s.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+          {svcs.bulkBillPayment && (
+            <div style={{ marginTop:14, padding:'12px 14px', background:'var(--chip-bg)', border:'1px solid var(--border)', borderRadius:'var(--radius-sm)' }}>
+              <div style={{ fontSize:10.5, fontWeight:700, textTransform:'uppercase', letterSpacing:'.07em', color:'var(--text-subtle)', marginBottom:8 }}>Bulk Bill Payment Paths</div>
+              <div className="rv-grid">
+                <RvRow label="Upload Path"   val={svcs.uploadPath}/>
+                <RvRow label="Download Path" val={svcs.downloadPath}/>
+              </div>
+            </div>
+          )}
+        </RvBlock>
+
+        <RvBlock icon="💰" title="Fee Preference">
+          <div className="rv-grid">
+            <RvRow label="Fee Structure"   val={fee.structure}/>
+            <RvRow label="Fee Amount"      val={feeDesc}/>
+            <RvRow label="Currency"        val={fee.currency}/>
+            <RvRow label="Charged To"      val={fee.chargedTo}/>
+            <RvRow label="Applied Per"     val={fee.appliedPer || '—'}/>
+          </div>
+          {fee.structure === 'Tiered' && fee.tiers?.length > 0 && (
+            <div className="tbl-wrap" style={{ margin: '12px 0 0', padding: 0 }}>
+              <table className="data-table">
+                <thead><tr>{['Tier','From','To','Fee'].map(h => <th key={h}>{h}</th>)}</tr></thead>
+                <tbody>{fee.tiers.map((t, i) => (
+                  <tr key={t.id}>
+                    <td className="tbl-muted">#{i+1}</td>
+                    <td className="tbl-mono">{fee.currency} {t.from || '—'}</td>
+                    <td className="tbl-mono">{fee.currency} {t.to || '—'}</td>
+                    <td className="tbl-mono">{fee.currency} {t.fee || '—'}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+          )}
+        </RvBlock>
+
+        <RvBlock icon="📡" title={`Channel Configuration (${selChnl.length})`}>
+          {selChnl.length === 0
+            ? <p style={{ color:'var(--text-subtle)', fontSize:13 }}>No channels configured.</p>
+            : (
+              <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+                {selChnl.map(c => <span key={c.id} className="tag tag-green">{c.name}</span>)}
+              </div>
+            )}
+        </RvBlock>
+      </div>
+      <div className="detail-back-link">
+        <button className="btn-add-text" onClick={onBack}>← Back to Entity Management</button>
+      </div>
+    </div>
+  );
+};
+
+/* ════════════════════════════════
+   LIST PAGE DISPLAY HELPERS
+   Priorities determine which 2 tags surface in the table; the rest collapse
+   into a "+" overflow with hover tooltip.
+   ════════════════════════════════ */
+const BILLER_SVC_PRIORITY = ['billPayment','billEnquiry','bulkFileUpload','onlineBillLoad','safProcessing','paymentNotification','adHocPayment','onlineBillPresentment'];
+const FE_CHANNEL_PRIORITY = ['internetBanking','mobileBanking','atm','branchTeller','kiosk','smsBanking','ivr'];
+const billerSvcName = (id) => ALL_BSVCS.find(s => s.id === id)?.name || id;
+const feChannelName = (id) => FE_CHANNELS.find(c => c.id === id)?.name || id;
+
+const BillDataModeBadge = ({ mode }) => {
+  if (!mode) return <span className="tbl-muted">—</span>;
+  return <span className={`bdm-badge bdm-${mode.toLowerCase()}`}>{mode}</span>;
+};
+
+const FeeStructureBadge = ({ structure }) => {
+  if (!structure) return <span className="tbl-muted">—</span>;
+  const cls = structure === 'Tiered' ? 'fs-tiered' : structure === 'Percentage' ? 'fs-percentage' : 'fs-fixed';
+  return <span className={`fs-badge ${cls}`}>{structure}</span>;
+};
+
+const PrioritisedTags = ({ items, priority, lookup }) => {
+  if (!items) return <span className="tbl-muted">—</span>;
+  // Service/channel keys that are NOT real toggles (e.g. paths, mode strings)
+  const isToggleKey = (k) => typeof items[k] === 'boolean';
+  // Enabled in priority order, then any leftover enabled toggles
+  const enabledByPriority = priority.filter(id => items[id]);
+  const extras = Object.keys(items).filter(id => items[id] && isToggleKey(id) && !priority.includes(id));
+  const ordered = [...enabledByPriority, ...extras];
+  if (ordered.length === 0) return <span className="tbl-muted">—</span>;
+  return (
+    <div className="svc-tags">
+      {ordered.map(id => <span key={id} className="svc-tag">{lookup(id)}</span>)}
+    </div>
+  );
+};
+
+/* ════════════════════════════════
+   ENTITY MANAGEMENT LIST PAGE
+   ════════════════════════════════ */
+const ListPage = ({ tab, onTabChange, billers, fes, onAddBiller, onAddFE, onView }) => {
+  const [search, setSearch]   = useState('');
+  const [filter, setFilter]   = useState('All');
+
+  const filt = (items) => items.filter(it => {
+    const q = search.toLowerCase();
+    const matchQ = !q || it.bi.entityName.toLowerCase().includes(q) || it.bi.contractRefNo.toLowerCase().includes(q);
+    const matchF = filter === 'All' || it.status === filter;
+    return matchQ && matchF;
+  });
+  const filteredBillers = filt(billers);
+  const filteredFEs     = filt(fes);
+
+  const svcCount  = sv => Object.values(sv).filter(Boolean).length;
+  const chnlCount = ch => Object.values(ch).filter(Boolean).length;
+
+  return (
+    <div className="step-content">
+      {/* Tab bar as its own card-like element */}
+      <div style={{ background:'#fff', borderRadius:8, boxShadow:'0 1px 3px rgba(0,0,0,0.07)', marginBottom:14, overflow:'hidden' }}>
+        <div style={{ padding:'0 26px', display:'flex', alignItems:'flex-end', borderBottom:'2px solid #EEEEEE' }}>
+          <div className="tab-bar" style={{ border:'none', flex:1 }}>
+            <div className={`tab-item${tab === 'billers' ? ' active' : ''}`} onClick={() => { onTabChange('billers'); setSearch(''); setFilter('All'); }}>
+              Billers
+              {billers.length > 0 && <span style={{ marginLeft:6, background: tab==='billers'?'#2E75B6':'#E0E0E0', color:'#fff', fontSize:10.5, fontWeight:700, padding:'1px 7px', borderRadius:100 }}>{billers.length}</span>}
+            </div>
+            <div className={`tab-item${tab === 'fe' ? ' active' : ''}`} onClick={() => { onTabChange('fe'); setSearch(''); setFilter('All'); }}>
+              Fulfillments
+              {fes.length > 0 && <span style={{ marginLeft:6, background: tab==='fe'?'#2E75B6':'#E0E0E0', color:'#fff', fontSize:10.5, fontWeight:700, padding:'1px 7px', borderRadius:100 }}>{fes.length}</span>}
+            </div>
+          </div>
+          <div style={{ padding:'8px 0 10px' }}>
+            <button className="btn btn-primary" style={{ fontSize:13, padding:'7px 16px' }}
+              onClick={tab === 'billers' ? onAddBiller : onAddFE}>
+              + {tab === 'billers' ? 'Add Biller' : 'Add Fulfillment'}
+            </button>
+          </div>
+        </div>
+
+        <div style={{ padding:'16px 26px 20px' }}>
+          {/* Toolbar */}
+          <div className="toolbar">
+            <input className="search-box" value={search} onChange={e => setSearch(e.target.value)}
+              placeholder={`Search ${tab === 'billers' ? 'billers' : 'fulfillments'}…`}/>
+          </div>
+
+          {/* Billers Tab */}
+          {tab === 'billers' && (
+            filteredBillers.length === 0 ? (
+              billers.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-icon">🏢</div>
+                  <div className="empty-title">No billers registered yet</div>
+                  <div className="empty-desc">Register billers to start accepting bill payments through the ePG system.</div>
+                  <button className="btn btn-primary" onClick={onAddBiller}>+ Add First Biller</button>
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <div className="empty-icon" style={{ fontSize:36 }}>🔍</div>
+                  <div className="empty-title">No results found</div>
+                  <div className="empty-desc">No billers match your search or filter criteria.</div>
+                  <button className="btn btn-secondary" onClick={() => { setSearch(''); setFilter('All'); }}>Clear filters</button>
+                </div>
+              )
+            ) : (
+              <div className="tbl-wrap">
+                <table className="data-table">
+                  <thead><tr>
+                    <th>Biller Name</th>
+                    <th>Bill Data Mode</th>
+                    <th>Services</th>
+                  </tr></thead>
+                  <tbody>
+                    {filteredBillers.map(b => (
+                      <tr key={b.id}>
+                        <td><div className="tbl-name-link" onClick={() => onView(b.id, 'biller')}>{b.bi.entityName}</div></td>
+                        <td><BillDataModeBadge mode={b.svcs?.billDataMode}/></td>
+                        <td><PrioritisedTags items={b.svcs} priority={BILLER_SVC_PRIORITY} lookup={billerSvcName}/></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
+          )}
+
+          {/* FE Tab */}
+          {tab === 'fe' && (
+            filteredFEs.length === 0 ? (
+              fes.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-icon">🏦</div>
+                  <div className="empty-title">No fulfillments registered yet</div>
+                  <div className="empty-desc">Register banks and financial institutions to enable payment processing.</div>
+                  <button className="btn btn-primary" onClick={onAddFE}>+ Add First Fulfillment</button>
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <div className="empty-icon" style={{ fontSize:36 }}>🔍</div>
+                  <div className="empty-title">No results found</div>
+                  <div className="empty-desc">No fulfillments match your search or filter criteria.</div>
+                  <button className="btn btn-secondary" onClick={() => { setSearch(''); setFilter('All'); }}>Clear filters</button>
+                </div>
+              )
+            ) : (
+              <div className="tbl-wrap">
+                <table className="data-table">
+                  <thead><tr>
+                    <th>Fulfillment Name</th>
+                    <th>Fee Structure</th>
+                    <th>Channels</th>
+                  </tr></thead>
+                  <tbody>
+                    {filteredFEs.map(f => (
+                      <tr key={f.id}>
+                        <td><div className="tbl-name-link" onClick={() => onView(f.id, 'fe')}>{f.bi.entityName}</div></td>
+                        <td><FeeStructureBadge structure={f.fee?.structure}/></td>
+                        <td><PrioritisedTags items={f.chnl} priority={FE_CHANNEL_PRIORITY} lookup={feChannelName}/></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ════════════════════════════════
+   PORTAL OWNER PAGE
+   ════════════════════════════════ */
+const INIT_PO = { orgName:'', regNum:'', primaryContactName:'', primaryContactEmail:'', primaryContactPhone:'', languageSetting:'' };
+const PortalOwnerPage = ({ value, onSave }) => {
+  const [editing, setEditing] = useState(!value);
+  const [form, setForm]       = useState(value ? { ...value } : { ...INIT_PO });
+  const [errs, setErrs]       = useState({});
+  const [saved, setSaved]     = useState(false);
+  const s = (k, v) => { setForm(p => ({ ...p, [k]: v })); if (errs[k]) setErrs(p => ({ ...p, [k]: undefined })); };
+  const validate = () => {
+    const e = {};
+    if (!form.orgName?.trim())             e.orgName             = 'Organization Name is required';
+    if (!form.regNum?.trim())              e.regNum              = 'Registration Number is required';
+    if (!form.primaryContactName?.trim())  e.primaryContactName  = 'Primary Contact Name is required';
+    if (!form.primaryContactEmail?.trim()) e.primaryContactEmail = 'Primary Contact Email is required';
+    else if (!/\S+@\S+\.\S+/.test(form.primaryContactEmail)) e.primaryContactEmail = 'Invalid email format';
+    if (!form.languageSetting)             e.languageSetting     = 'Language Setting is required';
+    setErrs(e);
+    return Object.keys(e).length === 0;
+  };
+  const save = () => {
+    if (!validate()) return;
+    onSave({ ...form });
+    setEditing(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3500);
+  };
+  if (!editing && value) return (
+    <div className="step-content">
+      <div className="card">
+        <div className="card-header" style={{ marginBottom:16 }}>
+          <div>
+            <div className="card-title">Portal Owner Configuration</div>
+            <div className="card-sub" style={{ marginBottom:0 }}>The organization that owns and manages the ePG platform.</div>
+          </div>
+          <button className="btn btn-secondary" style={{ fontSize:13, padding:'7px 16px' }}
+            onClick={() => { setEditing(true); setForm({ ...value }); }}>Edit</button>
+        </div>
+        <div className="po-grid">
+          {[['Organization Name', value.orgName], ['Registration Number', value.regNum],
+            ['Primary Contact', value.primaryContactName], ['Primary Email', value.primaryContactEmail],
+            ['Primary Phone', value.primaryContactPhone || '—'], ['Language Setting', value.languageSetting]
+          ].map(([lbl, val]) => (
+            <div key={lbl} className="rv-row">
+              <div className="rv-lbl">{lbl}</div>
+              <div className="rv-val">{val || '—'}</div>
+            </div>
+          ))}
+        </div>
+        {saved && <div className="po-saved-banner"><CheckSVG s={14}/> Portal Owner configuration saved successfully.</div>}
+      </div>
+    </div>
+  );
+  return (
+    <div className="step-content">
+      <div className="card">
+        <div className="card-title">Portal Owner Configuration</div>
+        <div className="card-sub">Configure the organization that owns and manages the ePG platform.</div>
+        {!value && (
+          <div className="empty-card">
+            <div style={{ fontSize:40 }}>🌐</div>
+            <div style={{ fontSize:15, fontWeight:700, color:'#424242' }}>Portal Owner Not Configured</div>
+            <p style={{ color:'#9E9E9E', fontSize:13, maxWidth:340 }}>Set up the organization that owns and manages the ePG platform. This should be configured before going live.</p>
+          </div>
+        )}
+        {Object.values(errs).some(Boolean) && <ValBanner/>}
+        <div className="form-grid">
+          <FI label="Organization Name"   req value={form.orgName}            onChange={v=>s('orgName',v)}            error={errs.orgName}            placeholder="e.g. Ministry of Finance Brunei"/>
+          <FI label="Registration Number" req value={form.regNum}             onChange={v=>s('regNum',v)}             error={errs.regNum}             placeholder="e.g. ROC-2024-001"/>
+          <FI label="Primary Contact Name"  req value={form.primaryContactName}  onChange={v=>s('primaryContactName',v)}  error={errs.primaryContactName}  placeholder="Full name"/>
+          <FI label="Primary Contact Email" req type="email" value={form.primaryContactEmail} onChange={v=>s('primaryContactEmail',v)} error={errs.primaryContactEmail} placeholder="email@example.com"/>
+          <FI label="Primary Contact Phone" value={form.primaryContactPhone}  onChange={v=>s('primaryContactPhone',v)}  placeholder="+673 xxx xxxx"/>
+          <FS label="Language Setting" req value={form.languageSetting} onChange={v=>s('languageSetting',v)} error={errs.languageSetting} options={['English','Malay','Both']}/>
+        </div>
+        <div className="step-actions">
+          {value ? <button className="btn btn-secondary" onClick={() => setEditing(false)}>Cancel</button> : <span/>}
+          <button className="btn btn-primary" onClick={save}>Save Configuration</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ════════════════════════════════
+   TOAST
+   ════════════════════════════════ */
+const Toast = ({ msg, onClose }) => {
+  useEffect(() => { const t = setTimeout(onClose, 3000); return () => clearTimeout(t); }, []);
+  return <div className="toast">{msg}</div>;
+};
+
+/* ════════════════════════════════
+   APP — root state & routing
+   ════════════════════════════════ */
+const CRUMBS = {
+  list:            (goList)                   => [{ label:'Home' }, { label:'Entity Management' }],
+  biller:          (goList)                   => [{ label:'Home' }, { label:'Entity Management', onClick: goList }, { label:'New Biller' }],
+  fe:              (goList)                   => [{ label:'Home' }, { label:'Entity Management', onClick: goList }, { label:'New Fulfillment' }],
+  'biller-detail': (goList, entity)           => [{ label:'Home' }, { label:'Entity Management', onClick: goList }, { label: entity?.bi?.entityName || 'Entity' }],
+  'fe-detail':     (goList, entity)           => [{ label:'Home' }, { label:'Entity Management', onClick: goList }, { label: entity?.bi?.entityName || 'Entity' }],
+  'biller-edit':   (goList, entity, goDetail) => [{ label:'Home' }, { label:'Entity Management', onClick: goList }, { label: entity?.bi?.entityName || 'Entity', onClick: goDetail }, { label:'Edit' }],
+  'fe-edit':       (goList, entity, goDetail) => [{ label:'Home' }, { label:'Entity Management', onClick: goList }, { label: entity?.bi?.entityName || 'Entity', onClick: goDetail }, { label:'Edit' }],
+  portal:          ()                         => [{ label:'Home' }, { label:'System Settings' }, { label:'Portal Owner' }],
+};
+const PAGE_TITLES = {
+  list:'Entity Management',
+  biller:'Biller Registration',
+  fe:'Fulfillment Registration',
+  'biller-edit':'Biller Registration',
+  'fe-edit':'Fulfillment Registration',
+  portal:'Portal Owner Configuration',
+};
+const PAGE_CHIPS  = { fe:'BCONFIG_UC1 — Fulfillment', 'fe-edit':'BCONFIG_UC1 — Fulfillment' };
+
+/* ════════════════════════════════
+   SEED DATA — Brunei context
+   ════════════════════════════════ */
+// Helper: ensure seed biller has the full state shape needed by Detail / Edit
+const seedBiller = (entry) => ({
+  ...entry,
+  bi: { levelNames: [], secondaryContactPhone: '', ...entry.bi },
+  svcs: { billDataMode: 'Hybrid', onlineBillLoad: false, uploadPath: '', downloadPath: '', ...entry.svcs },
+  fee:    entry.fee    || { structure:'Percentage', tiers:[{ id:1, from:'0.00', to:'', fee:'' }], pct:'1.00', minFee:'', maxFee:'', fixedAmt:'', currency:'BND', chargedTo:'Biller', appliedPer:'Per Transaction' },
+  notifs: entry.notifs || [{ id: 100 + Math.random(), name: entry.bi.primaryContactName || '', email: entry.bi.primaryContactEmail || '', phone: entry.bi.primaryContactPhone || '', events: { billUploadConfirmed:true, paymentReceived:true, paymentFailed:false, reconciliationCompleted:false, systemError:false } }],
+});
+
+const SEED_BILLERS = [
+  seedBiller({
+    type:'biller', status:'Active', id:'ENT-BILL-2026-1041', date:'2026-01-08',
+    bi:{ entityName:'Telekom Brunei Berhad (TelBru)', contractRefNo:'CONTRACT-2026-TELB-001', contractDate:'2026-01-05', primaryContactName:'Haji Mohd Azri bin Abdullah', primaryContactEmail:'azri.abdullah@telbru.com.bn', primaryContactPhone:'+673 222 2000', secondaryContactName:'Siti Nur Izzati binti Hj Rosli', secondaryContactEmail:'izzati.rosli@telbru.com.bn', hierarchyLevels:'3', languageSetting:'Both' },
+    accts:[{ id:1, currency:'BND', accountName:'Telekom Brunei Berhad', accountNumber:'0110023456789', bankName:'Baiduri Bank Berhad', accountType:'Settlement' }, { id:2, currency:'BND', accountName:'TelBru Reconciliation', accountNumber:'0110023456790', bankName:'Baiduri Bank Berhad', accountType:'Reconciliation' }],
+    svcs:{ billEnquiry:true, billPayment:true, adHocPayment:true, safProcessing:false, onlineBillPresentment:true, bulkFileUpload:true, paymentNotification:true, uploadPath:'sftp://sftp.telbru.com.bn/epg/upload/', downloadPath:'sftp://sftp.telbru.com.bn/epg/download/' },
+  }),
+  seedBiller({
+    type:'biller', status:'Active', id:'ENT-BILL-2026-1087', date:'2026-01-22',
+    bi:{ entityName:'DST Communications Sdn Bhd', contractRefNo:'CONTRACT-2026-DST-001', contractDate:'2026-01-20', primaryContactName:'Dayang Noraini binti Hj Sulaiman', primaryContactEmail:'noraini.sulaiman@dst.com.bn', primaryContactPhone:'+673 222 1000', secondaryContactName:'', secondaryContactEmail:'', hierarchyLevels:'2', languageSetting:'English' },
+    accts:[{ id:3, currency:'BND', accountName:'DST Communications Sdn Bhd', accountNumber:'0220034567001', bankName:'Bank Islam Brunei Darussalam', accountType:'Both' }],
+    svcs:{ billEnquiry:true, billPayment:true, adHocPayment:false, safProcessing:false, onlineBillPresentment:true, bulkFileUpload:false, paymentNotification:true },
+  }),
+  seedBiller({
+    type:'biller', status:'Active', id:'ENT-BILL-2026-1102', date:'2026-02-05',
+    bi:{ entityName:'Jabatan Air (Department of Water Services)', contractRefNo:'CONTRACT-2026-JAIR-001', contractDate:'2026-02-01', primaryContactName:'Pg Hj Mohd Shahril bin Pg Ahmad', primaryContactEmail:'shahril@air.gov.bn', primaryContactPhone:'+673 238 0333', secondaryContactName:'Hjh Rasidah binti Hj Salleh', secondaryContactEmail:'rasidah@air.gov.bn', hierarchyLevels:'2', languageSetting:'Malay' },
+    accts:[{ id:4, currency:'BND', accountName:'Jabatan Air Brunei Darussalam', accountNumber:'0330045678012', bankName:'Bank Islam Brunei Darussalam', accountType:'Settlement' }],
+    svcs:{ billEnquiry:true, billPayment:true, adHocPayment:false, safProcessing:true, onlineBillPresentment:false, bulkFileUpload:true, paymentNotification:true, uploadPath:'sftp://sftp.air.gov.bn/epg/upload/', downloadPath:'sftp://sftp.air.gov.bn/epg/download/' },
+  }),
+  seedBiller({
+    type:'biller', status:'Active', id:'ENT-BILL-2026-1155', date:'2026-02-18',
+    bi:{ entityName:'Royal Brunei Airlines Bhd', contractRefNo:'CONTRACT-2026-RBA-001', contractDate:'2026-02-15', primaryContactName:'Mohd Fareez bin Hj Kamaluddin', primaryContactEmail:'fareez.kamaluddin@rba.com.bn', primaryContactPhone:'+673 221 2222', secondaryContactName:'', secondaryContactEmail:'', hierarchyLevels:'1', languageSetting:'English' },
+    accts:[{ id:5, currency:'BND', accountName:'Royal Brunei Airlines Bhd', accountNumber:'0440056789023', bankName:'Standard Chartered Bank Brunei', accountType:'Settlement' }, { id:6, currency:'USD', accountName:'RBA USD Settlement', accountNumber:'0440056789024', bankName:'Standard Chartered Bank Brunei', accountType:'Settlement' }],
+    svcs:{ billEnquiry:false, billPayment:false, adHocPayment:true, safProcessing:false, onlineBillPresentment:false, bulkFileUpload:false, paymentNotification:true },
+  }),
+];
+
+const seedFE = (entry) => ({
+  ...entry,
+  bi: { levelNames: [], secondaryContactPhone: '', ...entry.bi },
+  svcs: { uploadPath:'', downloadPath:'', ...entry.svcs },
+  fee: { appliedPer: 'Per Transaction', ...entry.fee },
+});
+const SEED_FES = [
+  seedFE({
+    type:'fe', status:'Active', id:'ENT-FE-2026-2011', date:'2026-01-03',
+    bi:{ entityName:'Baiduri Bank Berhad', contractRefNo:'CONTRACT-2026-BAID-001', contractDate:'2025-12-20', primaryContactName:'Hj Khairul Anuar bin Hj Metassan', primaryContactEmail:'khairul.anuar@baiduri.com', primaryContactPhone:'+673 223 8181', secondaryContactName:'Farah Diyana binti Awg Ramlee', secondaryContactEmail:'farah.diyana@baiduri.com', hierarchyLevels:'4', languageSetting:'Both', uploadPath:'sftp://sftp.baiduri.com/epg/upload/', downloadPath:'sftp://sftp.baiduri.com/epg/download/' },
+    accts:[{ id:10, currency:'BND', accountName:'Baiduri Bank ePG Settlement', accountNumber:'1001-00-123456-7', bankName:'Baiduri Bank Berhad', accountType:'Settlement' }, { id:11, currency:'BND', accountName:'Baiduri Bank ePG Reconciliation', accountNumber:'1001-00-123456-8', bankName:'Baiduri Bank Berhad', accountType:'Reconciliation' }],
+    svcs:{ onlineBillPayment:true, bulkBillPayment:true, adHocPayment:true, branchTellerPayment:true, safProcessing:true, reconciliation:true, settlement:true },
+    fee:{ structure:'Tiered', tiers:[{ id:1, from:'0', to:'50', fee:'0.25' }, { id:2, from:'50.01', to:'500', fee:'0.50' }, { id:3, from:'500.01', to:'9999', fee:'1.00' }], pct:'', minFee:'', maxFee:'', fixedAmt:'', currency:'BND', chargedTo:'Biller' },
+    chnl:{ atm:true, internetBanking:true, mobileBanking:true, kiosk:true, branchTeller:true, ivr:false, smsBanking:false },
+  }),
+  seedFE({
+    type:'fe', status:'Active', id:'ENT-FE-2026-2034', date:'2026-01-15',
+    bi:{ entityName:'Bank Islam Brunei Darussalam (BIBD)', contractRefNo:'CONTRACT-2026-BIBD-001', contractDate:'2026-01-10', primaryContactName:'Awg Mohd Izzuddin bin Hj Damit', primaryContactEmail:'izzuddin.damit@bibd.com.bn', primaryContactPhone:'+673 224 5333', secondaryContactName:'Dk Nur Liyana binti Pg Damit', secondaryContactEmail:'liyana.damit@bibd.com.bn', hierarchyLevels:'4', languageSetting:'Both', uploadPath:'sftp://sftp.bibd.com.bn/epg/upload/', downloadPath:'sftp://sftp.bibd.com.bn/epg/download/' },
+    accts:[{ id:12, currency:'BND', accountName:'BIBD ePG Settlement Account', accountNumber:'2002-00-654321-1', bankName:'Bank Islam Brunei Darussalam', accountType:'Settlement' }, { id:13, currency:'BND', accountName:'BIBD ePG Reconciliation Account', accountNumber:'2002-00-654321-2', bankName:'Bank Islam Brunei Darussalam', accountType:'Reconciliation' }],
+    svcs:{ onlineBillPayment:true, bulkBillPayment:true, adHocPayment:true, branchTellerPayment:false, safProcessing:true, reconciliation:true, settlement:true },
+    fee:{ structure:'Percentage', tiers:[{ id:1, from:'', to:'', fee:'' }], pct:'0.75', minFee:'0.25', maxFee:'5.00', fixedAmt:'', currency:'BND', chargedTo:'Biller' },
+    chnl:{ atm:true, internetBanking:true, mobileBanking:true, kiosk:false, branchTeller:false, ivr:false, smsBanking:true },
+  }),
+  seedFE({
+    type:'fe', status:'Active', id:'ENT-FE-2026-2058', date:'2026-02-10',
+    bi:{ entityName:'Perbadanan Tabung Amanah Islam Brunei (TAIB)', contractRefNo:'CONTRACT-2026-TAIB-001', contractDate:'2026-02-05', primaryContactName:'Haji Roslan bin Hj Mokti', primaryContactEmail:'roslan.mokti@taib.com.bn', primaryContactPhone:'+673 238 2388', secondaryContactName:'', secondaryContactEmail:'', hierarchyLevels:'3', languageSetting:'Malay', uploadPath:'sftp://sftp.taib.com.bn/epg/upload/', downloadPath:'sftp://sftp.taib.com.bn/epg/download/' },
+    accts:[{ id:14, currency:'BND', accountName:'TAIB ePG Settlement', accountNumber:'3003-00-789012-1', bankName:'Perbadanan Tabung Amanah Islam Brunei', accountType:'Both' }],
+    svcs:{ onlineBillPayment:true, bulkBillPayment:false, adHocPayment:true, branchTellerPayment:true, safProcessing:false, reconciliation:true, settlement:true },
+    fee:{ structure:'Fixed Amount', tiers:[{ id:1, from:'', to:'', fee:'' }], pct:'', minFee:'', maxFee:'', fixedAmt:'0.50', currency:'BND', chargedTo:'Fulfillment Entity' },
+    chnl:{ atm:false, internetBanking:true, mobileBanking:true, kiosk:true, branchTeller:true, ivr:false, smsBanking:false },
+  }),
+];
+
+/* ════════════════════════════════
+   DEMO AUTO-FILL
+   Global dblclick on any input/select/textarea fills it with a
+   pre-defined demo value. Add new keys to DEMO_DATA when new
+   required fields are introduced — no per-field wiring needed.
+   ════════════════════════════════ */
+const DEMO_DATA = {
+  /* Step 1 — Basic Information */
+  entityName:            'Jabatan Kastam Diraja Brunei',
+  contractRefNo:         'CONTRACT-2026-JKDB-001',
+  contractDate:          '2026-06-01',
+  hierarchyLevels:       '3',
+  level1Name:            'Region',
+  level2Name:            'District',
+  level3Name:            'Branch',
+  level4Name:            'Counter',
+  level5Name:            'Cashier',
+  primaryContactName:    'Haji Roslan bin Hj Mokti',
+  primaryContactEmail:   'roslan.mokti@customs.gov.bn',
+  primaryContactPhone:   '+673 238 2388',
+  secondaryContactName:  'Dayang Nur Liyana binti Pg Damit',
+  secondaryContactEmail: 'liyana.damit@customs.gov.bn',
+  secondaryContactPhone: '+673 238 2399',
+
+  /* Step 2 — Bank Account (per-card values via data-card-idx) */
+  accountName:   (idx) => idx === 0 ? 'Jabatan Kastam Diraja Brunei'
+                       : idx === 1 ? 'Jabatan Kastam — Reconciliation'
+                       : `Jabatan Kastam — Account ${idx + 1}`,
+  accountNumber: (idx) => idx === 0 ? '0110023456799'
+                       : idx === 1 ? '0110023456800'
+                       : `011002345680${idx + 1}`,
+  bankName:      (idx) => idx === 0 ? 'Baiduri Bank Berhad'
+                       : idx === 1 ? 'Bank Islam Brunei Darussalam'
+                       : 'Standard Chartered Bank Brunei',
+
+  /* Step 3 — Service Mapping (paths under Bulk File Upload, Biller flow) */
+  uploadPath:            'sftp://sftp.customs.gov.bn/epg/upload/',
+  downloadPath:          'sftp://sftp.customs.gov.bn/epg/download/',
+
+  /* Step 3 — FE Service Mapping (paths under Bulk Bill Payment, FE flow) */
+  feUploadPath:          'sftp://sftp.baiduri.com/epg/upload/',
+  feDownloadPath:        'sftp://sftp.baiduri.com/epg/download/',
+
+  /* Step 4 — Fee Configuration */
+  feeFromAmount:         '0',
+  feeToAmount:           '100',
+  feeAmount:             '0.25',
+  feePercentage:         '0.5',
+  feeMinimum:            '0.25',
+  feeMaximum:            '5.00',
+  feeFixed:              '0.50',
+
+  /* Step 5 — Contact List (per-card values via data-card-idx) */
+  notifContactName: (idx) => idx === 0 ? 'Haji Roslan bin Hj Mokti'
+                           : idx === 1 ? 'Dayang Nur Liyana binti Pg Damit'
+                           : `Contact ${idx + 1} Name`,
+  notifEmail:       (idx) => idx === 0 ? 'roslan.mokti@customs.gov.bn'
+                           : idx === 1 ? 'liyana.damit@customs.gov.bn'
+                           : `contact${idx + 1}@customs.gov.bn`,
+  notifPhone:       (idx) => idx === 0 ? '+673 238 2388'
+                           : idx === 1 ? '+673 238 2389'
+                           : `+673 238 238${idx + 1}`,
+};
+
+/* Smoothly scroll the first error field into view (called after a failed validate()). */
+const scrollToFirstError = () => {
+  window.setTimeout(() => {
+    const el = document.querySelector('.fi.err, .fsel.err, input.err, select.err, textarea.err');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 50);
+};
+
+const applyDemoFill = (el) => {
+  if (!el || !['INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName)) return false;
+  // Match priority: id → name → placeholder
+  const key = el.id || el.name || el.placeholder;
+  if (!key || !(key in DEMO_DATA)) return false;
+  let val = DEMO_DATA[key];
+  if (typeof val === 'function') {
+    // Look for the nearest ancestor with a card index marker so per-card demo
+    // data can vary (e.g. Bank Account #1 vs #2). Defaults to 0.
+    const cardEl = el.closest('[data-card-idx]');
+    const idx    = cardEl ? parseInt(cardEl.getAttribute('data-card-idx')) || 0 : 0;
+    val = val(idx);
+  }
+  const proto = el.tagName === 'SELECT' ? HTMLSelectElement.prototype : HTMLInputElement.prototype;
+  const setter = Object.getOwnPropertyDescriptor(proto, 'value').set;
+  setter.call(el, val);
+  el.dispatchEvent(new Event(el.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true }));
+  // Brief green-border confirmation flash
+  el.classList.add('demo-filled');
+  window.setTimeout(() => el.classList.remove('demo-filled'), 500);
+  return true;
+};
+
+const App = () => {
+  const [page, setPage]           = useState('list');
+  const [tab,  setTab]            = useState('billers');
+  const [billers, setBillers]     = useState(SEED_BILLERS);
+  const [fes,     setFEs]         = useState(SEED_FES);
+  const [portalOwner, setPortalOwner] = useState(null);
+  const [toast, setToast]         = useState(null);
+  const [expanded, setExpanded]   = useState({ entity: true, settings: false });
+  const [selectedEntityId, setSelectedEntityId] = useState(null);
+
+  // Register the global demo auto-fill handler once
+  useEffect(() => {
+    const handler = e => applyDemoFill(e.target);
+    document.addEventListener('dblclick', handler);
+    return () => document.removeEventListener('dblclick', handler);
+  }, []);
+
+  const goNav = (p, t) => { setPage(p); if (t) setTab(t); };
+  const goList = () => { setPage('list'); setSelectedEntityId(null); };
+  const toggleExp = id => setExpanded(e => ({ ...e, [id]: !e[id] }));
+
+  const onBillerSuccess = (data) => setBillers(b => [...b, data]);
+  const onFESuccess     = (data) => setFEs(f => [...f, data]);
+  const backToList      = (t)    => { setPage('list'); setSelectedEntityId(null); if (t) setTab(t); };
+
+  // Detail/edit navigation
+  const viewEntity = (id, type) => {
+    setSelectedEntityId(id);
+    setPage(type === 'biller' ? 'biller-detail' : 'fe-detail');
+    setTab(type === 'biller' ? 'billers' : 'fe');
+  };
+  const editEntity   = () => setPage(page === 'biller-detail' ? 'biller-edit' : 'fe-edit');
+  const goToDetail   = () => setPage(page === 'biller-edit' ? 'biller-detail' : 'fe-detail');
+  const cancelEdit   = () => goToDetail();
+  const saveBiller   = (updated) => {
+    setBillers(bs => bs.map(b => b.id === updated.id ? updated : b));
+    setPage('biller-detail');
+    setToast('Changes saved successfully.');
+  };
+  const saveFE       = (updated) => {
+    setFEs(fs => fs.map(f => f.id === updated.id ? updated : f));
+    setPage('fe-detail');
+    setToast('Changes saved successfully.');
+  };
+
+  // Resolve selected entity
+  const selectedEntity = page.startsWith('biller-') ? billers.find(b => b.id === selectedEntityId)
+                       : page.startsWith('fe-')     ? fes.find(f => f.id === selectedEntityId)
+                       : null;
+
+  const crumbs = CRUMBS[page] ? CRUMBS[page](goList, selectedEntity, goToDetail) : [];
+
+  const isDetailPage = page === 'biller-detail' || page === 'fe-detail';
+  const dynamicTitle = (page === 'biller-detail' || page === 'fe-detail') ? (selectedEntity?.bi?.entityName || 'Entity') : PAGE_TITLES[page];
+
+  return (
+    <div id="app">
+      <Sidebar page={page} tab={tab} onNav={goNav} expanded={expanded} onToggle={toggleExp}/>
+      <div className="main-wrapper">
+        <Topbar crumbs={crumbs}/>
+        {/* Detail pages render their own header (entity name + meta + Edit button), so skip the default */}
+        {!isDetailPage && (
+          <div className="page-header">
+            <div className="page-title">{dynamicTitle}</div>
+            {PAGE_CHIPS[page] && <div><span className="page-chip">{PAGE_CHIPS[page]}</span></div>}
+          </div>
+        )}
+        <div className="main-content">
+          {page === 'list' && (
+            <ListPage tab={tab} onTabChange={setTab} billers={billers} fes={fes}
+              onAddBiller={() => setPage('biller')} onAddFE={() => setPage('fe')}
+              onView={viewEntity}/>
+          )}
+          {page === 'biller' && (
+            <BillerRegPage onSuccess={onBillerSuccess} onCancel={backToList}/>
+          )}
+          {page === 'fe' && (
+            <FERegPage onSuccess={onFESuccess} onCancel={backToList}/>
+          )}
+          {page === 'biller-detail' && (
+            <BillerDetailPage entity={selectedEntity} onEdit={editEntity}
+              onBack={() => backToList('billers')}/>
+          )}
+          {page === 'fe-detail' && (
+            <FEDetailPage entity={selectedEntity} onEdit={editEntity}
+              onBack={() => backToList('fe')}/>
+          )}
+          {page === 'biller-edit' && selectedEntity && (
+            <BillerRegPage mode="edit" initial={selectedEntity}
+              onSave={saveBiller} onCancel={cancelEdit}/>
+          )}
+          {page === 'fe-edit' && selectedEntity && (
+            <FERegPage mode="edit" initial={selectedEntity}
+              onSave={saveFE} onCancel={cancelEdit}/>
+          )}
+          {page === 'portal' && (
+            <PortalOwnerPage value={portalOwner} onSave={v => { setPortalOwner(v); setToast('Portal Owner configuration saved.'); }}/>
+          )}
+        </div>
+      </div>
+      {toast && <Toast msg={toast} onClose={() => setToast(null)}/>}
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
