@@ -62,10 +62,190 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-#app { display: flex; min-height: 100vh; }
+#app { display: flex; min-height: 100vh; padding-top: 60px; }
+
+/* ============================================================
+   LOGIN / AUTH-GATE
+   When body has `not-authed`, the React app is hidden and the
+   login screen is shown. Successful login flips the class.
+   ============================================================ */
+body.not-authed #root,
+body.not-authed .header { display: none; }
+body:not(.not-authed) .login-screen { display: none; }
+
+.login-screen {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 99;
+  padding: 24px;
+}
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 40px 48px;
+  width: 100%;
+  max-width: 520px;
+}
+.login-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+.login-brand-mark {
+  width: 44px; height: 44px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, var(--accent) 0%, #1a5fa0 100%);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 12px; letter-spacing: .03em;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 30%, transparent);
+  flex-shrink: 0;
+}
+.login-brand-text { line-height: 1.25; }
+.login-brand-title { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.login-brand-sub   { font-size: 12px; color: var(--text-subtle); margin-top: 2px; }
+.login-heading { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 6px; }
+.login-sub     { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
+.login-field { margin-bottom: 16px; }
+.login-field label {
+  display: block; font-size: 13px; font-weight: 600;
+  color: var(--text); margin-bottom: 6px;
+}
+.login-input-wrap {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.login-input-wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+.login-input-wrap svg {
+  width: 16px; height: 16px; flex-shrink: 0;
+  color: var(--text-subtle); pointer-events: none;
+}
+.login-input-wrap input {
+  flex: 1; padding: 11px 0; border: none; background: transparent;
+  font-size: 14px; font-family: inherit; color: var(--text); outline: none;
+}
+.login-input-wrap input::placeholder { color: var(--text-subtle); opacity: .6; }
+.login-error {
+  display: none; align-items: center; gap: 7px;
+  background: var(--red-dim); border: 1px solid color-mix(in srgb, var(--red) 25%, white);
+  color: var(--red); font-size: 13px; font-weight: 500;
+  padding: 10px 12px; border-radius: var(--radius-sm); margin-bottom: 16px;
+}
+.login-error.visible { display: flex; }
+.login-error svg { width: 15px; height: 15px; flex-shrink: 0; }
+.login-remember {
+  display: flex; align-items: center; gap: 8px;
+  margin: 6px 2px 14px;
+  font-size: 13px; color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+.login-remember input[type="checkbox"] {
+  width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; margin: 0;
+}
+.login-btn {
+  width: 100%; padding: 11px 20px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600; font-family: inherit;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: background var(--transition), box-shadow var(--transition);
+}
+.login-btn:hover {
+  background: color-mix(in srgb, var(--accent) 85%, #000);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.login-btn svg { width: 16px; height: 16px; }
+.login-hint {
+  margin-top: 20px; padding: 12px 14px;
+  background: var(--chip-bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px; color: var(--text-muted); line-height: 1.7;
+}
+.login-hint strong { color: var(--text-subtle); font-weight: 600; }
+
+/* ============================================================
+   HEADER (fixed top, Biller-Portal layout, Admin blue theme)
+   ============================================================ */
+.header {
+  background: rgba(255,255,255,.85);
+  backdrop-filter: saturate(140%) blur(10px);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex; align-items: center; gap: 16px;
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 60;
+  height: 60px;
+}
+.brand {
+  display: flex; align-items: center; gap: 12px;
+  text-decoration: none; color: inherit; flex-shrink: 0;
+}
+.brand-mark {
+  width: 36px; height: 36px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--accent) 0%, #1a5fa0 100%);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 11px; letter-spacing: .03em;
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--accent) 35%, transparent);
+  flex-shrink: 0;
+}
+.brand-text  { line-height: 1.2; }
+.brand-title { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.brand-sub   { font-size: 11px; color: var(--text-subtle); margin-top: 1px; }
+.header-sep  { width: 1px; height: 24px; background: var(--border-strong); flex-shrink: 0; }
+.header .breadcrumb {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--text-subtle);
+}
+.header .breadcrumb a {
+  color: var(--text-subtle); text-decoration: none;
+  transition: color var(--transition);
+}
+.header .breadcrumb a:hover { color: var(--text); }
+.header .breadcrumb-sep { opacity: .4; }
+.header .breadcrumb-current { color: var(--text); font-weight: 600; }
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.admin-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--accent-dim); color: var(--accent-text);
+  border: 1px solid var(--accent-border);
+  padding: 5px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 600;
+}
+.admin-chip::before {
+  content: ""; width: 6px; height: 6px;
+  border-radius: 50%; background: var(--accent);
+}
+.avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--accent-dim); border: 1px solid var(--accent-border);
+  color: var(--accent-text);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+}
+.btn-logout {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-size: 12px; font-weight: 500; color: var(--text-muted);
+  cursor: pointer; font-family: inherit;
+  transition: all var(--transition);
+}
+.btn-logout:hover { background: var(--bg); color: var(--text); border-color: var(--accent-border); }
+.btn-logout svg { width: 14px; height: 14px; }
 
 /* ============================================================
    SIDEBAR — light surface, blue admin accent
+   Starts below the fixed 60px header.
    ============================================================ */
 .sidebar {
   width: 240px;
@@ -76,7 +256,7 @@ body {
   display: flex;
   flex-direction: column;
   position: fixed;
-  top: 0; left: 0; bottom: 0;
+  top: 60px; left: 0; bottom: 0;
   z-index: 50;
   overflow-y: auto;
 }
@@ -1248,8 +1428,137 @@ body {
 }
 </style>
 </head>
-<body>
+<body class="not-authed">
+
+<!-- ════════════════════════════════════════════════════════
+     LOGIN SCREEN (vanilla, shown until auth)
+════════════════════════════════════════════════════════ -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-brand-mark">ePG</div>
+      <div class="login-brand-text">
+        <div class="login-brand-title">ePG Electronic Payment Gateway</div>
+        <div class="login-brand-sub">Brunei Darussalam — Ministry of Finance &amp; Economy</div>
+      </div>
+    </div>
+    <div class="login-heading">Sign in to Admin Portal</div>
+    <div class="login-sub">Enter your administrator credentials to continue.</div>
+
+    <div class="login-error" id="login-error">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+      <span id="login-error-text">Invalid Admin ID or password.</span>
+    </div>
+
+    <div class="login-field">
+      <label for="login-id">Admin ID</label>
+      <div class="login-input-wrap">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+        <input type="text" id="login-id" placeholder="e.g. A-001" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+    </div>
+    <div class="login-field">
+      <label for="login-pw">Password</label>
+      <div class="login-input-wrap">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+        <input type="password" id="login-pw" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+    </div>
+
+    <label class="login-remember">
+      <input type="checkbox" id="login-remember"/>
+      <span>Remember me on this device</span>
+    </label>
+
+    <button class="login-btn" onclick="doLogin()">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
+      Sign In
+    </button>
+    <div class="login-hint">
+      <strong>Demo credentials:</strong><br>
+      Admin ID: <strong>A-001</strong> &nbsp;/&nbsp; Password: <strong>1234</strong><br>
+      Admin ID: <strong>A-002</strong> &nbsp;/&nbsp; Password: <strong>1234</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     HEADER (vanilla, fixed top, shown after auth)
+════════════════════════════════════════════════════════ -->
+<header class="header" id="header">
+  <a class="brand" href="https://ycc-bct.github.io/epg/">
+    <div class="brand-mark">ePG</div>
+    <div class="brand-text">
+      <div class="brand-title">ePG Electronic Payment Gateway</div>
+      <div class="brand-sub">One Common Billing System — Brunei Darussalam</div>
+    </div>
+  </a>
+  <div class="header-sep"></div>
+  <nav class="breadcrumb">
+    <a href="https://ycc-bct.github.io/epg/">Portals</a>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-current">Admin Portal</span>
+  </nav>
+  <div class="header-right">
+    <span class="admin-chip">ePG Administrator</span>
+    <div class="avatar" id="header-avatar">A—</div>
+    <button class="btn-logout" onclick="doLogout()">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg>
+      Sign Out
+    </button>
+  </div>
+</header>
+
 <div id="root"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     LOGIN / LOGOUT JS (vanilla, runs before React mount)
+════════════════════════════════════════════════════════ -->
+<script>
+const CREDS = { 'A-001':'1234', 'A-002':'1234' };
+const REMEMBER_KEY = 'epg-admin-remember';
+
+function showApp(userId) {
+  document.body.classList.remove('not-authed');
+  const av = document.getElementById('header-avatar');
+  if (av) av.textContent = userId.replace('A-', 'A');
+}
+function showLogin() {
+  document.body.classList.add('not-authed');
+}
+function doLogin() {
+  const id = document.getElementById('login-id').value.trim();
+  const pw = document.getElementById('login-pw').value;
+  const remember = document.getElementById('login-remember').checked;
+  const err = document.getElementById('login-error');
+  if (CREDS[id] && CREDS[id] === pw) {
+    if (remember) {
+      try { localStorage.setItem(REMEMBER_KEY, id); } catch (e) {}
+    }
+    showApp(id);
+    err.classList.remove('visible');
+  } else {
+    err.classList.add('visible');
+    document.getElementById('login-error-text').textContent = 'Invalid Admin ID or password.';
+  }
+}
+function doLogout() {
+  try { localStorage.removeItem(REMEMBER_KEY); } catch (e) {}
+  document.getElementById('login-id').value = '';
+  document.getElementById('login-pw').value = '';
+  document.getElementById('login-remember').checked = false;
+  document.getElementById('login-error').classList.remove('visible');
+  showLogin();
+}
+// Auto-login on page load if previously remembered
+(function checkRemembered() {
+  try {
+    const remembered = localStorage.getItem(REMEMBER_KEY);
+    if (remembered && CREDS[remembered]) showApp(remembered);
+  } catch (e) {}
+})();
+</script>
+
 <script type="text/babel">
 const { useState, useEffect, useRef } = React;
 
@@ -1302,13 +1611,6 @@ const Sidebar = ({ page, tab, onNav, expanded, onToggle }) => {
   };
   return (
     <div className="sidebar">
-      <div className="sb-logo">
-        <div className="sb-logo-mark">e</div>
-        <div>
-          <div className="sb-logo-text">PG Admin</div>
-          <div className="sb-logo-sub">Portal</div>
-        </div>
-      </div>
       <div className="sb-section">Navigation</div>
       {NAV_ITEMS.map(n => (
         <div key={n.id}>
@@ -3579,11 +3881,47 @@ const App = () => {
   const isDetailPage = page === 'biller-detail' || page === 'fe-detail';
   const dynamicTitle = (page === 'biller-detail' || page === 'fe-detail') ? (selectedEntity?.bi?.entityName || 'Entity') : PAGE_TITLES[page];
 
+  // Mirror React breadcrumb into the vanilla header's <nav class="breadcrumb">
+  useEffect(() => {
+    const hdrCrumb = document.querySelector('.header .breadcrumb');
+    if (!hdrCrumb) return;
+    hdrCrumb.innerHTML = '';
+    const root = 'Portals';
+    const link = document.createElement('a');
+    link.href = 'https://ycc-bct.github.io/epg/';
+    link.textContent = root;
+    hdrCrumb.appendChild(link);
+    const allCrumbs = (crumbs && crumbs.length > 0) ? crumbs : [{ label: 'Admin Portal' }];
+    allCrumbs.forEach((c, i) => {
+      // Skip leading "Home" so the rendered chain doesn't read "Portals › Home › …"
+      if (i === 0 && (c.label === 'Home' || c.label === 'Portals')) return;
+      const sep = document.createElement('span');
+      sep.className = 'breadcrumb-sep';
+      sep.textContent = '›';
+      hdrCrumb.appendChild(sep);
+      const isLast = i === allCrumbs.length - 1;
+      if (isLast) {
+        const cur = document.createElement('span');
+        cur.className = 'breadcrumb-current';
+        cur.textContent = c.label;
+        hdrCrumb.appendChild(cur);
+      } else if (c.onClick) {
+        const a = document.createElement('a');
+        a.href = '#'; a.textContent = c.label;
+        a.onclick = (e) => { e.preventDefault(); c.onClick(); };
+        hdrCrumb.appendChild(a);
+      } else {
+        const span = document.createElement('span');
+        span.textContent = c.label;
+        hdrCrumb.appendChild(span);
+      }
+    });
+  }, [crumbs]);
+
   return (
     <div id="app">
       <Sidebar page={page} tab={tab} onNav={goNav} expanded={expanded} onToggle={toggleExp}/>
       <div className="main-wrapper">
-        <Topbar crumbs={crumbs}/>
         {/* Detail pages render their own header (entity name + meta + Edit button), so skip the default */}
         {!isDetailPage && (
           <div className="page-header">
