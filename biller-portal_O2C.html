@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Biller Portal O2C — ePG Electronic Payment Gateway</title>
+<title>Order to Cash — ePG Electronic Payment Gateway</title>
 <style>
 /* ============================================================
    DESIGN TOKENS  (aligned with teller-portal.html)
@@ -19,14 +19,14 @@
   --chip-bg:       #F1F5F9;
 
   /* Biller accent — green (from index.html --biller) */
-  --accent:        #1D7A4E;
-  --accent-dim:    color-mix(in srgb, #1D7A4E 10%, white);
-  --accent-border: color-mix(in srgb, #1D7A4E 25%, white);
-  --accent-text:   color-mix(in srgb, #1D7A4E 80%, #0F172A);
+  --accent:        #7C3AED;
+  --accent-dim:    color-mix(in srgb, #7C3AED 10%, white);
+  --accent-border: color-mix(in srgb, #7C3AED 25%, white);
+  --accent-text:   color-mix(in srgb, #7C3AED 80%, #0F172A);
 
   /* Semantic */
-  --green:         #1D7A4E;
-  --green-dim:     color-mix(in srgb, #1D7A4E 10%, white);
+  --green:         #10b981;
+  --green-dim:     color-mix(in srgb, #10b981 10%, white);
   --red:           #C8102E;
   --red-dim:       color-mix(in srgb, #C8102E 10%, white);
   --blue:          #2E75B6;
@@ -90,7 +90,7 @@ body {
 .login-brand-mark {
   width: 44px; height: 44px;
   border-radius: 11px;
-  background: linear-gradient(135deg, var(--accent) 0%, #0f4d30 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, #3b0764 100%);
   display: flex; align-items: center; justify-content: center;
   color: #fff; font-weight: 800; font-size: 12px; letter-spacing: .03em;
   box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 30%, transparent);
@@ -188,14 +188,14 @@ body {
   padding: 14px 24px;
   display: flex; align-items: center; gap: 16px;
   position: fixed; top: 0; left: 0; right: 0;
-  z-index: 50;
+  z-index: 200;
   height: 60px;
 }
 
 .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; flex-shrink: 0; }
 .brand-mark {
   width: 36px; height: 36px; border-radius: 9px;
-  background: linear-gradient(135deg, var(--accent) 0%, #0f4d30 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, #3b0764 100%);
   display: flex; align-items: center; justify-content: center;
   color: #fff; font-weight: 800; font-size: 11px; letter-spacing: .03em;
   box-shadow: 0 4px 10px color-mix(in srgb, var(--accent) 35%, transparent);
@@ -292,10 +292,13 @@ body {
 
 /* ── Content area ── */
 .content {
-  margin-left: var(--sidebar-w);
+  margin-left: 0;
   flex: 1;
   padding: 32px 32px 80px;
   min-height: calc(100vh - 60px);
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 /* ============================================================
@@ -954,19 +957,39 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
 <body>
 
 <!-- ════════════════════════════════════════════════════════
+     HEADER (always visible)
+════════════════════════════════════════════════════════ -->
+<header class="header">
+  <a class="brand" href="https://ycc-bct.github.io/epg/">
+    <div class="brand-mark">ePG</div>
+    <div class="brand-text">
+      <div class="brand-title">ePG Electronic Payment Gateway</div>
+      <div class="brand-sub">One Common Billing System — Brunei Darussalam</div>
+    </div>
+  </a>
+  <div class="header-sep"></div>
+  <nav class="breadcrumb">
+    <a href="https://ycc-bct.github.io/epg/">Portals</a>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-current">Order to Cash</span>
+  </nav>
+  <div class="header-right">
+    <span class="biller-chip" id="header-role-chip">Biller Operator</span>
+    <div class="avatar" id="header-avatar">—</div>
+    <button class="btn-logout" id="header-signout" onclick="doLogout()">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg>
+      Sign Out
+    </button>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════════════════════
      LOGIN SCREEN
 ════════════════════════════════════════════════════════ -->
 <div class="login-screen" id="login-screen">
   <div class="login-card">
-    <div class="login-brand">
-      <div class="login-brand-mark">ePG</div>
-      <div class="login-brand-text">
-        <div class="login-brand-title">ePG Electronic Payment Gateway</div>
-        <div class="login-brand-sub">Brunei Darussalam — Ministry of Finance &amp; Economy</div>
-      </div>
-    </div>
-    <div class="login-heading">Sign in to Biller Portal</div>
-    <div class="login-sub">Enter your service provider credentials to continue.</div>
+    <div class="login-heading">Sign in to Order to Cash</div>
+    <div class="login-sub">Enter your operator credentials to continue.</div>
 
     <div class="login-error" id="login-error">
       <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
@@ -1012,32 +1035,6 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
   </button>
 </div>
 
-<!-- ════════════════════════════════════════════════════════
-     HEADER
-════════════════════════════════════════════════════════ -->
-<header class="header">
-  <a class="brand" href="https://ycc-bct.github.io/epg/">
-    <div class="brand-mark">ePG</div>
-    <div class="brand-text">
-      <div class="brand-title">ePG Electronic Payment Gateway</div>
-      <div class="brand-sub">One Common Billing System — Brunei Darussalam</div>
-    </div>
-  </a>
-  <div class="header-sep"></div>
-  <nav class="breadcrumb">
-    <a href="https://ycc-bct.github.io/epg/">Portals</a>
-    <span class="breadcrumb-sep">›</span>
-    <span class="breadcrumb-current">Biller Portal</span>
-  </nav>
-  <div class="header-right">
-    <span class="biller-chip">Service Provider</span>
-    <div class="avatar" id="header-avatar">—</div>
-    <button class="btn-logout" onclick="doLogout()">
-      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg>
-      Sign Out
-    </button>
-  </div>
-</header>
 
 <!-- ════════════════════════════════════════════════════════
      APP SHELL
@@ -1045,51 +1042,11 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
 <div class="app" id="app">
 
   <!-- ── SIDEBAR ── -->
-  <aside class="sidebar">
-    <div class="sb-section">
-      <span class="sb-label">Billing</span>
-      <div class="sb-item active" id="ni-bill-mgmt" onclick="navTo('bill-mgmt',this)">
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
-        Bill Management
-      </div>
-      <div class="sb-item" id="ni-invoices" onclick="navTo('invoices',this)">
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
-        Invoices &amp; Bills
-        <span class="sb-badge">3</span>
-      </div>
-    </div>
-    <div class="sb-divider"></div>
-    <div class="sb-section">
-      <span class="sb-label">Customers</span>
-      <div class="sb-item" id="ni-customers" onclick="navTo('customers',this)">
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
-        Customers
-      </div>
-      <div class="sb-item" id="ni-products" onclick="navTo('products',this)">
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.658.524a18.634 18.634 0 005.83-5.829c.349-.879.177-1.96-.523-2.659L9.568 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/></svg>
-        Products &amp; Pricing
-      </div>
-    </div>
-    <div class="sb-divider"></div>
-    <div class="sb-section">
-      <span class="sb-label">Finance</span>
-      <div class="sb-item" id="ni-payments" onclick="navTo('payments',this)">
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/></svg>
-        Payment Tracking
-      </div>
-      <div class="sb-item" id="ni-reports" onclick="navTo('reports',this)">
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
-        Reports
-      </div>
-    </div>
-    <div class="sb-footer">ePG R2 · v2.4.1</div>
-  </aside>
-
   <!-- ── CONTENT ── -->
   <main class="content">
 
     <!-- ════════ BILL MANAGEMENT ════════ -->
-    <div class="page active" id="page-bill-mgmt">
+    <div class="page" id="page-bill-mgmt">
       <div class="page-header">
         <div class="page-title">Bill Management</div>
         <div class="page-meta">Upload and manage bills submitted to the ePG Fulfilment Entity · Biller Code: BCT-ELEC-001</div>
@@ -1441,7 +1398,7 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
                   <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                   Register Another Bill
                 </button>
-                <button class="btn btn-primary" onclick="navTo('invoices',null);document.getElementById('ni-invoices').classList.add('active');document.getElementById('ni-bill-mgmt').classList.remove('active')">
+                <button class="btn btn-primary" onclick="navTo('invoices',null)">
                   View in Invoices
                   <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
                 </button>
@@ -1606,7 +1563,7 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
 
     <!-- ════════ CUSTOMERS ════════ -->
     <!-- ════════ CUSTOMER LIST ════════ -->
-    <div class="page" id="page-customers">
+    <div class="page active" id="page-customers">
       <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
         <div>
           <div class="page-title">Customer Management</div>
@@ -2805,12 +2762,10 @@ function openCustomerDetail(id) {
   // Reset tabs
   detailTab('profile', null);
   navTo('cust-detail', null);
-  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
-  document.getElementById('ni-customers').classList.add('active');
 }
 
 function backToCustomers() {
-  navTo('customers', document.getElementById('ni-customers'));
+  navTo('customers', null);
 }
 
 /* ── Edit Customer Modal ── */
@@ -3689,11 +3644,8 @@ const PAGE_TITLES = {
 };
 function navTo(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.sb-item').forEach(n => n.classList.remove('active'));
   const pg = document.getElementById('page-' + id);
   if (pg) pg.classList.add('active');
-  const ni = document.getElementById('ni-' + id);
-  if (ni) ni.classList.add('active');
   if (id === 'customers') renderCustomerTable();
 }
 
