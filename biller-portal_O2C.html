@@ -2026,25 +2026,62 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
       </button>
     </div>
     <div class="dialog-body">
-      <div class="field">
-        <label>Account Number <span class="req">*</span></label>
-        <input type="text" id="acc-no" placeholder="e.g. SA0380-167600" />
-        <div class="field-err" id="err-acc-no">Account number is required.</div>
-      </div>
-      <div class="field" style="margin-top:14px;">
-        <label>Account Type <span class="req">*</span></label>
-        <div class="select-wrap">
-          <select id="acc-type">
-            <option value="">Select type…</option>
-            <option>Residential</option><option>Commercial</option><option>Industrial</option>
-          </select>
+      <!-- Row 1: Account Number + Account Name -->
+      <div class="field-row">
+        <div class="field">
+          <label>Account Number / Reference <span class="req">*</span></label>
+          <input type="text" id="acc-no" placeholder="e.g. SA0380-167600" />
+          <div class="field-err" id="err-acc-no">Account number is required.</div>
         </div>
-        <div class="field-err" id="err-acc-type">Account type is required.</div>
+        <div class="field">
+          <label>Account Name / Description <span class="req">*</span></label>
+          <input type="text" id="acc-name" placeholder="e.g. Main Premises" />
+          <div class="field-err" id="err-acc-name">Account name is required.</div>
+        </div>
       </div>
-      <div class="field" style="margin-top:14px;">
-        <label>Service Address</label>
-        <input type="text" id="acc-addr" placeholder="Address where service is provided" />
+      <!-- Row 2: Account Type + Billing Cycle -->
+      <div class="field-row" style="margin-top:14px;">
+        <div class="field">
+          <label>Account Type <span class="req">*</span></label>
+          <div class="select-wrap">
+            <select id="acc-type">
+              <option value="">Select type…</option>
+              <option>Main Account</option>
+              <option>Sub-Account</option>
+              <option>Cost Centre</option>
+              <option>Residential</option>
+              <option>Commercial</option>
+            </select>
+          </div>
+          <div class="field-err" id="err-acc-type">Account type is required.</div>
+        </div>
+        <div class="field">
+          <label>Billing Cycle <span class="req">*</span></label>
+          <div class="select-wrap">
+            <select id="acc-cycle">
+              <option value="">Select cycle…</option>
+              <option>Monthly</option>
+              <option>Quarterly</option>
+              <option>Bi-Annual</option>
+              <option>Annual</option>
+              <option>On-Demand</option>
+            </select>
+          </div>
+          <div class="field-err" id="err-acc-cycle">Billing cycle is required.</div>
+        </div>
       </div>
+      <!-- Row 3: Credit Limit + Service Address -->
+      <div class="field-row" style="margin-top:14px;">
+        <div class="field">
+          <label>Credit Limit (BND)</label>
+          <input type="text" id="acc-credit" placeholder="e.g. 500.00 — leave blank if none" />
+        </div>
+        <div class="field">
+          <label>Service Address</label>
+          <input type="text" id="acc-addr" placeholder="Address where service is provided" />
+        </div>
+      </div>
+      <!-- Notes -->
       <div class="field" style="margin-top:14px;">
         <label>Notes</label>
         <textarea id="acc-notes" rows="2" style="resize:vertical;" placeholder="Optional notes…"></textarea>
@@ -2145,8 +2182,8 @@ let CUSTOMERS = [
     addr1:'No. 12, Jalan Gadong', addr2:'', city:'Bandar Seri Begawan', postcode:'BB3719', district:'Brunei-Muara',
     status:'Active', accounts:2, services:2,
     accountList:[
-      { no:'SA0380-167519', type:'Commercial', addr:'No. 12, Jalan Gadong, BB3719', notes:'' },
-      { no:'SA0380-167520', type:'Commercial', addr:'Warehouse Unit 4, Sungai Akar', notes:'Warehouse account' },
+      { no:'SA0380-167519', name:'Main Premises',  type:'Main Account', cycle:'Monthly',   addr:'No. 12, Jalan Gadong, BB3719', notes:'' },
+      { no:'SA0380-167520', name:'Warehouse',      type:'Sub-Account',  cycle:'Monthly',   addr:'Warehouse Unit 4, Sungai Akar', notes:'Warehouse account' },
     ],
     serviceList:[
       { name:'Electricity Supply', code:'BCT-ELEC-001', plan:'Commercial C2', start:'2022-01-15', status:'Active' },
@@ -2158,7 +2195,7 @@ let CUSTOMERS = [
     addr1:'Level 3, Wisma Green Valley', addr2:'Jalan Sultan', city:'Bandar Seri Begawan', postcode:'BS8811', district:'Brunei-Muara',
     status:'Active', accounts:1, services:2,
     accountList:[
-      { no:'SA8480-167530', type:'Commercial', addr:'Level 3, Wisma Green Valley', notes:'' },
+      { no:'SA8480-167530', name:'Head Office', type:'Main Account', cycle:'Quarterly', addr:'Level 3, Wisma Green Valley', notes:'' },
     ],
     serviceList:[
       { name:'Electricity Supply', code:'BCT-ELEC-001', plan:'Commercial C3', start:'2021-06-01', status:'Active' },
@@ -2170,7 +2207,7 @@ let CUSTOMERS = [
     addr1:'Jalan Tutong KM5', addr2:'', city:'Bandar Seri Begawan', postcode:'BA1318', district:'Brunei-Muara',
     status:'Active', accounts:1, services:1,
     accountList:[
-      { no:'SA0380-167541', type:'Commercial', addr:'Jalan Tutong KM5, BA1318', notes:'Critical facility — priority restoration' },
+      { no:'SA0380-167541', name:'Medical Centre', type:'Main Account', cycle:'Monthly', addr:'Jalan Tutong KM5, BA1318', notes:'Critical facility — priority restoration' },
     ],
     serviceList:[
       { name:'Electricity Supply', code:'BCT-ELEC-001', plan:'Large Power LP1', start:'2019-11-20', status:'Active' },
@@ -2181,8 +2218,8 @@ let CUSTOMERS = [
     addr1:'Lot 7, Kawasan Perindustrian Seria', addr2:'', city:'Seria', postcode:'KA1131', district:'Belait',
     status:'Pending', accounts:2, services:2,
     accountList:[
-      { no:'SA5480-167552', type:'Industrial', addr:'Lot 7, Kawasan Perindustrian Seria', notes:'' },
-      { no:'SA5480-167553', type:'Industrial', addr:'Lot 8, Kawasan Perindustrian Seria', notes:'Expansion unit' },
+      { no:'SA5480-167552', name:'Main Depot',   type:'Main Account', cycle:'Monthly', addr:'Lot 7, Kawasan Perindustrian Seria', notes:'' },
+      { no:'SA5480-167553', name:'Expansion Unit', type:'Sub-Account', cycle:'Monthly', addr:'Lot 8, Kawasan Perindustrian Seria', notes:'Expansion unit' },
     ],
     serviceList:[
       { name:'Electricity Supply', code:'BCT-ELEC-001', plan:'Industrial I2', start:'2023-09-01', status:'Active' },
@@ -2194,7 +2231,7 @@ let CUSTOMERS = [
     addr1:'No. 88, Kompleks Yayasan Sultan Haji', addr2:'', city:'Bandar Seri Begawan', postcode:'BS8711', district:'Brunei-Muara',
     status:'Active', accounts:1, services:1,
     accountList:[
-      { no:'SA0380-167563', type:'Commercial', addr:'No. 88, Kompleks Yayasan', notes:'' },
+      { no:'SA0380-167563', name:'Supermarket Main', type:'Main Account', cycle:'Monthly', addr:'No. 88, Kompleks Yayasan', notes:'' },
     ],
     serviceList:[
       { name:'Electricity Supply', code:'BCT-ELEC-001', plan:'Commercial C2', start:'2020-03-10', status:'Active' },
@@ -2205,9 +2242,9 @@ let CUSTOMERS = [
     addr1:'Industrial Estate, Lumut', addr2:'Block B, Bay 3', city:'Lumut', postcode:'KA3333', district:'Belait',
     status:'Active', accounts:3, services:2,
     accountList:[
-      { no:'SA0380-167585', type:'Industrial', addr:'Block B, Bay 3, Lumut Industrial Estate', notes:'' },
-      { no:'SA0380-167586', type:'Industrial', addr:'Block C, Bay 1, Lumut Industrial Estate', notes:'Heavy machinery' },
-      { no:'SA0380-167587', type:'Industrial', addr:'Admin Block, Lumut Industrial Estate', notes:'Office & admin' },
+      { no:'SA0380-167585', name:'Production Floor B', type:'Main Account',  cycle:'Monthly', addr:'Block B, Bay 3, Lumut Industrial Estate', notes:'' },
+      { no:'SA0380-167586', name:'Production Floor C', type:'Sub-Account',   cycle:'Monthly', addr:'Block C, Bay 1, Lumut Industrial Estate', notes:'Heavy machinery' },
+      { no:'SA0380-167587', name:'Admin Block',        type:'Cost Centre',   cycle:'Monthly', addr:'Admin Block, Lumut Industrial Estate', notes:'Office & admin' },
     ],
     serviceList:[
       { name:'Electricity Supply', code:'BCT-ELEC-001', plan:'Industrial I3 (HV)', start:'2018-07-01', status:'Active' },
@@ -2219,7 +2256,7 @@ let CUSTOMERS = [
     addr1:'Jalan Residency', addr2:'', city:'Bandar Seri Begawan', postcode:'BA1000', district:'Brunei-Muara',
     status:'Inactive', accounts:1, services:1,
     accountList:[
-      { no:'SA5480-167596', type:'Commercial', addr:'Jalan Residency, BA1000', notes:'Overdue — account suspended' },
+      { no:'SA5480-167596', name:'Hotel Main', type:'Main Account', cycle:'Monthly', addr:'Jalan Residency, BA1000', notes:'Overdue — account suspended' },
     ],
     serviceList:[
       { name:'Electricity Supply', code:'BCT-ELEC-001', plan:'Large Power LP2', start:'2017-05-01', status:'Suspended' },
@@ -2230,7 +2267,7 @@ let CUSTOMERS = [
     addr1:'No. 5, Kampung Kapok', addr2:'', city:'Bandar Seri Begawan', postcode:'BD2714', district:'Brunei-Muara',
     status:'Active', accounts:1, services:1,
     accountList:[
-      { no:'SA0380-167610', type:'Residential', addr:'No. 5, Kampung Kapok, BD2714', notes:'' },
+      { no:'SA0380-167610', name:'Home', type:'Residential', cycle:'Monthly', addr:'No. 5, Kampung Kapok, BD2714', notes:'' },
     ],
     serviceList:[
       { name:'Electricity Supply', code:'BCT-ELEC-001', plan:'Domestic D1', start:'2024-01-10', status:'Active' },
@@ -2340,8 +2377,8 @@ function openCustomerDetail(id) {
         <div class="account-icon"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg></div>
         <div class="account-info">
           <div class="account-no">${a.no}</div>
-          <div class="account-type">${a.type}</div>
-          <div class="account-meta">${a.addr}${a.notes ? ' · ' + a.notes : ''}</div>
+          <div class="account-type">${a.name ? a.name + ' · ' : ''}${a.type}${a.cycle ? ' · ' + a.cycle : ''}</div>
+          <div class="account-meta">${a.addr || ''}${(a.addr && a.notes) ? ' · ' : ''}${a.notes || ''}</div>
         </div>
         <span class="chip chip-green" style="flex-shrink:0;">Active</span>
       </div>`).join('');
@@ -2584,10 +2621,11 @@ function afterCreateDoService() {
 
 /* ── Add Account Modal ── */
 function openAddAccount() {
-  document.getElementById('acc-no').value = '';
-  document.getElementById('acc-type').value = '';
-  document.getElementById('acc-addr').value = '';
-  document.getElementById('acc-notes').value = '';
+  ['acc-no','acc-name','acc-addr','acc-credit','acc-notes'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('acc-type').value  = '';
+  document.getElementById('acc-cycle').value = '';
   document.querySelectorAll('#add-account-dialog .field-err').forEach(e => e.classList.remove('visible'));
   document.getElementById('add-acc-sub').textContent = activeCustomer
     ? `Link a new billing account to ${activeCustomer.name}`
@@ -2601,12 +2639,23 @@ function closeAddAccountOnBg(e) {
   if (e.target === document.getElementById('add-account-dialog')) closeAddAccount();
 }
 function submitAddAccount() {
-  const no   = document.getElementById('acc-no').value.trim();
-  const type = document.getElementById('acc-type').value;
-  if (!no)   { document.getElementById('err-acc-no').classList.add('visible');   return; }
-  if (!type) { document.getElementById('err-acc-type').classList.add('visible'); return; }
-  if (!activeCustomer) return;
-  const newAcc = { no, type, addr: document.getElementById('acc-addr').value.trim(), notes: document.getElementById('acc-notes').value.trim() };
+  const no    = document.getElementById('acc-no').value.trim();
+  const name  = document.getElementById('acc-name').value.trim();
+  const type  = document.getElementById('acc-type').value;
+  const cycle = document.getElementById('acc-cycle').value;
+  let valid = true;
+  const setErr = (id, show) => { document.getElementById(id).classList.toggle('visible', show); if (show) valid = false; };
+  setErr('err-acc-no',    !no);
+  setErr('err-acc-name',  !name);
+  setErr('err-acc-type',  !type);
+  setErr('err-acc-cycle', !cycle);
+  if (!valid || !activeCustomer) return;
+  const newAcc = {
+    no, name, type, cycle,
+    credit: document.getElementById('acc-credit').value.trim(),
+    addr:   document.getElementById('acc-addr').value.trim(),
+    notes:  document.getElementById('acc-notes').value.trim()
+  };
   activeCustomer.accountList.push(newAcc);
   activeCustomer.accounts++;
   document.getElementById('tab-acc-count').textContent = activeCustomer.accountList.length;
@@ -2617,8 +2666,8 @@ function submitAddAccount() {
       <div class="account-icon">${icon}</div>
       <div class="account-info">
         <div class="account-no">${a.no}</div>
-        <div class="account-type">${a.type}</div>
-        <div class="account-meta">${a.addr}${a.notes ? ' · ' + a.notes : ''}</div>
+        <div class="account-type">${a.name ? a.name + ' · ' : ''}${a.type}${a.cycle ? ' · ' + a.cycle : ''}</div>
+        <div class="account-meta">${a.addr || ''}${(a.addr && a.notes) ? ' · ' : ''}${a.notes || ''}</div>
       </div>
       <span class="chip chip-green" style="flex-shrink:0;">Active</span>
     </div>`).join('');
