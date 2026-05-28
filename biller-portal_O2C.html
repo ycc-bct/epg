@@ -2013,12 +2013,12 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
   </div>
 </div>
 
-<!-- ════════ ADD ACCOUNT MODAL ════════ -->
+<!-- ════════ ADD / EDIT ACCOUNT MODAL ════════ -->
 <div class="dialog-overlay" id="add-account-dialog" onclick="closeAddAccountOnBg(event)">
   <div class="dialog">
     <div class="dialog-header">
       <div>
-        <div class="dialog-title">Add Account</div>
+        <div class="dialog-title" id="acc-modal-title">Add Account</div>
         <div class="dialog-sub" id="add-acc-sub">Link a new billing account to this customer</div>
       </div>
       <button class="dialog-close" onclick="closeAddAccount()">
@@ -2042,15 +2042,15 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
       <!-- Row 2: Account Type + Billing Cycle -->
       <div class="field-row" style="margin-top:14px;">
         <div class="field">
-          <label>Account Type <span class="req">*</span></label>
+          <label>Account Type <span class="req">*</span>
+            <span style="font-size:11px;font-weight:400;color:var(--text-subtle);margin-left:4px;">billing account hierarchy</span>
+          </label>
           <div class="select-wrap">
-            <select id="acc-type">
+            <select id="acc-type" onchange="onAccTypeChange()">
               <option value="">Select type…</option>
               <option>Main Account</option>
               <option>Sub-Account</option>
               <option>Cost Centre</option>
-              <option>Residential</option>
-              <option>Commercial</option>
             </select>
           </div>
           <div class="field-err" id="err-acc-type">Account type is required.</div>
@@ -2070,6 +2070,18 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
           <div class="field-err" id="err-acc-cycle">Billing cycle is required.</div>
         </div>
       </div>
+      <!-- Parent Account — only shown for Sub-Account / Cost Centre -->
+      <div id="acc-parent-row" class="field-row" style="margin-top:14px;display:none;">
+        <div class="field" style="flex:1;">
+          <label>Parent Account</label>
+          <div class="select-wrap">
+            <select id="acc-parent">
+              <option value="">None (top-level)</option>
+            </select>
+          </div>
+          <div style="font-size:11px;color:var(--text-subtle);margin-top:4px;">Select the main account this account reports under.</div>
+        </div>
+      </div>
       <!-- Row 3: Credit Limit + Service Address -->
       <div class="field-row" style="margin-top:14px;">
         <div class="field">
@@ -2081,6 +2093,23 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
           <input type="text" id="acc-addr" placeholder="Address where service is provided" />
         </div>
       </div>
+      <!-- Edit-mode only: Status + Closure Date -->
+      <div id="acc-edit-fields" class="field-row" style="margin-top:14px;display:none;">
+        <div class="field">
+          <label>Status <span class="req">*</span></label>
+          <div class="select-wrap">
+            <select id="acc-status">
+              <option value="Active">Active</option>
+              <option value="Suspended">Suspended</option>
+              <option value="Closed">Closed</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Closure Date</label>
+          <input type="text" id="acc-closure" placeholder="YYYY-MM-DD (if closing)" />
+        </div>
+      </div>
       <!-- Notes -->
       <div class="field" style="margin-top:14px;">
         <label>Notes</label>
@@ -2088,7 +2117,7 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
       </div>
       <div class="btn-row">
         <button class="btn btn-ghost" onclick="closeAddAccount()">Cancel</button>
-        <button class="btn btn-primary" onclick="submitAddAccount()">Add Account</button>
+        <button class="btn btn-primary" id="acc-submit-btn" onclick="submitAddAccount()">Add Account</button>
       </div>
     </div>
   </div>
@@ -2380,7 +2409,10 @@ function openCustomerDetail(id) {
           <div class="account-type">${a.name ? a.name + ' · ' : ''}${a.type}${a.cycle ? ' · ' + a.cycle : ''}</div>
           <div class="account-meta">${a.addr || ''}${(a.addr && a.notes) ? ' · ' : ''}${a.notes || ''}</div>
         </div>
-        <span class="chip chip-green" style="flex-shrink:0;">Active</span>
+        <span class="chip ${a.status === 'Suspended' ? 'chip-amber' : a.status === 'Closed' ? 'chip-muted' : 'chip-green'}" style="flex-shrink:0;">${a.status || 'Active'}</span>
+        <button class="btn btn-ghost" style="padding:6px 8px;flex-shrink:0;" title="Edit account" onclick="openEditAccount('${a.no}')">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:14px;height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"/></svg>
+        </button>
       </div>`).join('');
 
   // Services tab
@@ -2620,17 +2652,69 @@ function afterCreateDoService() {
 }
 
 /* ── Add Account Modal ── */
+let accEditMode = false;  // false = Add, true = Edit
+let accEditTarget = null; // account object being edited
+
 function openAddAccount() {
-  ['acc-no','acc-name','acc-addr','acc-credit','acc-notes'].forEach(id => {
+  accEditMode = false; accEditTarget = null;
+  ['acc-no','acc-name','acc-addr','acc-credit','acc-closure','acc-notes'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
-  document.getElementById('acc-type').value  = '';
-  document.getElementById('acc-cycle').value = '';
+  document.getElementById('acc-type').value   = '';
+  document.getElementById('acc-cycle').value  = '';
+  document.getElementById('acc-status').value = 'Active';
+  document.getElementById('acc-no').readOnly  = false;
+  document.getElementById('acc-no').style.background = '';
   document.querySelectorAll('#add-account-dialog .field-err').forEach(e => e.classList.remove('visible'));
+  document.getElementById('acc-modal-title').textContent  = 'Add Account';
+  document.getElementById('acc-submit-btn').textContent   = 'Add Account';
+  document.getElementById('acc-edit-fields').style.display = 'none';
+  document.getElementById('acc-parent-row').style.display  = 'none';
   document.getElementById('add-acc-sub').textContent = activeCustomer
     ? `Link a new billing account to ${activeCustomer.name}`
     : 'Link a new billing account';
+  populateParentAccountOptions();
   document.getElementById('add-account-dialog').classList.add('open');
+}
+
+function openEditAccount(accNo) {
+  if (!activeCustomer) return;
+  const a = activeCustomer.accountList.find(x => x.no === accNo);
+  if (!a) return;
+  accEditMode = true; accEditTarget = a;
+  document.getElementById('acc-no').value       = a.no;
+  document.getElementById('acc-no').readOnly    = true;
+  document.getElementById('acc-no').style.background = 'var(--chip-bg)';
+  document.getElementById('acc-name').value     = a.name   || '';
+  document.getElementById('acc-type').value     = a.type   || '';
+  document.getElementById('acc-cycle').value    = a.cycle  || '';
+  document.getElementById('acc-credit').value   = a.credit || '';
+  document.getElementById('acc-addr').value     = a.addr   || '';
+  document.getElementById('acc-status').value   = a.status || 'Active';
+  document.getElementById('acc-closure').value  = a.closure|| '';
+  document.getElementById('acc-notes').value    = a.notes  || '';
+  document.querySelectorAll('#add-account-dialog .field-err').forEach(e => e.classList.remove('visible'));
+  document.getElementById('acc-modal-title').textContent  = 'Edit Account';
+  document.getElementById('acc-submit-btn').textContent   = 'Save Changes';
+  document.getElementById('acc-edit-fields').style.display = '';
+  document.getElementById('add-acc-sub').textContent = `Editing ${a.no} — ${activeCustomer.name}`;
+  populateParentAccountOptions(a.parent);
+  onAccTypeChange();
+  document.getElementById('add-account-dialog').classList.add('open');
+}
+
+function populateParentAccountOptions(selectedNo) {
+  const sel = document.getElementById('acc-parent');
+  const mains = (activeCustomer ? activeCustomer.accountList : [])
+    .filter(a => a.type === 'Main Account' && (!accEditTarget || a.no !== accEditTarget.no));
+  sel.innerHTML = '<option value="">None (top-level)</option>' +
+    mains.map(a => `<option value="${a.no}" ${a.no === selectedNo ? 'selected' : ''}>${a.no} — ${a.name || a.type}</option>`).join('');
+}
+
+function onAccTypeChange() {
+  const t = document.getElementById('acc-type').value;
+  document.getElementById('acc-parent-row').style.display =
+    (t === 'Sub-Account' || t === 'Cost Centre') ? '' : 'none';
 }
 function closeAddAccount() {
   document.getElementById('add-account-dialog').classList.remove('open');
@@ -2650,12 +2734,29 @@ function submitAddAccount() {
   setErr('err-acc-type',  !type);
   setErr('err-acc-cycle', !cycle);
   if (!valid || !activeCustomer) return;
-  const newAcc = {
+
+  const accData = {
     no, name, type, cycle,
-    credit: document.getElementById('acc-credit').value.trim(),
-    addr:   document.getElementById('acc-addr').value.trim(),
-    notes:  document.getElementById('acc-notes').value.trim()
+    parent:  document.getElementById('acc-parent').value,
+    credit:  document.getElementById('acc-credit').value.trim(),
+    addr:    document.getElementById('acc-addr').value.trim(),
+    status:  document.getElementById('acc-status').value || 'Active',
+    closure: document.getElementById('acc-closure').value.trim(),
+    notes:   document.getElementById('acc-notes').value.trim()
   };
+
+  if (accEditMode && accEditTarget) {
+    // Edit — update in-place
+    Object.assign(accEditTarget, accData);
+    closeAddAccount();
+    // Re-render both detail view lists
+    openCustomerDetail(activeCustomer.id);
+    detailTab('accounts');
+    showSnack(`Account ${no} updated successfully`);
+    return;
+  }
+
+  const newAcc = accData;
   activeCustomer.accountList.push(newAcc);
   activeCustomer.accounts++;
   document.getElementById('tab-acc-count').textContent = activeCustomer.accountList.length;
