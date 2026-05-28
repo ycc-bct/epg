@@ -1,0 +1,2927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Biller Portal O2C — ePG Electronic Payment Gateway</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS  (aligned with teller-portal.html)
+   ============================================================ */
+:root {
+  --bg:            #F0F4F8;
+  --surface:       #FFFFFF;
+  --border:        #E2E8F0;
+  --border-strong: #CBD5E1;
+  --text:          #0F172A;
+  --text-muted:    #475569;
+  --text-subtle:   #64748B;
+  --chip-bg:       #F1F5F9;
+
+  /* Biller accent — green (from index.html --biller) */
+  --accent:        #1D7A4E;
+  --accent-dim:    color-mix(in srgb, #1D7A4E 10%, white);
+  --accent-border: color-mix(in srgb, #1D7A4E 25%, white);
+  --accent-text:   color-mix(in srgb, #1D7A4E 80%, #0F172A);
+
+  /* Semantic */
+  --green:         #1D7A4E;
+  --green-dim:     color-mix(in srgb, #1D7A4E 10%, white);
+  --red:           #C8102E;
+  --red-dim:       color-mix(in srgb, #C8102E 10%, white);
+  --blue:          #2E75B6;
+  --blue-dim:      color-mix(in srgb, #2E75B6 10%, white);
+  --amber:         #B45309;
+  --amber-dim:     color-mix(in srgb, #B45309 10%, white);
+
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+
+  --shadow-sm:  0 1px 2px rgba(15,23,42,.04);
+  --shadow-md:  0 4px 12px rgba(15,23,42,.06);
+  --shadow-lg:  0 16px 40px rgba(15,23,42,.10);
+
+  --transition: .2s cubic-bezier(.2,.8,.2,1);
+
+  --sidebar-w: 220px;
+}
+
+/* ============================================================
+   RESET + BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   LOGIN SCREEN
+   ============================================================ */
+.login-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+  padding: 24px;
+  padding-top: 80px;
+}
+.login-screen.hidden { display: none; }
+
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 40px 48px;
+  width: 100%;
+  max-width: 520px;
+}
+
+.login-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+.login-brand-mark {
+  width: 44px; height: 44px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, var(--accent) 0%, #0f4d30 100%);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 12px; letter-spacing: .03em;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 30%, transparent);
+  flex-shrink: 0;
+}
+.login-brand-text { line-height: 1.25; }
+.login-brand-title { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.login-brand-sub   { font-size: 12px; color: var(--text-subtle); margin-top: 2px; }
+
+.login-heading { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 6px; }
+.login-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
+
+.login-field { margin-bottom: 16px; }
+.login-field label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.login-input-wrap {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.login-input-wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+.login-input-wrap svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--text-subtle); pointer-events: none; }
+.login-input-wrap input {
+  flex: 1; padding: 11px 0; border: none; background: transparent;
+  font-size: 14px; font-family: inherit; color: var(--text); outline: none;
+}
+.login-input-wrap input::placeholder { color: var(--text-subtle); opacity: .6; }
+
+.login-error {
+  display: none; align-items: center; gap: 7px;
+  background: var(--red-dim); border: 1px solid color-mix(in srgb, var(--red) 25%, white);
+  color: var(--red); font-size: 13px; font-weight: 500;
+  padding: 10px 12px; border-radius: var(--radius-sm); margin-bottom: 16px;
+}
+.login-error.visible { display: flex; }
+.login-error svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+.login-btn {
+  width: 100%; padding: 11px 20px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600; font-family: inherit;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: background var(--transition), box-shadow var(--transition);
+  margin-top: 8px;
+}
+.login-btn:hover {
+  background: color-mix(in srgb, var(--accent) 85%, #000);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.login-btn svg { width: 16px; height: 16px; }
+
+.login-hint {
+  margin-top: 20px; padding: 12px 14px;
+  background: var(--chip-bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 12px; color: var(--text-muted); line-height: 1.7;
+}
+.login-hint strong { color: var(--text-subtle); font-weight: 600; }
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header {
+  background: rgba(255,255,255,.85);
+  backdrop-filter: saturate(140%) blur(10px);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex; align-items: center; gap: 16px;
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 50;
+  height: 60px;
+}
+
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; flex-shrink: 0; }
+.brand-mark {
+  width: 36px; height: 36px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--accent) 0%, #0f4d30 100%);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 11px; letter-spacing: .03em;
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--accent) 35%, transparent);
+  flex-shrink: 0;
+}
+.brand-text { line-height: 1.2; }
+.brand-title { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.brand-sub   { font-size: 11px; color: var(--text-subtle); margin-top: 1px; }
+
+.header-sep { width: 1px; height: 24px; background: var(--border-strong); flex-shrink: 0; }
+
+.breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-subtle); }
+.breadcrumb a { color: var(--text-subtle); text-decoration: none; transition: color var(--transition); }
+.breadcrumb a:hover { color: var(--text); }
+.breadcrumb-sep { opacity: .4; }
+.breadcrumb-current { color: var(--text); font-weight: 600; }
+
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+.biller-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--accent-dim); color: var(--accent-text);
+  border: 1px solid var(--accent-border);
+  padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+}
+.biller-chip::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+}
+
+.avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--accent-dim); border: 1px solid var(--accent-border);
+  color: var(--accent-text); display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+}
+
+.btn-logout {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm); background: transparent;
+  font-size: 12px; font-weight: 500; color: var(--text-muted);
+  cursor: pointer; font-family: inherit; transition: all var(--transition);
+}
+.btn-logout:hover { background: var(--bg); color: var(--text); border-color: var(--accent-border); }
+.btn-logout svg { width: 14px; height: 14px; }
+
+/* ============================================================
+   APP SHELL  (sidebar + content)
+   ============================================================ */
+.app {
+  display: none;
+  padding-top: 60px;
+  min-height: 100vh;
+}
+.app.visible { display: flex; }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: calc(100vh - 60px);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  position: fixed; top: 60px; left: 0; bottom: 0;
+  overflow-y: auto;
+  padding: 16px 10px 24px;
+  z-index: 40;
+  display: flex; flex-direction: column;
+}
+
+.sb-section { margin-bottom: 4px; }
+.sb-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--text-subtle); padding: 10px 8px 5px; display: block;
+}
+
+.sb-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 10px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500; color: var(--text-muted);
+  cursor: pointer; transition: all var(--transition);
+  user-select: none;
+}
+.sb-item:hover { background: var(--chip-bg); color: var(--text); }
+.sb-item.active { background: var(--accent-dim); color: var(--accent-text); font-weight: 600; }
+.sb-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+.sb-item .sb-badge {
+  margin-left: auto; background: var(--accent); color: #fff;
+  font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 999px;
+}
+.sb-item.active .sb-badge { background: color-mix(in srgb, var(--accent) 70%, white); }
+
+.sb-divider { height: 1px; background: var(--border); margin: 10px 0; }
+.sb-footer { margin-top: auto; font-size: 11px; color: var(--text-subtle); padding: 8px 8px 0; }
+
+/* ── Content area ── */
+.content {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  padding: 32px 32px 80px;
+  min-height: calc(100vh - 60px);
+}
+
+/* ============================================================
+   PAGE / PANEL SWITCHING
+   ============================================================ */
+.page { display: none; }
+.page.active { display: block; animation: fadeUp .18s ease both; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   PAGE TITLE
+   ============================================================ */
+.page-header { margin-bottom: 24px; }
+.page-title  { font-size: 22px; font-weight: 700; letter-spacing: -.02em; color: var(--text); }
+.page-meta   { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+/* ============================================================
+   CARD
+   ============================================================ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow var(--transition);
+}
+.card + .card { margin-top: 16px; }
+
+.card-section {
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--border);
+}
+.card-section:last-child { border-bottom: none; }
+
+.section-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--text-subtle);
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.section-label::before {
+  content: ""; width: 3px; height: 14px; border-radius: 2px;
+  background: var(--accent); flex-shrink: 0;
+}
+
+/* ============================================================
+   KPI ROW
+   ============================================================ */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.kpi-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+}
+.kpi-label { font-size: 12px; font-weight: 600; color: var(--text-subtle); margin-bottom: 6px; }
+.kpi-value { font-size: 24px; font-weight: 800; letter-spacing: -.03em; color: var(--text); font-family: ui-monospace, monospace; }
+.kpi-value.green  { color: var(--green); }
+.kpi-value.amber  { color: var(--amber); }
+.kpi-value.blue   { color: var(--blue); }
+.kpi-sub   { font-size: 11px; color: var(--text-subtle); margin-top: 4px; }
+.kpi-up    { color: var(--green); font-weight: 600; }
+
+/* ============================================================
+   STEP INDICATOR
+   ============================================================ */
+.steps { display: flex; align-items: flex-start; gap: 0; margin-bottom: 28px; }
+.step  { display: flex; flex-direction: column; align-items: center; flex: 1; position: relative; }
+.step:not(:last-child)::after {
+  content: ""; position: absolute; top: 15px;
+  left: calc(50% + 18px); right: calc(-50% + 18px);
+  height: 2px; background: var(--border-strong); transition: background var(--transition);
+}
+.step.done:not(:last-child)::after { background: var(--accent); }
+
+.step-circle {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 2px solid var(--border-strong); background: var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: var(--text-subtle);
+  transition: all var(--transition); position: relative; z-index: 1;
+}
+.step.done   .step-circle { background: var(--accent); border-color: var(--accent); color: #fff; }
+.step.active .step-circle { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 0 4px var(--accent-dim); }
+
+.step-label { margin-top: 8px; text-align: center; }
+.step-label-main { font-size: 12px; font-weight: 600; color: var(--text-subtle); transition: color var(--transition); }
+.step.active .step-label-main,
+.step.done   .step-label-main { color: var(--text); }
+.step-label-sub { font-size: 10px; color: var(--text-subtle); opacity: .65; font-weight: 600; letter-spacing: .05em; margin-top: 2px; }
+
+/* ============================================================
+   STEP PANELS
+   ============================================================ */
+.step-panel { display: none; }
+.step-panel.active { display: block; animation: fadeUp .18s ease both; }
+
+/* ============================================================
+   FORM ELEMENTS
+   ============================================================ */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field + .field { margin-top: 14px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+.field-row .field + .field { margin-top: 0; }
+
+label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+label .req { color: var(--red); margin-left: 2px; }
+
+input[type="text"], input[type="number"], input[type="email"], select, textarea {
+  width: 100%; padding: 10px 12px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+  font-size: 14px; font-family: inherit; color: var(--text);
+  background: var(--surface); outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  -webkit-appearance: none; appearance: none;
+}
+input:focus, select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+input::placeholder { color: var(--text-subtle); opacity: .6; }
+
+.select-wrap { position: relative; }
+.select-wrap select { padding-right: 36px; cursor: pointer; }
+.select-wrap::after {
+  content: ""; position: absolute; right: 12px; top: 50%;
+  transform: translateY(-50%); width: 0; height: 0;
+  border-left: 4px solid transparent; border-right: 4px solid transparent;
+  border-top: 5px solid var(--text-subtle); pointer-events: none;
+}
+
+.hint { font-size: 12px; color: var(--text-subtle); line-height: 1.5; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 18px; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600; font-family: inherit;
+  cursor: pointer; border: none;
+  transition: filter var(--transition), transform var(--transition), box-shadow var(--transition);
+  white-space: nowrap;
+}
+.btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: .45; pointer-events: none; }
+
+.btn-primary {
+  background: var(--accent); color: #fff;
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.btn-primary:hover { filter: brightness(1.08); box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 30%, transparent); }
+
+.btn-ghost {
+  background: transparent; color: var(--text-muted);
+  border: 1px solid var(--border-strong);
+}
+.btn-ghost:hover { background: var(--chip-bg); color: var(--text); }
+
+.btn-danger { background: var(--red); color: #fff; }
+.btn-danger:hover { filter: brightness(1.08); }
+
+.btn-full { width: 100%; }
+
+.btn-row { display: flex; gap: 10px; margin-top: 20px; }
+.btn-row .btn { flex: 1; }
+
+/* ============================================================
+   CHIPS / BADGES
+   ============================================================ */
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: .03em; border: 1px solid transparent;
+}
+.chip-green  { background: var(--green-dim); color: var(--green); border-color: color-mix(in srgb, var(--green) 25%, white); }
+.chip-red    { background: var(--red-dim);   color: var(--red);   border-color: color-mix(in srgb, var(--red) 25%, white); }
+.chip-amber  { background: var(--amber-dim); color: var(--amber); border-color: color-mix(in srgb, var(--amber) 25%, white); }
+.chip-blue   { background: var(--blue-dim);  color: var(--blue);  border-color: color-mix(in srgb, var(--blue) 25%, white); }
+.chip-muted  { background: var(--chip-bg);   color: var(--text-muted); border-color: var(--border-strong); }
+.chip-mono   { font-family: ui-monospace, monospace; font-size: 10px; background: var(--chip-bg); color: var(--text-muted); border-color: var(--border-strong); }
+
+/* ============================================================
+   FILTER BAR
+   ============================================================ */
+.filter-bar {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 14px; flex-wrap: wrap;
+}
+.filter-bar input[type="text"] {
+  padding: 8px 12px; font-size: 13px;
+  width: 200px; border-radius: var(--radius-sm);
+}
+.fchip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--accent-dim); color: var(--accent-text);
+  border: 1px solid var(--accent-border);
+  padding: 4px 8px 4px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 600;
+}
+.fchip button {
+  border: none; background: transparent; cursor: pointer;
+  color: var(--accent-text); font-size: 14px; line-height: 1;
+  padding: 0 2px; transition: color var(--transition);
+}
+.fchip button:hover { color: var(--red); }
+.filter-bar-right { margin-left: auto; display: flex; gap: 8px; }
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+.table-wrap {
+  overflow-x: auto; border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead tr { background: var(--chip-bg); }
+thead th {
+  padding: 10px 12px; text-align: left;
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--text-subtle); white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+thead th.th-right { text-align: right; }
+thead th.th-check { width: 40px; }
+tbody tr { border-bottom: 1px solid var(--border); transition: background var(--transition); cursor: pointer; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--chip-bg); }
+tbody tr.selected { background: var(--accent-dim); }
+tbody td { padding: 11px 12px; vertical-align: middle; }
+tbody td.td-right { text-align: right; }
+tbody td.td-mono  { font-family: ui-monospace, monospace; font-size: 12px; color: var(--text-muted); }
+tbody td.td-bold  { font-weight: 700; }
+input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }
+
+/* ============================================================
+   UPLOAD DROP ZONE
+   ============================================================ */
+.drop-zone {
+  border: 2px dashed var(--border-strong); border-radius: var(--radius-md);
+  padding: 48px 24px; text-align: center;
+  cursor: pointer; transition: all var(--transition); margin-top: 16px;
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: var(--accent); background: var(--accent-dim);
+}
+.drop-zone svg { width: 40px; height: 40px; color: var(--text-subtle); margin-bottom: 12px; }
+.drop-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.drop-sub   { font-size: 13px; color: var(--text-muted); }
+.drop-zone.uploaded { border-color: var(--green); background: var(--green-dim); }
+.drop-zone.uploaded svg { color: var(--green); }
+
+/* ============================================================
+   PROGRESS BAR
+   ============================================================ */
+.progress-wrap {
+  background: var(--border); border-radius: 999px;
+  height: 6px; overflow: hidden; margin: 8px 0;
+}
+.progress-fill {
+  height: 100%; background: var(--accent); border-radius: 999px;
+  transition: width .3s ease;
+}
+
+/* ============================================================
+   SUMMARY ROW
+   ============================================================ */
+.summary-row {
+  display: flex; align-items: flex-start; justify-content: space-between; padding: 9px 0;
+}
+.summary-row + .summary-row { border-top: 1px solid var(--border); }
+.summary-label { font-size: 13px; color: var(--text-muted); }
+.summary-value { font-size: 13px; font-weight: 600; font-family: ui-monospace, monospace; color: var(--text); }
+
+.total-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px; background: var(--accent-dim); border: 1px solid var(--accent-border);
+  border-radius: var(--radius-sm); margin-top: 14px;
+}
+.total-label { font-size: 14px; font-weight: 700; color: var(--accent-text); }
+.total-value { font-size: 22px; font-weight: 800; font-family: ui-monospace, monospace; color: var(--accent); }
+
+/* ============================================================
+   ALERT / MODE BANNER
+   ============================================================ */
+.alert {
+  display: flex; gap: 10px; padding: 12px 14px;
+  border-radius: var(--radius-sm); font-size: 13px; line-height: 1.55;
+  margin-top: 14px; border: 1px solid transparent;
+}
+.alert svg { flex-shrink: 0; width: 16px; height: 16px; margin-top: 1px; }
+.alert.hidden { display: none; }
+.alert-success { background: var(--green-dim); color: var(--green); border-color: color-mix(in srgb, var(--green) 25%, white); }
+.alert-error   { background: var(--red-dim);   color: var(--red);   border-color: color-mix(in srgb, var(--red) 25%, white); }
+.alert-info    { background: var(--blue-dim);  color: var(--blue);  border-color: color-mix(in srgb, var(--blue) 25%, white); }
+.alert-amber   { background: var(--amber-dim); color: var(--amber); border-color: color-mix(in srgb, var(--amber) 25%, white); }
+
+/* ============================================================
+   SNACKBAR
+   ============================================================ */
+.snack {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px);
+  background: #0F172A; color: #fff;
+  padding: 10px 20px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500;
+  opacity: 0; transition: all .2s; pointer-events: none; z-index: 100; white-space: nowrap;
+}
+.snack.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ============================================================
+   BILL MANAGEMENT TABS
+   ============================================================ */
+.tab-row { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.tab-btn {
+  padding: 10px 16px; font-size: 13px; font-weight: 500; color: var(--text-muted);
+  background: transparent; border: none; cursor: pointer; font-family: inherit;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color var(--transition), border-color var(--transition);
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.tab-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 999px;
+  background: var(--accent-dim); color: var(--accent-text);
+  font-size: 10px; font-weight: 700; margin-left: 5px;
+}
+
+/* ============================================================
+   FILE SPEC PILLS
+   ============================================================ */
+.spec-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.spec-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 999px;
+  background: var(--chip-bg); border: 1px solid var(--border-strong);
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+  font-family: ui-monospace, monospace;
+}
+
+/* ============================================================
+   SPINNER
+   ============================================================ */
+.spinner {
+  width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff; border-radius: 50%;
+  animation: spin .6s linear infinite; flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.processing-state { text-align: center; padding: 56px 24px; }
+.processing-spinner {
+  width: 48px; height: 48px;
+  border: 3px solid var(--border-strong); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 24px;
+}
+.processing-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.processing-sub   { font-size: 14px; color: var(--text-muted); }
+
+/* ============================================================
+   DIALOG / MODAL
+   ============================================================ */
+.dialog-overlay {
+  position: fixed; inset: 0; background: rgba(15,23,42,.45);
+  backdrop-filter: blur(3px); z-index: 200;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.dialog-overlay.open { opacity: 1; pointer-events: all; }
+
+.dialog {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+  width: 100%; max-width: 560px; max-height: 85vh; overflow-y: auto;
+  transform: translateY(16px); transition: transform .2s;
+}
+.dialog-overlay.open .dialog { transform: translateY(0); }
+
+.dialog-header {
+  padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+}
+.dialog-title { font-size: 16px; font-weight: 700; color: var(--text); }
+.dialog-sub    { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.dialog-close  {
+  flex-shrink: 0; width: 28px; height: 28px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong); background: transparent;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--text-subtle); transition: all var(--transition);
+}
+.dialog-close:hover { background: var(--chip-bg); color: var(--text); }
+.dialog-close svg { width: 14px; height: 14px; }
+.dialog-body { padding: 20px 24px; }
+
+.spec-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+.spec-table th {
+  padding: 8px 10px; text-align: left; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--text-subtle);
+  background: var(--chip-bg); border-bottom: 1px solid var(--border);
+}
+.spec-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text-muted); vertical-align: top; }
+.spec-table td:first-child { font-family: ui-monospace, monospace; font-weight: 600; color: var(--text); white-space: nowrap; }
+.spec-table tr:last-child td { border-bottom: none; }
+.spec-req  { color: var(--red); font-size: 10px; font-weight: 700; margin-left: 4px; }
+.spec-opt  { color: var(--text-subtle); font-size: 10px; font-weight: 600; margin-left: 4px; }
+
+/* Field validation error */
+.field-err {
+  font-size: 12px; color: var(--red); margin-top: 4px; min-height: 0;
+  display: none;
+}
+.field-err.visible { display: block; }
+
+/* Hold chip */
+.chip-hold { background: color-mix(in srgb, #7C3AED 10%, white); color: #6D28D9; border-color: color-mix(in srgb, #7C3AED 25%, white); }
+
+/* Upload zone — simplified */
+.upload-area {
+  text-align: center; padding: 40px 24px 32px;
+}
+.upload-area .upload-desc {
+  font-size: 13px; color: var(--text-muted); margin-top: 12px; line-height: 1.6;
+}
+.upload-area .upload-desc a {
+  color: var(--accent); font-weight: 600; text-decoration: none; cursor: pointer;
+}
+.upload-area .upload-desc a:hover { text-decoration: underline; }
+
+/* ============================================================
+   DRAWER  (Create Customer slide-in)
+   ============================================================ */
+.drawer-overlay {
+  position: fixed; inset: 0; background: rgba(15,23,42,.35);
+  backdrop-filter: blur(2px); z-index: 300;
+  opacity: 0; pointer-events: none; transition: opacity .25s;
+}
+.drawer-overlay.open { opacity: 1; pointer-events: all; }
+
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 520px; max-width: 95vw;
+  background: var(--surface); border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  display: flex; flex-direction: column;
+  transform: translateX(100%); transition: transform .28s cubic-bezier(.2,.8,.2,1);
+  z-index: 301;
+}
+.drawer-overlay.open .drawer { transform: translateX(0); }
+
+.drawer-header {
+  padding: 20px 24px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  flex-shrink: 0;
+}
+.drawer-title  { font-size: 16px; font-weight: 700; color: var(--text); }
+.drawer-sub    { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.drawer-close  {
+  flex-shrink: 0; width: 28px; height: 28px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong); background: transparent;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--text-subtle); transition: all var(--transition);
+}
+.drawer-close:hover { background: var(--chip-bg); color: var(--text); }
+.drawer-close svg { width: 14px; height: 14px; }
+
+.drawer-steps { padding: 16px 24px 0; flex-shrink: 0; }
+
+.drawer-body {
+  flex: 1; overflow-y: auto; padding: 20px 24px;
+}
+
+.drawer-footer {
+  padding: 16px 24px; border-top: 1px solid var(--border);
+  display: flex; gap: 10px; flex-shrink: 0;
+}
+.drawer-footer .btn { flex: 1; }
+
+/* ============================================================
+   CUSTOMER DETAIL PAGE
+   ============================================================ */
+.cust-profile-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+}
+.profile-item {}
+.profile-item-label { font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--text-subtle); margin-bottom: 3px; }
+.profile-item-value { font-size: 14px; color: var(--text); font-weight: 500; }
+.profile-item-value.mono { font-family: ui-monospace, monospace; }
+
+.cust-avatar {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: var(--accent-dim); border: 2px solid var(--accent-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; color: var(--accent-text);
+  flex-shrink: 0;
+}
+.cust-header-row {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 20px;
+}
+.cust-header-info {}
+.cust-header-name { font-size: 18px; font-weight: 700; letter-spacing: -.01em; }
+.cust-header-id   { font-size: 12px; color: var(--text-subtle); font-family: ui-monospace, monospace; margin-top: 2px; }
+
+/* Account card */
+.account-card {
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: 14px 16px; display: flex; align-items: flex-start; gap: 14px;
+  transition: box-shadow var(--transition);
+}
+.account-card:hover { box-shadow: var(--shadow-md); }
+.account-card + .account-card { margin-top: 10px; }
+.account-icon {
+  width: 36px; height: 36px; border-radius: var(--radius-sm);
+  background: var(--blue-dim); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.account-icon svg { width: 18px; height: 18px; color: var(--blue); }
+.account-info { flex: 1; min-width: 0; }
+.account-no   { font-size: 13px; font-weight: 700; font-family: ui-monospace, monospace; }
+.account-type { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.account-meta { font-size: 11px; color: var(--text-subtle); margin-top: 4px; }
+
+/* Service subscription card */
+.service-card {
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: 14px 16px;
+  transition: box-shadow var(--transition);
+}
+.service-card + .service-card { margin-top: 10px; }
+.service-card:hover { box-shadow: var(--shadow-md); }
+.service-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.service-name { font-size: 14px; font-weight: 600; }
+.service-code { font-size: 11px; font-family: ui-monospace, monospace; color: var(--text-subtle); margin-top: 2px; }
+.service-dates { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+
+/* Radio option (type selector) */
+.type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+.type-opt {
+  border: 2px solid var(--border-strong); border-radius: var(--radius-md);
+  padding: 14px 16px; cursor: pointer; transition: all var(--transition);
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.type-opt:has(input:checked) { border-color: var(--accent); background: var(--accent-dim); }
+.type-opt input { position: absolute; opacity: 0; pointer-events: none; }
+.type-opt-icon {
+  width: 32px; height: 32px; border-radius: var(--radius-sm); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.type-opt-icon svg { width: 18px; height: 18px; }
+.type-opt-label { font-size: 13px; font-weight: 700; color: var(--text); }
+.type-opt-desc  { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* Empty state */
+.empty-state {
+  text-align: center; padding: 40px 24px; color: var(--text-subtle);
+}
+.empty-state svg { width: 40px; height: 40px; margin-bottom: 12px; opacity: .4; }
+.empty-state p { font-size: 13px; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  :root { --sidebar-w: 0px; }
+  .sidebar { display: none; }
+  .content { margin-left: 0; padding: 20px 16px 60px; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+  .field-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════
+     LOGIN SCREEN
+════════════════════════════════════════════════════════ -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-brand-mark">ePG</div>
+      <div class="login-brand-text">
+        <div class="login-brand-title">ePG Electronic Payment Gateway</div>
+        <div class="login-brand-sub">Brunei Darussalam — Ministry of Finance &amp; Economy</div>
+      </div>
+    </div>
+    <div class="login-heading">Sign in to Biller Portal</div>
+    <div class="login-sub">Enter your service provider credentials to continue.</div>
+
+    <div class="login-error" id="login-error">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+      <span id="login-error-text">Invalid Biller ID or password.</span>
+    </div>
+
+    <div class="login-field">
+      <label for="login-id">Biller ID</label>
+      <div class="login-input-wrap">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+        <input type="text" id="login-id" placeholder="e.g. B-001" autocomplete="off"
+               onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+    </div>
+    <div class="login-field">
+      <label for="login-pw">Password</label>
+      <div class="login-input-wrap">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+        <input type="password" id="login-pw" placeholder="Enter your password"
+               onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+    </div>
+    <button class="login-btn" onclick="doLogin()">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
+      Sign In
+    </button>
+    <div class="login-hint">
+      <strong>Demo credentials:</strong><br>
+      Biller ID: <strong>B-001</strong> &nbsp;/&nbsp; Password: <strong>1234</strong><br>
+      Biller ID: <strong>B-002</strong> &nbsp;/&nbsp; Password: <strong>1234</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════════════════ -->
+<header class="header">
+  <a class="brand" href="https://ycc-bct.github.io/epg/">
+    <div class="brand-mark">ePG</div>
+    <div class="brand-text">
+      <div class="brand-title">ePG Electronic Payment Gateway</div>
+      <div class="brand-sub">One Common Billing System — Brunei Darussalam</div>
+    </div>
+  </a>
+  <div class="header-sep"></div>
+  <nav class="breadcrumb">
+    <a href="https://ycc-bct.github.io/epg/">Portals</a>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-current">Biller Portal</span>
+  </nav>
+  <div class="header-right">
+    <span class="biller-chip">Service Provider</span>
+    <div class="avatar" id="header-avatar">—</div>
+    <button class="btn-logout" onclick="doLogout()">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg>
+      Sign Out
+    </button>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════════════════════
+     APP SHELL
+════════════════════════════════════════════════════════ -->
+<div class="app" id="app">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sb-section">
+      <span class="sb-label">Billing</span>
+      <div class="sb-item active" id="ni-bill-mgmt" onclick="navTo('bill-mgmt',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+        Bill Management
+      </div>
+      <div class="sb-item" id="ni-invoices" onclick="navTo('invoices',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
+        Invoices &amp; Bills
+        <span class="sb-badge">3</span>
+      </div>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">
+      <span class="sb-label">Customers</span>
+      <div class="sb-item" id="ni-customers" onclick="navTo('customers',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
+        Customers
+      </div>
+      <div class="sb-item" id="ni-products" onclick="navTo('products',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.658.524a18.634 18.634 0 005.83-5.829c.349-.879.177-1.96-.523-2.659L9.568 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/></svg>
+        Products &amp; Pricing
+      </div>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">
+      <span class="sb-label">Finance</span>
+      <div class="sb-item" id="ni-payments" onclick="navTo('payments',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/></svg>
+        Payment Tracking
+      </div>
+      <div class="sb-item" id="ni-reports" onclick="navTo('reports',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+        Reports
+      </div>
+    </div>
+    <div class="sb-footer">ePG R2 · v2.4.1</div>
+  </aside>
+
+  <!-- ── CONTENT ── -->
+  <main class="content">
+
+    <!-- ════════ BILL MANAGEMENT ════════ -->
+    <div class="page active" id="page-bill-mgmt">
+      <div class="page-header">
+        <div class="page-title">Bill Management</div>
+        <div class="page-meta">Upload and manage bills submitted to the ePG Fulfilment Entity · Biller Code: BCT-ELEC-001</div>
+      </div>
+
+      <div class="card">
+        <div class="card-section">
+          <div class="tab-row">
+            <button class="tab-btn active" id="bm-tab-offline" onclick="bmTab('offline')">
+              Offline Batch Upload <span class="tab-count">4</span>
+            </button>
+            <button class="tab-btn" id="bm-tab-online" onclick="bmTab('online')">Online – Single Load</button>
+            <button class="tab-btn" id="bm-tab-history" onclick="bmTab('history')">Submission History</button>
+          </div>
+
+          <!-- ── OFFLINE ── -->
+          <div id="bm-offline">
+            <!-- Step indicator -->
+            <div class="steps" id="bm-steps">
+              <div class="step active" id="bs-1">
+                <div class="step-circle">1</div>
+                <div class="step-label"><div class="step-label-main">Upload Bills</div><div class="step-label-sub">CSV / XLSX</div></div>
+              </div>
+              <div class="step" id="bs-2">
+                <div class="step-circle">2</div>
+                <div class="step-label"><div class="step-label-main">Review &amp; Submit</div><div class="step-label-sub">Verify</div></div>
+              </div>
+              <div class="step" id="bs-3">
+                <div class="step-circle">3</div>
+                <div class="step-label"><div class="step-label-main">Confirmation</div><div class="step-label-sub">Job ID</div></div>
+              </div>
+            </div>
+
+            <!-- Step 1 -->
+            <div class="step-panel active" id="bsp-1">
+              <div id="upload-idle">
+                <div class="upload-area">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor" style="width:48px;height:48px;color:var(--accent);margin:0 auto 16px;display:block;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/></svg>
+                  <button class="btn btn-primary" style="font-size:14px;padding:11px 28px;" onclick="bmSimUpload()">
+                    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                    Upload Bill File
+                  </button>
+                  <div class="upload-desc">
+                    CSV or XLSX &nbsp;·&nbsp; Max 500 records &nbsp;·&nbsp; 10 MB limit
+                    &nbsp;·&nbsp; <a onclick="openSpecDialog()">Learn more about file specs</a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Progress state -->
+              <div id="upload-progress" style="display:none;padding:24px 0 8px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor" style="width:32px;height:32px;color:var(--green);flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                  <div>
+                    <div style="font-size:13px;font-weight:600;color:var(--text);" id="progress-filename">bills_batch_20240520.csv</div>
+                    <div style="font-size:12px;color:var(--text-subtle);">47.2 KB · BCT-ELEC-001</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                  <span id="progress-label" style="font-size:13px;color:var(--text-muted);">Reading file…</span>
+                  <span id="progress-pct" style="font-size:12px;font-weight:700;color:var(--accent);">0%</span>
+                </div>
+                <div class="progress-wrap"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step-panel" id="bsp-2">
+              <div class="section-label">Parsed Records <span id="bm-count-lbl" style="font-family:ui-monospace,monospace;font-size:11px;font-weight:600;color:var(--text-muted);margin-left:4px;text-transform:none;letter-spacing:0;"></span></div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr>
+                    <th class="th-check"><input type="checkbox" checked id="cb-all" onchange="toggleAll(this)"></th>
+                    <th>Bill Reference</th>
+                    <th>Customer</th>
+                    <th>Type</th>
+                    <th class="th-right">Amount Due</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                  </tr></thead>
+                  <tbody id="bm-tbody"></tbody>
+                </table>
+              </div>
+              <div class="total-row" style="margin-top:16px;">
+                <div><div class="total-label">Total Batch Amount</div><div style="font-size:11px;color:var(--accent-text);margin-top:2px;" id="bm-count-sub"></div></div>
+                <div class="total-value" id="bm-total-val">BND 0.00</div>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-ghost" onclick="bmGoStep(1)">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+                  Back
+                </button>
+                <button class="btn btn-primary" onclick="bmSubmit()">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  Submit to ePG
+                </button>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step-panel" id="bsp-3">
+              <div class="alert alert-success">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div><strong>Batch submitted to Fulfilment Entity.</strong> Processing within 1 business day. A confirmation file will be available once the FE has reconciled all records.</div>
+              </div>
+              <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">Job ID</div>
+                  <div style="font-size:16px;font-weight:700;font-family:ui-monospace,monospace;color:var(--text);" id="conf-jobid">—</div>
+                </div>
+                <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">Records Submitted</div>
+                  <div style="font-size:16px;font-weight:700;font-family:ui-monospace,monospace;color:var(--text);" id="conf-count">—</div>
+                </div>
+                <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">Total Amount</div>
+                  <div style="font-size:16px;font-weight:700;font-family:ui-monospace,monospace;color:var(--accent);" id="conf-total">—</div>
+                </div>
+                <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">Submitted At</div>
+                  <div style="font-size:16px;font-weight:700;font-family:ui-monospace,monospace;color:var(--text);" id="conf-time">—</div>
+                </div>
+              </div>
+              <!-- Download confirmation file -->
+              <div style="margin-top:16px;padding:14px 16px;border:1px solid var(--border);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:space-between;gap:16px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:18px;height:18px;color:var(--text-subtle);flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                  <div>
+                    <div style="font-size:13px;font-weight:600;color:var(--text);">Confirmation File (ACK)</div>
+                    <div style="font-size:12px;color:var(--text-muted);">Available after FE reconciliation · CSV format</div>
+                  </div>
+                </div>
+                <button class="btn btn-ghost" style="padding:8px 14px;font-size:13px;" onclick="showSnack('Confirmation file downloaded: ACK_' + document.getElementById(\'conf-jobid\').textContent + '.csv')">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                  Download
+                </button>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-ghost" onclick="bmReset()">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+                  New Upload
+                </button>
+                <button class="btn btn-primary" onclick="bmTab('history')">View History</button>
+              </div>
+            </div>
+          </div><!-- /bm-offline -->
+
+          <!-- ── ONLINE ── -->
+          <div id="bm-online" style="display:none;">
+
+            <!-- How it works banner -->
+            <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--blue-dim,#EFF6FF);border:1px solid color-mix(in srgb,var(--blue) 20%,white);border-radius:var(--radius-sm);margin-bottom:22px;font-size:13px;color:var(--blue);">
+              <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:16px;height:16px;flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+              <span><strong>Online Single Load</strong> registers one bill directly to ePG in real time. Unlike Offline Batch, the bill is validated against the FE immediately and becomes payable by the customer as soon as it's confirmed — no waiting period.</span>
+            </div>
+
+            <!-- Step indicator -->
+            <div class="steps" id="ol-steps">
+              <div class="step active" id="ol-s1">
+                <div class="step-circle">1</div>
+                <div class="step-label"><div class="step-label-main">Enter Bill Details</div><div class="step-label-sub">Fill form</div></div>
+              </div>
+              <div class="step" id="ol-s2">
+                <div class="step-circle">2</div>
+                <div class="step-label"><div class="step-label-main">Review &amp; Confirm</div><div class="step-label-sub">Verify</div></div>
+              </div>
+              <div class="step" id="ol-s3">
+                <div class="step-circle">3</div>
+                <div class="step-label"><div class="step-label-main">Bill Activated</div><div class="step-label-sub">Live</div></div>
+              </div>
+            </div>
+
+            <!-- ── Online Step 1: Enter Bill Details ── -->
+            <div class="step-panel active" id="ol-p1">
+              <div style="max-width:560px;">
+                <div class="section-label">Bill Information</div>
+                <div class="field-row">
+                  <div class="field">
+                    <label for="ol-cust">Customer ID <span class="req">*</span></label>
+                    <input type="text" id="ol-cust" placeholder="e.g. CUST-10042" oninput="olClearErr('ol-cust-err')">
+                    <div class="field-err" id="ol-cust-err"></div>
+                  </div>
+                  <div class="field">
+                    <label for="ol-ref">Bill Reference <span class="req">*</span></label>
+                    <input type="text" id="ol-ref" placeholder="e.g. BILL-000099" oninput="olClearErr('ol-ref-err')">
+                    <div class="field-err" id="ol-ref-err"></div>
+                  </div>
+                </div>
+
+                <div class="field-row" style="margin-top:14px;">
+                  <div class="field">
+                    <label for="ol-code">Biller Code <span class="req">*</span></label>
+                    <div class="select-wrap">
+                      <select id="ol-code">
+                        <option value="BCT-ELEC-001">BCT-ELEC-001 — Electricity</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="ol-amt">Amount Due (BND) <span class="req">*</span></label>
+                    <input type="number" id="ol-amt" placeholder="0.00" min="0.01" step="0.01" oninput="olClearErr('ol-amt-err')">
+                    <div class="field-err" id="ol-amt-err"></div>
+                  </div>
+                </div>
+
+                <div class="field-row" style="margin-top:14px;">
+                  <div class="field">
+                    <label for="ol-due">Due Date <span class="req">*</span></label>
+                    <input type="text" id="ol-due" placeholder="YYYY-MM-DD" oninput="olClearErr('ol-due-err')">
+                    <div class="field-err" id="ol-due-err"></div>
+                  </div>
+                  <div class="field">
+                    <label for="ol-rmk">Remarks</label>
+                    <input type="text" id="ol-rmk" placeholder="Optional — max 200 characters" maxlength="200">
+                  </div>
+                </div>
+
+                <div class="btn-row">
+                  <button class="btn btn-ghost" onclick="olReset()">
+                    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+                    Clear
+                  </button>
+                  <button class="btn btn-primary" id="ol-validate-btn" onclick="olValidate()">
+                    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Validate &amp; Preview
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Online Step 2: Review & Confirm ── -->
+            <div class="step-panel" id="ol-p2">
+              <div class="alert alert-success" style="margin-bottom:20px;">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div><strong>Real-time validation passed.</strong> Review the bill details below before confirming submission to ePG.</div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+                <div style="padding:18px 20px;border-right:1px solid var(--border);">
+                  <div class="section-label">Bill Details</div>
+                  <div class="summary-row"><div class="summary-label">Customer ID</div><div class="summary-value" id="rv-cust">—</div></div>
+                  <div class="summary-row"><div class="summary-label">Bill Reference</div><div class="summary-value" id="rv-ref">—</div></div>
+                  <div class="summary-row"><div class="summary-label">Biller Code</div><div class="summary-value" id="rv-code">—</div></div>
+                  <div class="summary-row"><div class="summary-label">Remarks</div><div class="summary-value" id="rv-rmk" style="color:var(--text-subtle);font-family:inherit;font-weight:400;">—</div></div>
+                </div>
+                <div style="padding:18px 20px;background:var(--chip-bg);">
+                  <div class="section-label">Payment Details</div>
+                  <div class="summary-row"><div class="summary-label">Amount Due</div><div class="summary-value" id="rv-amt" style="color:var(--accent);font-size:15px;">—</div></div>
+                  <div class="summary-row"><div class="summary-label">Due Date</div><div class="summary-value" id="rv-due">—</div></div>
+                  <div class="summary-row"><div class="summary-label">Activation</div>
+                    <div style="font-size:12px;font-weight:600;color:var(--green);display:flex;align-items:center;gap:5px;">
+                      <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:13px;height:13px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+                      Immediate upon confirmation
+                    </div>
+                  </div>
+                  <div class="summary-row"><div class="summary-label">Channel</div><div style="font-size:13px;font-weight:600;color:var(--text);">Online Portal</div></div>
+                </div>
+              </div>
+
+              <div style="margin-top:14px;padding:12px 14px;background:var(--amber-dim);border:1px solid color-mix(in srgb,var(--amber) 25%,white);border-radius:var(--radius-sm);font-size:13px;color:var(--amber);display:flex;gap:10px;align-items:flex-start;">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:16px;height:16px;flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                <span>Once confirmed, this bill cannot be cancelled through the portal. Contact ePG support if you need to void it.</span>
+              </div>
+
+              <div class="btn-row">
+                <button class="btn btn-ghost" onclick="olGoStep(1)">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+                  Back
+                </button>
+                <button class="btn btn-primary" id="ol-confirm-btn" onclick="olSubmit()">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  Confirm &amp; Activate Bill
+                </button>
+              </div>
+            </div>
+
+            <!-- ── Online Step 3: Bill Activated ── -->
+            <div class="step-panel" id="ol-p3">
+              <div class="alert alert-success" style="margin-bottom:20px;">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div>
+                  <strong>Bill is now live.</strong> The customer can pay immediately through any ePG-connected channel (Teller Portal, OCBS, or mobile banking).
+                </div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">Bill Reference</div>
+                  <div style="font-size:15px;font-weight:700;font-family:ui-monospace,monospace;color:var(--text);" id="ol-conf-ref">—</div>
+                </div>
+                <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">ePG Reference</div>
+                  <div style="font-size:15px;font-weight:700;font-family:ui-monospace,monospace;color:var(--accent);" id="ol-conf-epg">—</div>
+                </div>
+                <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">Amount Due</div>
+                  <div style="font-size:15px;font-weight:700;font-family:ui-monospace,monospace;color:var(--text);" id="ol-conf-amt">—</div>
+                </div>
+                <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">Activated At</div>
+                  <div style="font-size:15px;font-weight:700;font-family:ui-monospace,monospace;color:var(--text);" id="ol-conf-time">—</div>
+                </div>
+              </div>
+
+              <!-- Status timeline -->
+              <div style="padding:16px 18px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:16px;">
+                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:14px;">Bill Lifecycle</div>
+                <div style="display:flex;flex-direction:column;gap:0;">
+                  <div style="display:flex;gap:14px;align-items:flex-start;">
+                    <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+                      <div style="width:22px;height:22px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;">
+                        <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="#fff" style="width:11px;height:11px;"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                      </div>
+                      <div style="width:2px;flex:1;background:var(--border);min-height:24px;"></div>
+                    </div>
+                    <div style="padding-bottom:18px;">
+                      <div style="font-size:13px;font-weight:600;color:var(--text);">Bill Created &amp; Validated</div>
+                      <div style="font-size:12px;color:var(--text-subtle);margin-top:1px;" id="ol-tl-created">—</div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:14px;align-items:flex-start;">
+                    <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+                      <div style="width:22px;height:22px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;">
+                        <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="#fff" style="width:11px;height:11px;"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                      </div>
+                      <div style="width:2px;flex:1;background:var(--border);min-height:24px;"></div>
+                    </div>
+                    <div style="padding-bottom:18px;">
+                      <div style="font-size:13px;font-weight:600;color:var(--text);">Registered with FE</div>
+                      <div style="font-size:12px;color:var(--text-subtle);margin-top:1px;" id="ol-tl-registered">—</div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:14px;align-items:flex-start;">
+                    <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+                      <div style="width:22px;height:22px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;">
+                        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#fff" style="width:11px;height:11px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+                      </div>
+                    </div>
+                    <div>
+                      <div style="font-size:13px;font-weight:600;color:var(--green);">Bill Live — Awaiting Customer Payment</div>
+                      <div style="font-size:12px;color:var(--text-subtle);margin-top:1px;">Payable via Teller Portal, OCBS, or mobile banking</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="btn-row">
+                <button class="btn btn-ghost" onclick="olReset()">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                  Register Another Bill
+                </button>
+                <button class="btn btn-primary" onclick="navTo('invoices',null);document.getElementById('ni-invoices').classList.add('active');document.getElementById('ni-bill-mgmt').classList.remove('active')">
+                  View in Invoices
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ── HISTORY ── -->
+          <div id="bm-history" style="display:none;">
+
+            <!-- Filter row -->
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+
+              <!-- Search -->
+              <div style="position:relative;display:flex;align-items:center;">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"
+                     style="position:absolute;left:10px;width:14px;height:14px;color:var(--text-subtle);pointer-events:none;">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+                </svg>
+                <input type="text" id="hist-search" placeholder="Search batch ID…"
+                       oninput="histFilter()"
+                       style="padding:8px 12px 8px 32px;font-size:13px;width:190px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);">
+              </div>
+
+              <!-- Time filter -->
+              <div class="select-wrap" style="min-width:155px;">
+                <select id="hist-time" onchange="histFilter()" style="padding:8px 32px 8px 10px;font-size:13px;">
+                  <option value="all">All Time</option>
+                  <option value="thismonth">This Month</option>
+                  <option value="last3">Last 3 Months</option>
+                  <option value="last6">Last 6 Months</option>
+                  <option value="thisyear">This Year</option>
+                </select>
+              </div>
+
+              <!-- Status filter -->
+              <div class="select-wrap" style="min-width:145px;">
+                <select id="hist-status" onchange="histFilter()" style="padding:8px 32px 8px 10px;font-size:13px;">
+                  <option value="all">All Status</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="processing">Processing</option>
+                  <option value="pending">Pending</option>
+                  <option value="failed">Failed</option>
+                </select>
+              </div>
+
+              <!-- Value filter -->
+              <div class="select-wrap" style="min-width:170px;">
+                <select id="hist-value" onchange="histFilter()" style="padding:8px 32px 8px 10px;font-size:13px;">
+                  <option value="all">All Values</option>
+                  <option value="lt10k">Under BND 10,000</option>
+                  <option value="10k50k">BND 10,000 – 50,000</option>
+                  <option value="gt50k">Over BND 50,000</option>
+                </select>
+              </div>
+
+              <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+                <button class="btn btn-ghost" style="padding:8px 14px;font-size:13px;" onclick="showSnack('Exporting filtered results…')">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:14px;height:14px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+                  </svg>
+                  Export
+                </button>
+              </div>
+            </div>
+
+            <!-- Active filter chips -->
+            <div id="hist-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;min-height:0;"></div>
+
+            <!-- Result count -->
+            <div style="font-size:12px;color:var(--text-subtle);margin-bottom:8px;" id="hist-count"></div>
+
+            <!-- Table -->
+            <div class="table-wrap">
+              <table>
+                <thead><tr>
+                  <th class="th-check"><input type="checkbox" id="hist-cb-all" onchange="histToggleAll(this)"></th>
+                  <th>Batch ID</th>
+                  <th>Submitted</th>
+                  <th>Bills</th>
+                  <th class="th-right">Total Value</th>
+                  <th>FE Status</th>
+                  <th>Confirmed At</th>
+                  <th style="width:90px;"></th>
+                </tr></thead>
+                <tbody id="hist-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ INVOICES ════════ -->
+    <div class="page" id="page-invoices">
+      <div class="page-header">
+        <div class="page-title">Invoices &amp; Bills</div>
+        <div class="page-meta">All bills issued under your biller account · <strong style="font-family:ui-monospace,monospace;font-weight:600;">BCT-ELEC-001</strong> · Electricity</div>
+      </div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="kpi-card"><div class="kpi-label">Total Bills Issued</div><div class="kpi-value">6</div><div class="kpi-sub">Apr 2024 cycle</div></div>
+        <div class="kpi-card"><div class="kpi-label">Amount Billed</div><div class="kpi-value green">36,541</div><div class="kpi-sub">BND · Full period</div></div>
+        <div class="kpi-card"><div class="kpi-label">Outstanding</div><div class="kpi-value amber">8,420</div><div class="kpi-sub">BND · 2 bills</div></div>
+      </div>
+      <div class="card">
+        <div class="card-section">
+          <!-- Filter bar -->
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+            <div style="position:relative;flex:0 0 210px;">
+              <svg style="position:absolute;left:9px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text-subtle);pointer-events:none;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0Z"/></svg>
+              <input type="text" id="inv-search" placeholder="Bill ref or customer…"
+                style="width:100%;padding:7px 10px 7px 30px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);font-size:13px;outline:none;background:var(--surface);transition:border-color var(--transition);"
+                oninput="invFilter()">
+            </div>
+            <div style="display:flex;gap:4px;align-items:center;">
+              <span style="font-size:12px;color:var(--text-subtle);padding-right:4px;">Status</span>
+              <button class="btn btn-ghost inv-sb active" data-s="all"     onclick="invSetStatus('all')"     style="padding:5px 11px;font-size:12px;">All</button>
+              <button class="btn btn-ghost inv-sb"        data-s="paid"    onclick="invSetStatus('paid')"    style="padding:5px 11px;font-size:12px;">Paid</button>
+              <button class="btn btn-ghost inv-sb"        data-s="partial" onclick="invSetStatus('partial')" style="padding:5px 11px;font-size:12px;">Partial</button>
+              <button class="btn btn-ghost inv-sb"        data-s="hold"    onclick="invSetStatus('hold')"    style="padding:5px 11px;font-size:12px;">Hold</button>
+            </div>
+            <span id="inv-count" style="margin-left:auto;font-size:12px;color:var(--text-subtle);">6 bills</span>
+          </div>
+          <!-- Table -->
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Bill Ref</th>
+                <th>Customer</th>
+                <th>Account No.</th>
+                <th>Period</th>
+                <th class="th-right">Amount Due (BND)</th>
+                <th>Due Date</th>
+                <th>Status</th>
+              </tr></thead>
+              <tbody id="inv-tbody">
+                <tr data-status="paid" data-search="bill-000001 al-rashid trading co. cust-10042">
+                  <td class="td-mono">BILL-000001</td><td><div style="font-weight:600;">Al-Rashid Trading Co.</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10042</div></td><td class="td-mono" style="font-size:11px;">SA0380…167519</td><td>Apr 2024</td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">1,250.00</td><td>31 May 2024</td><td><span class="chip chip-blue">Paid</span></td>
+                </tr>
+                <tr data-status="paid" data-search="bill-000002 green valley properties cust-10087">
+                  <td class="td-mono">BILL-000002</td><td><div style="font-weight:600;">Green Valley Properties</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10087</div></td><td class="td-mono" style="font-size:11px;">SA8480…167530</td><td>Apr 2024</td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">3,400.75</td><td>31 May 2024</td><td><span class="chip chip-blue">Paid</span></td>
+                </tr>
+                <tr data-status="partial" data-search="bill-000004 horizon logistics llc cust-10215">
+                  <td class="td-mono">BILL-000004</td><td><div style="font-weight:600;">Horizon Logistics LLC</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10215</div></td><td class="td-mono" style="font-size:11px;">SA5480…167552</td><td>Apr 2024</td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">2,100.00</td><td>31 May 2024</td><td><span class="chip chip-amber">Partial</span></td>
+                </tr>
+                <tr data-status="paid" data-search="bill-000005 al-baraka supermarket cust-10308">
+                  <td class="td-mono">BILL-000005</td><td><div style="font-weight:600;">Al-Baraka Supermarket</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10308</div></td><td class="td-mono" style="font-size:11px;">SA0380…167563</td><td>Apr 2024</td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">5,670.25</td><td>31 May 2024</td><td><span class="chip chip-blue">Paid</span></td>
+                </tr>
+                <tr data-status="paid" data-search="bill-000007 gulf star manufacturing cust-10512">
+                  <td class="td-mono">BILL-000007</td><td><div style="font-weight:600;">Gulf Star Manufacturing</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10512</div></td><td class="td-mono" style="font-size:11px;">SA0380…167585</td><td>Apr 2024</td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">9,800.00</td><td>31 May 2024</td><td><span class="chip chip-blue">Paid</span></td>
+                </tr>
+                <tr data-status="hold" data-search="bill-000008 desert rose hotels cust-10637">
+                  <td class="td-mono">BILL-000008</td><td><div style="font-weight:600;">Desert Rose Hotels</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10637</div></td><td class="td-mono" style="font-size:11px;">SA5480…167596</td><td>Apr 2024</td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">14,320.50</td><td>31 May 2024</td><td><span class="chip chip-hold">Hold</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ CUSTOMERS ════════ -->
+    <!-- ════════ CUSTOMER LIST ════════ -->
+    <div class="page" id="page-customers">
+      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+        <div>
+          <div class="page-title">Customer Management</div>
+          <div class="page-meta">UC18 · Manage customer profiles, accounts and service subscriptions — BCT-ELEC-001</div>
+        </div>
+        <button class="btn btn-primary" onclick="openCreateDrawer()">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          Create Customer
+        </button>
+      </div>
+
+      <!-- KPI strip -->
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Customers</div>
+          <div class="kpi-value" id="kpi-total">8</div>
+          <div class="kpi-sub">All types</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Active</div>
+          <div class="kpi-value green" id="kpi-active">6</div>
+          <div class="kpi-sub">Currently active</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Pending Verification</div>
+          <div class="kpi-value amber" id="kpi-pending">1</div>
+          <div class="kpi-sub">Awaiting review</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Inactive / Overdue</div>
+          <div class="kpi-value" style="color:var(--red);" id="kpi-inactive">1</div>
+          <div class="kpi-sub">Needs attention</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-section">
+          <div class="filter-bar">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:16px;height:16px;color:var(--text-subtle);flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+            <input type="text" id="cust-search" placeholder="Search by name, ID or IC number…" style="width:260px;" oninput="filterCustomers()">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;" id="status-filters">
+              <button class="tab-btn active" onclick="setStatusFilter('all',this)">All</button>
+              <button class="tab-btn" onclick="setStatusFilter('Active',this)">Active</button>
+              <button class="tab-btn" onclick="setStatusFilter('Pending',this)">Pending</button>
+              <button class="tab-btn" onclick="setStatusFilter('Inactive',this)">Inactive</button>
+            </div>
+            <div class="filter-bar-right">
+              <div style="font-size:12px;color:var(--text-subtle);" id="cust-count-label">8 customers</div>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table id="cust-table">
+              <thead><tr>
+                <th>Customer ID</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>IC / Reg. No.</th>
+                <th>Accounts</th>
+                <th>Active Services</th>
+                <th>Status</th>
+                <th></th>
+              </tr></thead>
+              <tbody id="cust-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ CUSTOMER DETAIL ════════ -->
+    <div class="page" id="page-cust-detail">
+      <div class="page-header" style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <button class="btn btn-ghost" style="padding:7px 12px;font-size:13px;" onclick="backToCustomers()">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:14px;height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+          Customers
+        </button>
+        <span style="color:var(--border-strong);">/</span>
+        <span id="detail-breadcrumb" style="font-size:14px;font-weight:600;color:var(--text);"></span>
+      </div>
+
+      <!-- Profile header -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-section">
+          <div class="cust-header-row">
+            <div class="cust-avatar" id="detail-avatar"></div>
+            <div class="cust-header-info" style="flex:1;">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <div class="cust-header-name" id="detail-name"></div>
+                <span class="chip" id="detail-status-chip"></span>
+                <span class="chip chip-muted" id="detail-type-chip"></span>
+              </div>
+              <div class="cust-header-id" id="detail-id"></div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-ghost" style="padding:8px 14px;font-size:13px;">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                Edit
+              </button>
+            </div>
+          </div>
+
+          <!-- Tab bar -->
+          <div class="tab-row" style="margin-bottom:0;">
+            <button class="tab-btn active" onclick="detailTab('profile',this)">Profile</button>
+            <button class="tab-btn" onclick="detailTab('accounts',this)">Accounts <span class="tab-count" id="tab-acc-count">0</span></button>
+            <button class="tab-btn" onclick="detailTab('services',this)">Services <span class="tab-count" id="tab-svc-count">0</span></button>
+          </div>
+        </div>
+
+        <!-- Profile tab -->
+        <div id="dt-profile" class="card-section">
+          <div class="section-label">Personal / Entity Information</div>
+          <div class="cust-profile-grid" id="detail-profile-grid"></div>
+          <div class="section-label" style="margin-top:20px;">Contact Details</div>
+          <div class="cust-profile-grid" id="detail-contact-grid"></div>
+          <div class="section-label" style="margin-top:20px;">Billing Address</div>
+          <div class="cust-profile-grid" id="detail-address-grid"></div>
+        </div>
+
+        <!-- Accounts tab -->
+        <div id="dt-accounts" class="card-section" style="display:none;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div class="section-label" style="margin-bottom:0;">Linked Accounts</div>
+            <button class="btn btn-ghost" style="padding:7px 12px;font-size:13px;" onclick="openAddAccount()">
+              <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+              Add Account
+            </button>
+          </div>
+          <div id="detail-accounts-list"></div>
+        </div>
+
+        <!-- Services tab -->
+        <div id="dt-services" class="card-section" style="display:none;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div class="section-label" style="margin-bottom:0;">Subscribed Services</div>
+            <button class="btn btn-ghost" style="padding:7px 12px;font-size:13px;" onclick="showSnack('Add Service — links to UC19 Product Catalogue')">
+              <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+              Add Service
+            </button>
+          </div>
+          <div id="detail-services-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ PRODUCTS ════════ -->
+    <div class="page" id="page-products">
+      <div class="page-header">
+        <div class="page-title">Products &amp; Pricing</div>
+        <div class="page-meta">Service category and fee structure for your biller account · BCT-ELEC-001</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="card">
+          <div class="card-section">
+            <div class="section-label">BCT-ELEC-001 · Electricity</div>
+            <div class="summary-row"><div class="summary-label">Service type</div><div class="summary-value">Utility — Electricity</div></div>
+            <div class="summary-row"><div class="summary-label">Billing cycle</div><div class="summary-value">Monthly</div></div>
+            <div class="summary-row"><div class="summary-label">Payment window</div><div class="summary-value">30 days</div></div>
+            <div class="summary-row"><div class="summary-label">Late fee</div><div class="summary-value">2% per month</div></div>
+            <div class="summary-row"><div class="summary-label">Status</div><div><span class="chip chip-green">Active</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ PAYMENTS ════════ -->
+    <div class="page" id="page-payments">
+      <div class="page-header">
+        <div class="page-title">Payment Tracking</div>
+        <div class="page-meta">Incoming payments confirmed by the Fulfilment Entity · 20 May 2024</div>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Total Collected</div><div class="kpi-value green">18,321</div><div class="kpi-sub">BND · 5 payments</div></div>
+        <div class="kpi-card"><div class="kpi-label">Outstanding</div><div class="kpi-value amber">8,421</div><div class="kpi-sub">BND · 2 partial</div></div>
+        <div class="kpi-card"><div class="kpi-label">Success Rate</div><div class="kpi-value blue">80%</div><div class="kpi-sub kpi-up">↑ from 74% last month</div></div>
+        <div class="kpi-card"><div class="kpi-label">Payments Today</div><div class="kpi-value">15</div><div class="kpi-sub">As of 10:38 AM</div></div>
+      </div>
+      <div class="card">
+        <div class="card-section">
+          <div class="section-label">Payment Advice · 20 May 2024</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Payment Ref</th><th>Bill Ref</th><th>Customer</th><th>Type</th><th class="th-right">Paid</th><th class="th-right">Bill Total</th><th>Channel</th><th>Time</th><th>Status</th>
+              </tr></thead>
+              <tbody>
+                <tr><td class="td-mono">PAY-0001</td><td class="td-mono">BILL-000001</td><td>Al-Rashid Trading</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">1,250.00</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">1,250.00</td><td>Portal</td><td>10:15</td><td><span class="chip chip-green">Full</span></td></tr>
+                <tr><td class="td-mono">PAY-0002</td><td class="td-mono">BILL-000002</td><td>Green Valley Prop.</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">3,400.75</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">3,400.75</td><td>Portal</td><td>10:17</td><td><span class="chip chip-green">Full</span></td></tr>
+<tr><td class="td-mono">PAY-0004</td><td class="td-mono">BILL-000004</td><td>Horizon Logistics</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">1,000.00</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">2,100.00</td><td>Portal</td><td>10:20</td><td><span class="chip chip-amber">Partial</span></td></tr>
+                <tr><td class="td-mono">PAY-0005</td><td class="td-mono">BILL-000005</td><td>Al-Baraka Supermt.</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">5,670.25</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">5,670.25</td><td>Portal</td><td>10:21</td><td><span class="chip chip-green">Full</span></td></tr>
+                <tr><td class="td-mono">PAY-0008</td><td class="td-mono">BILL-000008</td><td>Desert Rose Hotels</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">7,000.00</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">14,320.50</td><td>Portal</td><td>10:26</td><td><span class="chip chip-amber">Partial</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ REPORTS ════════ -->
+    <div class="page" id="page-reports">
+      <div class="page-header">
+        <div class="page-title">Reports</div>
+        <div class="page-meta">Billing and payment reports for your biller account</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="card" style="cursor:pointer;" onclick="showSnack('Generating Monthly Billing Report…')">
+          <div class="card-section">
+            <div class="section-label">Monthly Billing Report</div>
+            <div style="font-size:13px;color:var(--text-muted);line-height:1.7;">Summary of all bills issued, payment status, and outstanding balances for any given month.</div>
+            <div style="margin-top:14px;display:flex;gap:8px;">
+              <span class="chip chip-muted">CSV</span><span class="chip chip-muted">XLSX</span><span class="chip chip-muted">PDF</span>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="showSnack('Generating Payment Reconciliation…')">
+          <div class="card-section">
+            <div class="section-label">Payment Reconciliation</div>
+            <div style="font-size:13px;color:var(--text-muted);line-height:1.7;">Match payments received against bills issued. Identify discrepancies and partial payments.</div>
+            <div style="margin-top:14px;display:flex;gap:8px;">
+              <span class="chip chip-muted">CSV</span><span class="chip chip-muted">XLSX</span>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="showSnack('Generating Batch Submission Log…')">
+          <div class="card-section">
+            <div class="section-label">Batch Submission Log</div>
+            <div style="font-size:13px;color:var(--text-muted);line-height:1.7;">Full audit trail of all offline batch uploads submitted to the ePG Fulfilment Entity.</div>
+            <div style="margin-top:14px;display:flex;gap:8px;">
+              <span class="chip chip-muted">CSV</span><span class="chip chip-muted">XLSX</span>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="showSnack('Generating Outstanding Bills Report…')">
+          <div class="card-section">
+            <div class="section-label">Outstanding Bills</div>
+            <div style="font-size:13px;color:var(--text-muted);line-height:1.7;">List of all unpaid or partially paid bills with ageing analysis and contact details.</div>
+            <div style="margin-top:14px;display:flex;gap:8px;">
+              <span class="chip chip-muted">CSV</span><span class="chip chip-muted">PDF</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ════════ CREATE CUSTOMER DRAWER ════════ -->
+<div class="drawer-overlay" id="create-drawer-overlay" onclick="closeCreateDrawerOnBg(event)">
+  <div class="drawer" id="create-drawer">
+    <div class="drawer-header">
+      <div>
+        <div class="drawer-title">Create Customer</div>
+        <div class="drawer-sub" id="drawer-sub">Step 1 of 3 — Customer Type &amp; Identity</div>
+      </div>
+      <button class="drawer-close" onclick="closeCreateDrawer()">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Step indicator -->
+    <div class="drawer-steps">
+      <div class="steps" id="drawer-steps">
+        <div class="step active" id="ds-1"><div class="step-circle">1</div><div class="step-label"><div class="step-label-main">Type &amp; Identity</div></div></div>
+        <div class="step" id="ds-2"><div class="step-circle">2</div><div class="step-label"><div class="step-label-main">Contact Details</div></div></div>
+        <div class="step" id="ds-3"><div class="step-circle">3</div><div class="step-label"><div class="step-label-main">Review &amp; Create</div></div></div>
+      </div>
+    </div>
+
+    <div class="drawer-body">
+
+      <!-- Step 1: Type & Identity -->
+      <div id="dsp-1" class="step-panel active">
+        <div class="field">
+          <label>Customer Type <span class="req">*</span></label>
+          <div class="type-grid">
+            <label class="type-opt">
+              <input type="radio" name="cust-type" value="Individual" checked onchange="onCustTypeChange()" />
+              <div class="type-opt-icon" style="background:var(--blue-dim);">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="color:var(--blue);"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+              </div>
+              <div>
+                <div class="type-opt-label">Individual</div>
+                <div class="type-opt-desc">Private person, residential services</div>
+              </div>
+            </label>
+            <label class="type-opt">
+              <input type="radio" name="cust-type" value="Corporate" onchange="onCustTypeChange()" />
+              <div class="type-opt-icon" style="background:var(--amber-dim);">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="color:var(--amber);"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"/></svg>
+              </div>
+              <div>
+                <div class="type-opt-label">Corporate</div>
+                <div class="type-opt-desc">Business entity, commercial services</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div id="identity-fields" style="margin-top:16px;">
+          <!-- Individual -->
+          <div id="fields-individual">
+            <div class="field">
+              <label>Full Name <span class="req">*</span></label>
+              <input type="text" id="c-name" placeholder="e.g. Muhammad Haziq bin Abdullah" />
+              <div class="field-err" id="err-name">Full name is required.</div>
+            </div>
+            <div class="field-row" style="margin-top:14px;">
+              <div class="field">
+                <label>IC Number <span class="req">*</span></label>
+                <input type="text" id="c-ic" placeholder="e.g. 01-123456" />
+                <div class="field-err" id="err-ic">IC number is required.</div>
+              </div>
+              <div class="field">
+                <label>Date of Birth</label>
+                <input type="text" id="c-dob" placeholder="DD / MM / YYYY" />
+              </div>
+            </div>
+          </div>
+          <!-- Corporate -->
+          <div id="fields-corporate" style="display:none;">
+            <div class="field">
+              <label>Legal Entity Name <span class="req">*</span></label>
+              <input type="text" id="c-entity" placeholder="e.g. Al-Rashid Trading Co. Sdn Bhd" />
+              <div class="field-err" id="err-entity">Entity name is required.</div>
+            </div>
+            <div class="field-row" style="margin-top:14px;">
+              <div class="field">
+                <label>Company Registration No. <span class="req">*</span></label>
+                <input type="text" id="c-regno" placeholder="e.g. RC-200001-XYZ" />
+                <div class="field-err" id="err-regno">Registration number is required.</div>
+              </div>
+              <div class="field">
+                <label>Industry / Sector</label>
+                <div class="select-wrap">
+                  <select id="c-sector">
+                    <option value="">Select…</option>
+                    <option>Retail</option><option>Corporate</option><option>Healthcare</option>
+                    <option>Hospitality</option><option>Industrial</option><option>Education</option><option>Other</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Contact Details -->
+      <div id="dsp-2" class="step-panel">
+        <div class="field">
+          <label>Email Address <span class="req">*</span></label>
+          <input type="email" id="c-email" placeholder="e.g. contact@example.com" />
+          <div class="field-err" id="err-email">A valid email address is required.</div>
+        </div>
+        <div class="field-row" style="margin-top:14px;">
+          <div class="field">
+            <label>Mobile Number <span class="req">*</span></label>
+            <input type="text" id="c-mobile" placeholder="e.g. +673 8123456" />
+            <div class="field-err" id="err-mobile">Mobile number is required.</div>
+          </div>
+          <div class="field">
+            <label>Phone (Office)</label>
+            <input type="text" id="c-phone" placeholder="e.g. +673 2234567" />
+          </div>
+        </div>
+        <div class="field" style="margin-top:14px;">
+          <label>Address Line 1 <span class="req">*</span></label>
+          <input type="text" id="c-addr1" placeholder="e.g. No. 12, Jalan Gadong" />
+          <div class="field-err" id="err-addr1">Address is required.</div>
+        </div>
+        <div class="field" style="margin-top:14px;">
+          <label>Address Line 2</label>
+          <input type="text" id="c-addr2" placeholder="Building / Floor / Unit (optional)" />
+        </div>
+        <div class="field-row" style="margin-top:14px;">
+          <div class="field">
+            <label>City / Mukim <span class="req">*</span></label>
+            <input type="text" id="c-city" placeholder="e.g. Bandar Seri Begawan" />
+            <div class="field-err" id="err-city">City is required.</div>
+          </div>
+          <div class="field">
+            <label>Postcode</label>
+            <input type="text" id="c-postcode" placeholder="e.g. BA1110" />
+          </div>
+        </div>
+        <div class="field" style="margin-top:14px;">
+          <label>District</label>
+          <div class="select-wrap">
+            <select id="c-district">
+              <option value="">Select district…</option>
+              <option>Brunei-Muara</option><option>Belait</option><option>Tutong</option><option>Temburong</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" style="margin-top:14px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="c-billing-same" checked style="width:15px;height:15px;" onchange="toggleBillingAddr()" />
+            Billing address same as contact address
+          </label>
+        </div>
+        <div id="billing-addr-fields" style="display:none;margin-top:14px;">
+          <div class="field">
+            <label>Billing Address Line 1</label>
+            <input type="text" id="c-baddr1" placeholder="e.g. P.O. Box 1234" />
+          </div>
+          <div class="field" style="margin-top:14px;">
+            <label>Billing City / Mukim</label>
+            <input type="text" id="c-bcity" placeholder="e.g. Kuala Belait" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Review & Create -->
+      <div id="dsp-3" class="step-panel">
+        <div class="alert alert-info" style="margin-top:0;margin-bottom:16px;">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+          <span>Please review the details before creating. A unique Customer ID will be generated automatically.</span>
+        </div>
+        <div id="review-summary"></div>
+      </div>
+
+    </div><!-- /drawer-body -->
+
+    <div class="drawer-footer">
+      <button class="btn btn-ghost" id="drawer-back-btn" onclick="drawerBack()" style="display:none;">Back</button>
+      <button class="btn btn-primary" id="drawer-next-btn" onclick="drawerNext()">
+        Next — Contact Details
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ ADD ACCOUNT MODAL ════════ -->
+<div class="dialog-overlay" id="add-account-dialog" onclick="closeAddAccountOnBg(event)">
+  <div class="dialog">
+    <div class="dialog-header">
+      <div>
+        <div class="dialog-title">Add Account</div>
+        <div class="dialog-sub" id="add-acc-sub">Link a new billing account to this customer</div>
+      </div>
+      <button class="dialog-close" onclick="closeAddAccount()">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="dialog-body">
+      <div class="field">
+        <label>Account Number <span class="req">*</span></label>
+        <input type="text" id="acc-no" placeholder="e.g. SA0380-167600" />
+        <div class="field-err" id="err-acc-no">Account number is required.</div>
+      </div>
+      <div class="field" style="margin-top:14px;">
+        <label>Account Type <span class="req">*</span></label>
+        <div class="select-wrap">
+          <select id="acc-type">
+            <option value="">Select type…</option>
+            <option>Residential</option><option>Commercial</option><option>Industrial</option>
+          </select>
+        </div>
+        <div class="field-err" id="err-acc-type">Account type is required.</div>
+      </div>
+      <div class="field" style="margin-top:14px;">
+        <label>Service Address</label>
+        <input type="text" id="acc-addr" placeholder="Address where service is provided" />
+      </div>
+      <div class="field" style="margin-top:14px;">
+        <label>Notes</label>
+        <textarea id="acc-notes" rows="2" style="resize:vertical;" placeholder="Optional notes…"></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="closeAddAccount()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitAddAccount()">Add Account</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ SPEC DIALOG ════════ -->
+<div class="dialog-overlay" id="spec-dialog" onclick="closeSpecDialog(event)">
+  <div class="dialog">
+    <div class="dialog-header">
+      <div>
+        <div class="dialog-title">Bill File Specifications</div>
+        <div class="dialog-sub">Offline Batch Upload · BCT-ELEC-001</div>
+      </div>
+      <button class="dialog-close" onclick="closeSpecDialogDirect()">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="dialog-body">
+      <!-- File limits -->
+      <div class="section-label">File Requirements</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;">
+        <div style="padding:12px 14px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);text-align:center;">
+          <div style="font-size:11px;color:var(--text-subtle);margin-bottom:4px;">Accepted Formats</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);">CSV · XLSX</div>
+        </div>
+        <div style="padding:12px 14px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);text-align:center;">
+          <div style="font-size:11px;color:var(--text-subtle);margin-bottom:4px;">Max Records</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);">500 rows</div>
+        </div>
+        <div style="padding:12px 14px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);text-align:center;">
+          <div style="font-size:11px;color:var(--text-subtle);margin-bottom:4px;">Max File Size</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);">10 MB</div>
+        </div>
+      </div>
+
+      <!-- Column spec table -->
+      <div class="section-label">Column Specifications</div>
+      <div style="border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+        <table class="spec-table">
+          <thead><tr><th>Column Name</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>customer_id<span class="spec-req">REQ</span></td><td>String</td><td>Unique customer identifier (e.g. CUST-10042)</td></tr>
+            <tr><td>bill_ref<span class="spec-req">REQ</span></td><td>String</td><td>Unique bill reference number (e.g. BILL-000001)</td></tr>
+            <tr><td>biller_code<span class="spec-req">REQ</span></td><td>String</td><td>Your registered biller code (BCT-ELEC-001)</td></tr>
+            <tr><td>amount_due<span class="spec-req">REQ</span></td><td>Decimal</td><td>Amount due in BND, 2 decimal places (e.g. 125.50)</td></tr>
+            <tr><td>due_date<span class="spec-req">REQ</span></td><td>Date</td><td>Payment due date in YYYY-MM-DD format</td></tr>
+            <tr><td>remarks<span class="spec-opt">OPT</span></td><td>String</td><td>Free-text note, max 200 characters</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Bill statuses -->
+      <div class="section-label" style="margin-top:20px;">Bill Status Reference</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);">
+          <span class="chip chip-green" style="flex-shrink:0;margin-top:1px;">Valid</span>
+          <div style="font-size:13px;color:var(--text-muted);">Bill passed all validation checks and is ready for submission.</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);">
+          <span class="chip chip-blue" style="flex-shrink:0;margin-top:1px;">Fully Paid</span>
+          <div style="font-size:13px;color:var(--text-muted);">This bill has already been paid in full. It will be excluded from the batch submission.</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);">
+          <span class="chip chip-hold" style="flex-shrink:0;margin-top:1px;">Hold</span>
+          <div style="font-size:13px;color:var(--text-muted);">Bill is flagged by the FE (e.g. dispute, duplicate, or account issue). Contact ePG support to resolve.</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);">
+          <span class="chip chip-red" style="flex-shrink:0;margin-top:1px;">Error</span>
+          <div style="font-size:13px;color:var(--text-muted);">Validation failed (e.g. missing field, invalid biller code). Correct the record and re-upload.</div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;padding:12px 14px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;color:var(--text-muted);line-height:1.7;">
+        💡 <strong>Tip:</strong> Download the <a href="#" onclick="showSnack('Downloading template…');closeSpecDialogDirect();return false;" style="color:var(--accent);font-weight:600;">sample template</a> to ensure your file matches the required format.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SNACKBAR -->
+<div class="snack" id="snack"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   UC18  CUSTOMER MANAGEMENT — DATA & LOGIC
+   ═══════════════════════════════════════════════════════════ */
+
+let CUSTOMERS = [
+  { id:'CUST-10042', type:'Corporate', name:'Al-Rashid Trading Co.', ic:'RC-200001-ART', sector:'Retail',
+    email:'info@alrashid.bn', mobile:'+673 8881234', phone:'+673 2234100',
+    addr1:'No. 12, Jalan Gadong', addr2:'', city:'Bandar Seri Begawan', postcode:'BB3719', district:'Brunei-Muara',
+    status:'Active', accounts:2, services:2,
+    accountList:[
+      { no:'SA0380-167519', type:'Commercial', addr:'No. 12, Jalan Gadong, BB3719', notes:'' },
+      { no:'SA0380-167520', type:'Commercial', addr:'Warehouse Unit 4, Sungai Akar', notes:'Warehouse account' },
+    ],
+    serviceList:[
+      { name:'Electricity Supply', code:'BCT-ELEC-001', plan:'Commercial C2', start:'2022-01-15', status:'Active' },
+      { name:'Street Lighting', code:'BCT-LITE-003', plan:'Standard', start:'2022-01-15', status:'Active' },
+    ]
+  },
+  { id:'CUST-10087', type:'Corporate', name:'Green Valley Properties', ic:'RC-200508-GVP', sector:'Corporate',
+    email:'accounts@greenvalley.bn', mobile:'+673 8882345', phone:'+673 2234200',
+    addr1:'Level 3, Wisma Green Valley', addr2:'Jalan Sultan', city:'Bandar Seri Begawan', postcode:'BS8811', district:'Brunei-Muara',
+    status:'Active', accounts:1, services:2,
+    accountList:[
+      { no:'SA8480-167530', type:'Commercial', addr:'Level 3, Wisma Green Valley', notes:'' },
+    ],
+    serviceList:[
+      { name:'Electricity Supply', code:'BCT-ELEC-001', plan:'Commercial C3', start:'2021-06-01', status:'Active' },
+      { name:'Demand Management', code:'BCT-DEM-002', plan:'Premium', start:'2023-03-01', status:'Active' },
+    ]
+  },
+  { id:'CUST-10103', type:'Corporate', name:'Sunrise Medical Center', ic:'RC-201102-SMC', sector:'Healthcare',
+    email:'finance@sunrisemc.bn', mobile:'+673 8883456', phone:'+673 2234300',
+    addr1:'Jalan Tutong KM5', addr2:'', city:'Bandar Seri Begawan', postcode:'BA1318', district:'Brunei-Muara',
+    status:'Active', accounts:1, services:1,
+    accountList:[
+      { no:'SA0380-167541', type:'Commercial', addr:'Jalan Tutong KM5, BA1318', notes:'Critical facility — priority restoration' },
+    ],
+    serviceList:[
+      { name:'Electricity Supply', code:'BCT-ELEC-001', plan:'Large Power LP1', start:'2019-11-20', status:'Active' },
+    ]
+  },
+  { id:'CUST-10215', type:'Corporate', name:'Horizon Logistics LLC', ic:'RC-201809-HLL', sector:'Industrial',
+    email:'ops@horizonlogistics.bn', mobile:'+673 8884567', phone:'+673 3334500',
+    addr1:'Lot 7, Kawasan Perindustrian Seria', addr2:'', city:'Seria', postcode:'KA1131', district:'Belait',
+    status:'Pending', accounts:2, services:2,
+    accountList:[
+      { no:'SA5480-167552', type:'Industrial', addr:'Lot 7, Kawasan Perindustrian Seria', notes:'' },
+      { no:'SA5480-167553', type:'Industrial', addr:'Lot 8, Kawasan Perindustrian Seria', notes:'Expansion unit' },
+    ],
+    serviceList:[
+      { name:'Electricity Supply', code:'BCT-ELEC-001', plan:'Industrial I2', start:'2023-09-01', status:'Active' },
+      { name:'Metering Services', code:'BCT-MTR-001', plan:'Smart Meter', start:'2023-09-01', status:'Pending' },
+    ]
+  },
+  { id:'CUST-10308', type:'Corporate', name:'Al-Baraka Supermarket', ic:'RC-200604-ABS', sector:'Retail',
+    email:'admin@albaraka.bn', mobile:'+673 8885678', phone:'+673 2234600',
+    addr1:'No. 88, Kompleks Yayasan Sultan Haji', addr2:'', city:'Bandar Seri Begawan', postcode:'BS8711', district:'Brunei-Muara',
+    status:'Active', accounts:1, services:1,
+    accountList:[
+      { no:'SA0380-167563', type:'Commercial', addr:'No. 88, Kompleks Yayasan', notes:'' },
+    ],
+    serviceList:[
+      { name:'Electricity Supply', code:'BCT-ELEC-001', plan:'Commercial C2', start:'2020-03-10', status:'Active' },
+    ]
+  },
+  { id:'CUST-10512', type:'Corporate', name:'Gulf Star Manufacturing', ic:'RC-201203-GSM', sector:'Industrial',
+    email:'engineering@gulfstar.bn', mobile:'+673 8886789', phone:'+673 3334700',
+    addr1:'Industrial Estate, Lumut', addr2:'Block B, Bay 3', city:'Lumut', postcode:'KA3333', district:'Belait',
+    status:'Active', accounts:3, services:2,
+    accountList:[
+      { no:'SA0380-167585', type:'Industrial', addr:'Block B, Bay 3, Lumut Industrial Estate', notes:'' },
+      { no:'SA0380-167586', type:'Industrial', addr:'Block C, Bay 1, Lumut Industrial Estate', notes:'Heavy machinery' },
+      { no:'SA0380-167587', type:'Industrial', addr:'Admin Block, Lumut Industrial Estate', notes:'Office & admin' },
+    ],
+    serviceList:[
+      { name:'Electricity Supply', code:'BCT-ELEC-001', plan:'Industrial I3 (HV)', start:'2018-07-01', status:'Active' },
+      { name:'Power Factor Correction', code:'BCT-PFC-001', plan:'Standard', start:'2020-01-01', status:'Active' },
+    ]
+  },
+  { id:'CUST-10637', type:'Corporate', name:'Desert Rose Hotels', ic:'RC-201504-DRH', sector:'Hospitality',
+    email:'finance@desertrose.bn', mobile:'+673 8887890', phone:'+673 2234800',
+    addr1:'Jalan Residency', addr2:'', city:'Bandar Seri Begawan', postcode:'BA1000', district:'Brunei-Muara',
+    status:'Inactive', accounts:1, services:1,
+    accountList:[
+      { no:'SA5480-167596', type:'Commercial', addr:'Jalan Residency, BA1000', notes:'Overdue — account suspended' },
+    ],
+    serviceList:[
+      { name:'Electricity Supply', code:'BCT-ELEC-001', plan:'Large Power LP2', start:'2017-05-01', status:'Suspended' },
+    ]
+  },
+  { id:'CUST-10801', type:'Individual', name:'Haji Mohd Razif bin Haji Salleh', ic:'01-234567', sector:'',
+    email:'razif.salleh@gmail.com', mobile:'+673 8123456', phone:'',
+    addr1:'No. 5, Kampung Kapok', addr2:'', city:'Bandar Seri Begawan', postcode:'BD2714', district:'Brunei-Muara',
+    status:'Active', accounts:1, services:1,
+    accountList:[
+      { no:'SA0380-167610', type:'Residential', addr:'No. 5, Kampung Kapok, BD2714', notes:'' },
+    ],
+    serviceList:[
+      { name:'Electricity Supply', code:'BCT-ELEC-001', plan:'Domestic D1', start:'2024-01-10', status:'Active' },
+    ]
+  },
+];
+
+let custFilter = 'all';
+let activeCustomer = null;
+let drawerStep = 1;
+
+/* ── Render customer table ── */
+function renderCustomerTable() {
+  const q = (document.getElementById('cust-search').value || '').toLowerCase();
+  const rows = CUSTOMERS.filter(c => {
+    const matchStatus = custFilter === 'all' || c.status === custFilter;
+    const matchQ = !q || c.name.toLowerCase().includes(q) || c.id.toLowerCase().includes(q) || c.ic.toLowerCase().includes(q);
+    return matchStatus && matchQ;
+  });
+
+  const statusChip = s => ({
+    Active:   '<span class="chip chip-green">Active</span>',
+    Pending:  '<span class="chip chip-amber">Pending</span>',
+    Inactive: '<span class="chip chip-red">Inactive</span>',
+  }[s] || `<span class="chip chip-muted">${s}</span>`);
+
+  document.getElementById('cust-tbody').innerHTML = rows.length === 0
+    ? `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-subtle);">No customers found</td></tr>`
+    : rows.map(c => `
+      <tr onclick="openCustomerDetail('${c.id}')">
+        <td class="td-mono">${c.id}</td>
+        <td><div style="font-weight:600;">${c.name}</div>${c.sector ? `<div style="font-size:11px;color:var(--text-subtle);">${c.sector}</div>` : ''}</td>
+        <td><span class="chip chip-muted">${c.type}</span></td>
+        <td class="td-mono" style="font-size:12px;">${c.ic}</td>
+        <td style="text-align:center;">${c.accounts}</td>
+        <td style="text-align:center;">${c.services}</td>
+        <td>${statusChip(c.status)}</td>
+        <td style="text-align:right;">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:14px;height:14px;color:var(--text-subtle);"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+        </td>
+      </tr>`).join('');
+
+  document.getElementById('cust-count-label').textContent = `${rows.length} customer${rows.length !== 1 ? 's' : ''}`;
+  updateKPIs();
+}
+
+function updateKPIs() {
+  document.getElementById('kpi-total').textContent   = CUSTOMERS.length;
+  document.getElementById('kpi-active').textContent  = CUSTOMERS.filter(c => c.status === 'Active').length;
+  document.getElementById('kpi-pending').textContent = CUSTOMERS.filter(c => c.status === 'Pending').length;
+  document.getElementById('kpi-inactive').textContent= CUSTOMERS.filter(c => c.status === 'Inactive').length;
+}
+
+function filterCustomers() { renderCustomerTable(); }
+
+function setStatusFilter(s, el) {
+  custFilter = s;
+  document.querySelectorAll('#status-filters .tab-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderCustomerTable();
+}
+
+/* ── Customer Detail ── */
+function openCustomerDetail(id) {
+  activeCustomer = CUSTOMERS.find(c => c.id === id);
+  if (!activeCustomer) return;
+  const c = activeCustomer;
+
+  // Breadcrumb + avatar
+  document.getElementById('detail-breadcrumb').textContent = c.name;
+  document.getElementById('detail-avatar').textContent = c.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('detail-name').textContent = c.name;
+  document.getElementById('detail-id').textContent   = c.id + ' · ' + c.ic;
+
+  const sc = { Active:'chip-green', Pending:'chip-amber', Inactive:'chip-red' }[c.status] || 'chip-muted';
+  document.getElementById('detail-status-chip').className = `chip ${sc}`;
+  document.getElementById('detail-status-chip').textContent = c.status;
+  document.getElementById('detail-type-chip').textContent   = c.type;
+
+  // Profile grids
+  document.getElementById('detail-profile-grid').innerHTML = [
+    { label:'Customer Type', value: c.type },
+    { label:'IC / Registration No.', value: c.ic, mono: true },
+    { label: c.type === 'Corporate' ? 'Industry / Sector' : 'Date of Birth', value: c.sector || '—' },
+    { label:'Customer ID', value: c.id, mono: true },
+  ].map(f => `<div class="profile-item"><div class="profile-item-label">${f.label}</div><div class="profile-item-value${f.mono?' mono':''}">${f.value}</div></div>`).join('');
+
+  document.getElementById('detail-contact-grid').innerHTML = [
+    { label:'Email Address', value: c.email },
+    { label:'Mobile', value: c.mobile, mono: true },
+    { label:'Phone (Office)', value: c.phone || '—', mono: !!c.phone },
+  ].map(f => `<div class="profile-item"><div class="profile-item-label">${f.label}</div><div class="profile-item-value${f.mono?' mono':''}">${f.value}</div></div>`).join('');
+
+  document.getElementById('detail-address-grid').innerHTML = [
+    { label:'Address', value: [c.addr1, c.addr2].filter(Boolean).join(', ') },
+    { label:'City / Mukim', value: c.city },
+    { label:'Postcode', value: c.postcode || '—', mono: true },
+    { label:'District', value: c.district },
+  ].map(f => `<div class="profile-item"><div class="profile-item-label">${f.label}</div><div class="profile-item-value${f.mono?' mono':''}">${f.value}</div></div>`).join('');
+
+  // Accounts tab
+  document.getElementById('tab-acc-count').textContent = c.accountList.length;
+  document.getElementById('detail-accounts-list').innerHTML = c.accountList.length === 0
+    ? `<div class="empty-state"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg><p>No accounts linked yet</p></div>`
+    : c.accountList.map(a => `
+      <div class="account-card">
+        <div class="account-icon"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg></div>
+        <div class="account-info">
+          <div class="account-no">${a.no}</div>
+          <div class="account-type">${a.type}</div>
+          <div class="account-meta">${a.addr}${a.notes ? ' · ' + a.notes : ''}</div>
+        </div>
+        <span class="chip chip-green" style="flex-shrink:0;">Active</span>
+      </div>`).join('');
+
+  // Services tab
+  document.getElementById('tab-svc-count').textContent = c.serviceList.length;
+  const svcStatusChip = s => ({ Active:'chip-green', Pending:'chip-amber', Suspended:'chip-red' }[s] || 'chip-muted');
+  document.getElementById('detail-services-list').innerHTML = c.serviceList.length === 0
+    ? `<div class="empty-state"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.658.524a18.634 18.634 0 005.83-5.829c.349-.879.177-1.96-.523-2.659L9.568 3z"/></svg><p>No services subscribed yet</p></div>`
+    : c.serviceList.map(s => `
+      <div class="service-card">
+        <div class="service-row">
+          <div>
+            <div class="service-name">${s.name}</div>
+            <div class="service-code">${s.code} · ${s.plan}</div>
+          </div>
+          <span class="chip ${svcStatusChip(s.status)}">${s.status}</span>
+        </div>
+        <div class="service-dates">Active since ${s.start}</div>
+      </div>`).join('');
+
+  // Reset tabs
+  detailTab('profile', null);
+  navTo('cust-detail', null);
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  document.getElementById('ni-customers').classList.add('active');
+}
+
+function backToCustomers() {
+  navTo('customers', document.getElementById('ni-customers'));
+}
+
+function detailTab(tab, el) {
+  ['profile','accounts','services'].forEach(t => {
+    document.getElementById('dt-' + t).style.display = t === tab ? '' : 'none';
+  });
+  document.querySelectorAll('.card .tab-row .tab-btn').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  else document.querySelector('.card .tab-row .tab-btn').classList.add('active');
+}
+
+/* ── Create Customer Drawer ── */
+function openCreateDrawer() {
+  drawerStep = 1;
+  updateDrawerStep();
+  clearDrawerFields();
+  document.getElementById('create-drawer-overlay').classList.add('open');
+}
+
+function closeCreateDrawer() {
+  document.getElementById('create-drawer-overlay').classList.remove('open');
+}
+
+function closeCreateDrawerOnBg(e) {
+  if (e.target === document.getElementById('create-drawer-overlay')) closeCreateDrawer();
+}
+
+function clearDrawerFields() {
+  ['c-name','c-ic','c-dob','c-entity','c-regno','c-email','c-mobile','c-phone',
+   'c-addr1','c-addr2','c-city','c-postcode','c-baddr1','c-bcity','c-addr1'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.querySelectorAll('.field-err').forEach(e => e.classList.remove('visible'));
+  const firstType = document.querySelector('input[name="cust-type"]');
+  if (firstType) { firstType.checked = true; onCustTypeChange(); }
+  const billingSame = document.getElementById('c-billing-same');
+  if (billingSame) { billingSame.checked = true; toggleBillingAddr(); }
+  document.getElementById('c-district').value = '';
+  document.getElementById('c-sector').value   = '';
+}
+
+function onCustTypeChange() {
+  const t = (document.querySelector('input[name="cust-type"]:checked') || {}).value;
+  document.getElementById('fields-individual').style.display = t === 'Individual' ? '' : 'none';
+  document.getElementById('fields-corporate').style.display  = t === 'Corporate'  ? '' : 'none';
+}
+
+function toggleBillingAddr() {
+  const same = document.getElementById('c-billing-same').checked;
+  document.getElementById('billing-addr-fields').style.display = same ? 'none' : '';
+}
+
+function drawerNext() {
+  if (drawerStep < 3) {
+    if (!validateDrawerStep(drawerStep)) return;
+    drawerStep++;
+    if (drawerStep === 3) buildReviewSummary();
+    updateDrawerStep();
+  } else {
+    submitCreateCustomer();
+  }
+}
+
+function drawerBack() {
+  if (drawerStep > 1) { drawerStep--; updateDrawerStep(); }
+}
+
+function updateDrawerStep() {
+  [1,2,3].forEach(i => {
+    document.getElementById('dsp-' + i).classList.toggle('active', i === drawerStep);
+    const stepEl = document.getElementById('ds-' + i);
+    stepEl.classList.remove('active','done');
+    if (i < drawerStep)  stepEl.classList.add('done');
+    if (i === drawerStep) stepEl.classList.add('active');
+    if (i <= drawerStep) {
+      const circle = stepEl.querySelector('.step-circle');
+      if (i < drawerStep) {
+        circle.innerHTML = `<svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width:12px;height:12px;"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>`;
+      } else {
+        circle.textContent = i;
+      }
+    }
+  });
+
+  const subs = ['Step 1 of 3 — Customer Type & Identity', 'Step 2 of 3 — Contact Details', 'Step 3 of 3 — Review & Create'];
+  document.getElementById('drawer-sub').textContent = subs[drawerStep - 1];
+
+  document.getElementById('drawer-back-btn').style.display = drawerStep > 1 ? '' : 'none';
+  const nextBtn = document.getElementById('drawer-next-btn');
+  if (drawerStep === 3) {
+    nextBtn.innerHTML = `<svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Confirm & Create Customer`;
+  } else {
+    const labels = ['', 'Next — Contact Details', 'Next — Review'];
+    nextBtn.innerHTML = `${labels[drawerStep]} <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>`;
+  }
+}
+
+function validateDrawerStep(step) {
+  let valid = true;
+  const show = (id) => { document.getElementById(id).classList.add('visible'); valid = false; };
+  const hide = (id) => { document.getElementById(id).classList.remove('visible'); };
+  if (step === 1) {
+    const t = (document.querySelector('input[name="cust-type"]:checked') || {}).value;
+    if (t === 'Individual') {
+      document.getElementById('c-name').value.trim() ? hide('err-name') : show('err-name');
+      document.getElementById('c-ic').value.trim()   ? hide('err-ic')   : show('err-ic');
+    } else {
+      document.getElementById('c-entity').value.trim() ? hide('err-entity') : show('err-entity');
+      document.getElementById('c-regno').value.trim()  ? hide('err-regno')  : show('err-regno');
+    }
+  }
+  if (step === 2) {
+    const email = document.getElementById('c-email').value.trim();
+    (email && email.includes('@')) ? hide('err-email') : show('err-email');
+    document.getElementById('c-mobile').value.trim() ? hide('err-mobile') : show('err-mobile');
+    document.getElementById('c-addr1').value.trim()  ? hide('err-addr1')  : show('err-addr1');
+    document.getElementById('c-city').value.trim()   ? hide('err-city')   : show('err-city');
+  }
+  return valid;
+}
+
+function buildReviewSummary() {
+  const t    = (document.querySelector('input[name="cust-type"]:checked') || {}).value || 'Individual';
+  const name = t === 'Individual'
+    ? document.getElementById('c-name').value.trim()
+    : document.getElementById('c-entity').value.trim();
+  const ic   = t === 'Individual'
+    ? document.getElementById('c-ic').value.trim()
+    : document.getElementById('c-regno').value.trim();
+
+  const rows = [
+    { label:'Customer Type', value: t },
+    { label: t === 'Individual' ? 'Full Name' : 'Entity Name', value: name },
+    { label: t === 'Individual' ? 'IC Number' : 'Reg. No.', value: ic },
+    { label:'Email', value: document.getElementById('c-email').value.trim() },
+    { label:'Mobile', value: document.getElementById('c-mobile').value.trim() },
+    { label:'Address', value: [document.getElementById('c-addr1').value.trim(), document.getElementById('c-city').value.trim()].filter(Boolean).join(', ') },
+    { label:'District', value: document.getElementById('c-district').value || '—' },
+  ];
+
+  document.getElementById('review-summary').innerHTML = rows.map(r => `
+    <div class="summary-row">
+      <span class="summary-label">${r.label}</span>
+      <span class="summary-value" style="font-family:inherit;font-size:13px;">${r.value}</span>
+    </div>`).join('');
+}
+
+function submitCreateCustomer() {
+  const t = (document.querySelector('input[name="cust-type"]:checked') || {}).value || 'Individual';
+  const name = t === 'Individual'
+    ? document.getElementById('c-name').value.trim()
+    : document.getElementById('c-entity').value.trim();
+  const ic = t === 'Individual'
+    ? document.getElementById('c-ic').value.trim()
+    : document.getElementById('c-regno').value.trim();
+
+  const newId = 'CUST-' + (10900 + CUSTOMERS.length);
+  const newCust = {
+    id: newId, type: t, name, ic,
+    sector: document.getElementById('c-sector').value || '',
+    email:  document.getElementById('c-email').value.trim(),
+    mobile: document.getElementById('c-mobile').value.trim(),
+    phone:  document.getElementById('c-phone').value.trim(),
+    addr1:  document.getElementById('c-addr1').value.trim(),
+    addr2:  document.getElementById('c-addr2').value.trim(),
+    city:   document.getElementById('c-city').value.trim(),
+    postcode: document.getElementById('c-postcode').value.trim(),
+    district: document.getElementById('c-district').value,
+    status: 'Active',
+    accounts: 0, services: 0,
+    accountList: [], serviceList: [],
+  };
+  CUSTOMERS.unshift(newCust);
+  closeCreateDrawer();
+  renderCustomerTable();
+  showSnack(`Customer ${newId} created successfully`);
+}
+
+/* ── Add Account Modal ── */
+function openAddAccount() {
+  document.getElementById('acc-no').value = '';
+  document.getElementById('acc-type').value = '';
+  document.getElementById('acc-addr').value = '';
+  document.getElementById('acc-notes').value = '';
+  document.querySelectorAll('#add-account-dialog .field-err').forEach(e => e.classList.remove('visible'));
+  document.getElementById('add-acc-sub').textContent = activeCustomer
+    ? `Link a new billing account to ${activeCustomer.name}`
+    : 'Link a new billing account';
+  document.getElementById('add-account-dialog').classList.add('open');
+}
+function closeAddAccount() {
+  document.getElementById('add-account-dialog').classList.remove('open');
+}
+function closeAddAccountOnBg(e) {
+  if (e.target === document.getElementById('add-account-dialog')) closeAddAccount();
+}
+function submitAddAccount() {
+  const no   = document.getElementById('acc-no').value.trim();
+  const type = document.getElementById('acc-type').value;
+  if (!no)   { document.getElementById('err-acc-no').classList.add('visible');   return; }
+  if (!type) { document.getElementById('err-acc-type').classList.add('visible'); return; }
+  if (!activeCustomer) return;
+  const newAcc = { no, type, addr: document.getElementById('acc-addr').value.trim(), notes: document.getElementById('acc-notes').value.trim() };
+  activeCustomer.accountList.push(newAcc);
+  activeCustomer.accounts++;
+  document.getElementById('tab-acc-count').textContent = activeCustomer.accountList.length;
+  // Re-render accounts list
+  const icon = `<svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg>`;
+  document.getElementById('detail-accounts-list').innerHTML = activeCustomer.accountList.map(a => `
+    <div class="account-card">
+      <div class="account-icon">${icon}</div>
+      <div class="account-info">
+        <div class="account-no">${a.no}</div>
+        <div class="account-type">${a.type}</div>
+        <div class="account-meta">${a.addr}${a.notes ? ' · ' + a.notes : ''}</div>
+      </div>
+      <span class="chip chip-green" style="flex-shrink:0;">Active</span>
+    </div>`).join('');
+  closeAddAccount();
+  showSnack(`Account ${no} added successfully`);
+}
+
+// ── CREDENTIALS ──
+const CREDS = {'B-001':'1234','B-002':'1234'};
+let currentUser = null;
+
+function doLogin() {
+  const id = document.getElementById('login-id').value.trim();
+  const pw = document.getElementById('login-pw').value;
+  const err = document.getElementById('login-error');
+  if (CREDS[id] && CREDS[id] === pw) {
+    currentUser = id;
+    document.getElementById('header-avatar').textContent = id.replace('B-','B');
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('app').classList.add('visible');
+    err.classList.remove('visible');
+    renderCustomerTable();
+  } else {
+    err.classList.add('visible');
+    document.getElementById('login-error-text').textContent = 'Invalid Biller ID or password.';
+  }
+}
+function doLogout() {
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('login-id').value = '';
+  document.getElementById('login-pw').value = '';
+  currentUser = null;
+}
+
+// ── NAVIGATION ──
+const PAGE_TITLES = {
+  'bill-mgmt': 'Bill Management', 'invoices': 'Invoices & Bills',
+  'customers': 'Customer Management', 'products': 'Products & Pricing',
+  'payments': 'Payment Tracking', 'reports': 'Reports'
+};
+function navTo(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('page-' + id);
+  if (pg) pg.classList.add('active');
+  const ni = document.getElementById('ni-' + id);
+  if (ni) ni.classList.add('active');
+  if (id === 'customers') renderCustomerTable();
+}
+
+// ── BILL MGMT TABS ──
+function bmTab(t) {
+  ['offline','online','history'].forEach(n => {
+    document.getElementById('bm-' + n).style.display = n === t ? 'block' : 'none';
+    document.getElementById('bm-tab-' + n).classList.toggle('active', n === t);
+  });
+  if (t === 'history') { navTo('bill-mgmt', null); histFilter(); }
+}
+
+// ── UPLOAD SIMULATION ──
+// status: 'valid' | 'paid' | 'hold'
+const BM_BILLS = [
+  {ref:'BILL-000001',name:'Al-Rashid Trading Co.',type:'Utility',amt:1250.00,due:'2024-05-31',status:'valid'},
+  {ref:'BILL-000002',name:'Green Valley Properties',type:'Utility',amt:3400.75,due:'2024-05-31',status:'valid'},
+  {ref:'BILL-000004',name:'Horizon Logistics LLC',type:'Utility',amt:2100.00,due:'2024-05-31',status:'valid'},
+  {ref:'BILL-000005',name:'Al-Baraka Supermarket',type:'Utility',amt:5670.25,due:'2024-05-31',status:'paid'},
+  {ref:'BILL-000007',name:'Gulf Star Manufacturing',type:'Utility',amt:9800.00,due:'2024-05-31',status:'valid'},
+  {ref:'BILL-000008',name:'Desert Rose Hotels',type:'Utility',amt:14320.50,due:'2024-05-31',status:'hold'},
+  {ref:'BILL-000010',name:'Al-Noor Pharmaceuticals',type:'Utility',amt:6450.00,due:'2024-05-31',status:'valid'},
+  {ref:'BILL-000011',name:'Falak Retail Group',type:'Utility',amt:3880.25,due:'2024-05-31',status:'valid'},
+];
+const STAGES = [
+  {l:'Reading file…',p:15,d:400},{l:'Parsing records…',p:35,d:600},
+  {l:'Validating schema…',p:55,d:700},{l:'Checking biller codes…',p:75,d:500},
+  {l:'Calculating totals…',p:90,d:400},{l:'Upload complete',p:100,d:300},
+];
+
+function bmSimUpload() {
+  document.getElementById('upload-idle').style.display = 'none';
+  const pr = document.getElementById('upload-progress');
+  pr.style.display = 'block';
+  let i = 0;
+  function runStage() {
+    if (i >= STAGES.length) { setTimeout(() => bmGoStep(2), 400); return; }
+    const s = STAGES[i++];
+    document.getElementById('progress-label').textContent = s.l;
+    document.getElementById('progress-pct').textContent = s.p + '%';
+    document.getElementById('progress-fill').style.width = s.p + '%';
+    setTimeout(runStage, s.d);
+  }
+  runStage();
+}
+
+function bmGoStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    const sp = document.getElementById('bsp-' + i);
+    const sc = document.getElementById('bs-' + i);
+    if (sp) sp.classList.toggle('active', i === n);
+    if (sc) {
+      sc.classList.remove('active', 'done');
+      if (i < n) sc.classList.add('done');
+      if (i === n) sc.classList.add('active');
+    }
+  }
+  if (n === 2) finishUpload();
+}
+
+function finishUpload() {
+  const tbody = document.getElementById('bm-tbody');
+  let total = 0;
+  const statusMap = {
+    valid: {chip:'chip-green', label:'Valid',       cbk:true,  dim:false},
+    paid:  {chip:'chip-blue',  label:'Fully Paid',  cbk:false, dim:true},
+    hold:  {chip:'chip-hold',  label:'Hold',        cbk:false, dim:true},
+  };
+  tbody.innerHTML = BM_BILLS.map(b => {
+    const s = statusMap[b.status] || statusMap.valid;
+    if (s.cbk) total += b.amt;
+    const rowStyle = s.dim ? 'opacity:.55;' : '';
+    const tooltip  = b.status === 'paid' ? ' title="Already paid — excluded from batch"'
+                   : b.status === 'hold' ? ' title="On hold by FE — contact support"' : '';
+    return `<tr style="${rowStyle}"${tooltip}>
+      <td><input type="checkbox" ${s.cbk ? 'checked' : 'disabled'} ${s.dim ? 'title="Cannot submit"' : ''}></td>
+      <td class="td-mono">${b.ref}</td>
+      <td style="font-weight:600;">${b.name}</td>
+      <td><span class="chip chip-muted">${b.type}</span></td>
+      <td class="td-right" style="font-family:ui-monospace,monospace;font-weight:700;">${b.amt.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td>${b.due}</td>
+      <td><span class="chip ${s.chip}">${s.label}</span></td>
+    </tr>`;
+  }).join('');
+  const validCount = BM_BILLS.filter(b => b.status === 'valid').length;
+  const skipped = BM_BILLS.length - validCount;
+  document.getElementById('bm-count-lbl').textContent = `· ${BM_BILLS.length} records`;
+  document.getElementById('bm-count-sub').textContent = `${validCount} submittable${skipped > 0 ? ` · ${skipped} excluded (Fully Paid / Hold)` : ''}`;
+  document.getElementById('bm-total-val').textContent = 'BND ' + total.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function toggleAll(cb) {
+  document.querySelectorAll('#bm-tbody input[type="checkbox"]').forEach(c => c.checked = cb.checked);
+}
+
+function bmSubmit() {
+  const btn = event.target.closest('.btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>Submitting…';
+  setTimeout(() => {
+    const jobId = 'JOB-' + Date.now().toString().slice(-8);
+    const now = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('conf-jobid').textContent  = jobId;
+    document.getElementById('conf-count').textContent  = BM_BILLS.length + ' records';
+    document.getElementById('conf-total').textContent  = document.getElementById('bm-total-val').textContent;
+    document.getElementById('conf-time').textContent   = now + ', 20 May 2024';
+    bmGoStep(3);
+    btn.disabled = false;
+    btn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Submit to ePG';
+  }, 1400);
+}
+
+function bmReset() {
+  document.getElementById('upload-idle').style.display = 'block';
+  document.getElementById('upload-progress').style.display = 'none';
+  document.getElementById('progress-fill').style.width = '0%';
+  bmGoStep(1);
+}
+
+// ── ONLINE SINGLE LOAD ──
+function olGoStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    const p = document.getElementById('ol-p' + i);
+    const s = document.getElementById('ol-s' + i);
+    if (p) p.classList.toggle('active', i === n);
+    if (s) {
+      s.classList.remove('active','done');
+      if (i < n) s.classList.add('done');
+      if (i === n) s.classList.add('active');
+    }
+  }
+}
+
+function olClearErr(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('visible');
+}
+
+function olShowErr(id, msg) {
+  const el = document.getElementById(id);
+  if (el) { el.textContent = msg; el.classList.add('visible'); }
+}
+
+function olValidate() {
+  const cust = document.getElementById('ol-cust').value.trim();
+  const ref  = document.getElementById('ol-ref').value.trim();
+  const amt  = parseFloat(document.getElementById('ol-amt').value);
+  const due  = document.getElementById('ol-due').value.trim();
+  let valid  = true;
+
+  if (!cust) { olShowErr('ol-cust-err', 'Customer ID is required'); valid = false; }
+  else if (!/^CUST-\d+$/i.test(cust)) { olShowErr('ol-cust-err', 'Format: CUST-XXXXX'); valid = false; }
+
+  if (!ref) { olShowErr('ol-ref-err', 'Bill Reference is required'); valid = false; }
+  else if (!/^BILL-\d+$/i.test(ref)) { olShowErr('ol-ref-err', 'Format: BILL-XXXXXX'); valid = false; }
+
+  if (!amt || amt <= 0) { olShowErr('ol-amt-err', 'Enter a valid amount greater than 0'); valid = false; }
+
+  if (!due) { olShowErr('ol-due-err', 'Due date is required'); valid = false; }
+  else if (!/^\d{4}-\d{2}-\d{2}$/.test(due)) { olShowErr('ol-due-err', 'Use format YYYY-MM-DD'); valid = false; }
+
+  if (!valid) return;
+
+  // Simulate FE validation delay
+  const btn = document.getElementById('ol-validate-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>Validating…';
+
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Validate &amp; Preview';
+
+    // Populate review panel
+    const code = document.getElementById('ol-code').value;
+    const rmk  = document.getElementById('ol-rmk').value.trim();
+    document.getElementById('rv-cust').textContent = cust;
+    document.getElementById('rv-ref').textContent  = ref;
+    document.getElementById('rv-code').textContent = code;
+    document.getElementById('rv-rmk').textContent  = rmk || '—';
+    document.getElementById('rv-amt').textContent  = 'BND ' + amt.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById('rv-due').textContent  = due;
+    olGoStep(2);
+  }, 1200);
+}
+
+function olSubmit() {
+  const btn = document.getElementById('ol-confirm-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>Activating…';
+
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Confirm &amp; Activate Bill';
+
+    const ref    = document.getElementById('ol-ref').value.trim();
+    const amt    = document.getElementById('rv-amt').textContent;
+    const epgRef = 'EPG-' + Date.now().toString().slice(-8);
+    const now    = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    const ts     = now + ', 20 May 2024';
+
+    document.getElementById('ol-conf-ref').textContent  = ref;
+    document.getElementById('ol-conf-epg').textContent  = epgRef;
+    document.getElementById('ol-conf-amt').textContent  = amt;
+    document.getElementById('ol-conf-time').textContent = ts;
+    document.getElementById('ol-tl-created').textContent    = ts + ' · FE validation OK';
+    document.getElementById('ol-tl-registered').textContent = ts + ' · ePG Ref: ' + epgRef;
+    olGoStep(3);
+  }, 1400);
+}
+
+function olReset() {
+  ['ol-cust','ol-ref','ol-amt','ol-due','ol-rmk'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  ['ol-cust-err','ol-ref-err','ol-amt-err','ol-due-err'].forEach(id => olClearErr(id));
+  olGoStep(1);
+}
+
+// ── HISTORY DATA & FILTER ──
+const HIST_DATA = [
+  {id:'BATCH-20240520', date:'20 May 2024, 10:15', dateMs: new Date('2024-05-20').getTime(), bills:20, value:84284.00, status:'confirmed', confirmedAt:'20 May 2024, 14:30'},
+  {id:'BATCH-20240415', date:'15 Apr 2024, 09:42', dateMs: new Date('2024-04-15').getTime(), bills:18, value:71540.50, status:'confirmed', confirmedAt:'15 Apr 2024, 13:15'},
+  {id:'BATCH-20240310', date:'10 Mar 2024, 10:05', dateMs: new Date('2024-03-10').getTime(), bills:22, value:96720.25, status:'processing', confirmedAt:'—'},
+  {id:'BATCH-20240205', date:'05 Feb 2024, 09:30', dateMs: new Date('2024-02-05').getTime(), bills:16, value:58930.00, status:'confirmed', confirmedAt:'05 Feb 2024, 14:45'},
+  {id:'BATCH-20240115', date:'15 Jan 2024, 11:00', dateMs: new Date('2024-01-15').getTime(), bills:9,  value:23450.00, status:'failed',     confirmedAt:'—'},
+  {id:'BATCH-20231210', date:'10 Dec 2023, 09:15', dateMs: new Date('2023-12-10').getTime(), bills:7,  value:6800.00,  status:'confirmed', confirmedAt:'10 Dec 2023, 15:05'},
+  {id:'BATCH-20231115', date:'15 Nov 2023, 08:45', dateMs: new Date('2023-11-15').getTime(), bills:14, value:45100.75, status:'pending',    confirmedAt:'—'},
+];
+
+const HIST_STATUS_CHIP = {
+  confirmed:  'chip-green',
+  processing: 'chip-blue',
+  pending:    'chip-amber',
+  failed:     'chip-red',
+};
+const HIST_STATUS_LABEL = {
+  confirmed:'Confirmed', processing:'Processing', pending:'Pending', failed:'Failed'
+};
+
+function histFilter() {
+  const search = document.getElementById('hist-search').value.toLowerCase();
+  const time   = document.getElementById('hist-time').value;
+  const status = document.getElementById('hist-status').value;
+  const value  = document.getElementById('hist-value').value;
+
+  const now   = new Date('2024-05-20').getTime();
+  const m1    = new Date('2024-05-01').getTime();
+  const m3ago = new Date('2024-02-20').getTime();
+  const m6ago = new Date('2023-11-20').getTime();
+  const y1ago = new Date('2024-01-01').getTime();
+
+  const filtered = HIST_DATA.filter(r => {
+    if (search && !r.id.toLowerCase().includes(search)) return false;
+    if (time === 'thismonth' && r.dateMs < m1) return false;
+    if (time === 'last3'     && r.dateMs < m3ago) return false;
+    if (time === 'last6'     && r.dateMs < m6ago) return false;
+    if (time === 'thisyear'  && r.dateMs < y1ago) return false;
+    if (status !== 'all' && r.status !== status) return false;
+    if (value === 'lt10k'  && r.value >= 10000)  return false;
+    if (value === '10k50k' && (r.value < 10000 || r.value > 50000)) return false;
+    if (value === 'gt50k'  && r.value <= 50000)  return false;
+    return true;
+  });
+
+  // Render active chips
+  const timeLabels = {thismonth:'This Month',last3:'Last 3 Months',last6:'Last 6 Months',thisyear:'This Year'};
+  const valueLabels = {lt10k:'Under BND 10,000','10k50k':'BND 10K – 50K',gt50k:'Over BND 50,000'};
+  let chips = '';
+  if (time   !== 'all') chips += `<span class="fchip">${timeLabels[time]} <button onclick="document.getElementById('hist-time').value='all';histFilter()">×</button></span>`;
+  if (status !== 'all') chips += `<span class="fchip">${HIST_STATUS_LABEL[status]} <button onclick="document.getElementById('hist-status').value='all';histFilter()">×</button></span>`;
+  if (value  !== 'all') chips += `<span class="fchip">${valueLabels[value]} <button onclick="document.getElementById('hist-value').value='all';histFilter()">×</button></span>`;
+  const chipsEl = document.getElementById('hist-chips');
+  chipsEl.innerHTML = chips;
+  chipsEl.style.display = chips ? 'flex' : 'none';
+
+  // Result count
+  document.getElementById('hist-count').textContent =
+    `Showing ${filtered.length} of ${HIST_DATA.length} batches`;
+
+  // Render table
+  const tbody = document.getElementById('hist-tbody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-subtle);font-size:13px;">No batches match the selected filters.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(r => {
+    const chip = HIST_STATUS_CHIP[r.status] || 'chip-muted';
+    const label = HIST_STATUS_LABEL[r.status];
+    const canDownload = r.status === 'confirmed';
+    const dlBtn = canDownload
+      ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;" onclick="showSnack('Downloading ACK_${r.id}.csv…')">
+           <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:13px;height:13px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+           ACK
+         </button>`
+      : `<span style="font-size:12px;color:var(--text-subtle);">—</span>`;
+    return `<tr>
+      <td><input type="checkbox"></td>
+      <td class="td-mono">${r.id}</td>
+      <td>${r.date}</td>
+      <td>${r.bills}</td>
+      <td class="td-right td-bold" style="font-family:ui-monospace,monospace;">BND ${r.value.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td><span class="chip ${chip}">${label}</span></td>
+      <td style="color:var(--text-muted);font-size:13px;">${r.confirmedAt}</td>
+      <td style="text-align:center;">${dlBtn}</td>
+    </tr>`;
+  }).join('');
+}
+
+function histToggleAll(cb) {
+  document.querySelectorAll('#hist-tbody input[type="checkbox"]').forEach(c => c.checked = cb.checked);
+}
+
+// ── SPEC DIALOG ──
+function openSpecDialog() {
+  document.getElementById('spec-dialog').classList.add('open');
+}
+function closeSpecDialogDirect() {
+  document.getElementById('spec-dialog').classList.remove('open');
+}
+function closeSpecDialog(e) {
+  if (e.target === document.getElementById('spec-dialog')) closeSpecDialogDirect();
+}
+
+// ── INVOICES FILTER ──
+let invStatus = 'all';
+function invSetStatus(s) {
+  invStatus = s;
+  document.querySelectorAll('.inv-sb').forEach(b => b.classList.toggle('active', b.dataset.s === s));
+  invFilter();
+}
+function invFilter() {
+  const q = (document.getElementById('inv-search').value || '').toLowerCase();
+  const rows = document.querySelectorAll('#inv-tbody tr');
+  let n = 0;
+  rows.forEach(r => {
+    const show = (invStatus === 'all' || r.dataset.status === invStatus) &&
+                 (!q || (r.dataset.search || '').includes(q));
+    r.style.display = show ? '' : 'none';
+    if (show) n++;
+  });
+  const el = document.getElementById('inv-count');
+  if (el) el.textContent = n + ' bill' + (n !== 1 ? 's' : '');
+}
+
+// ── SERVICE FILTER ──
+function svcFilter(f) {
+  ['all','elec'].forEach(s => {
+    const btn = document.getElementById('svc-' + s);
+    if (btn) btn.classList.toggle('active', s === f);
+  });
+}
+
+// ── SNACK ──
+let snackTimer;
+function showSnack(msg) {
+  const el = document.getElementById('snack');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(snackTimer);
+  snackTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// Init service filter
+svcFilter('all');
+</script>
+</body>
+</html>
