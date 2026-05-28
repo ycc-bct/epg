@@ -714,22 +714,26 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
    DRAWER  (Create Customer slide-in)
    ============================================================ */
 .drawer-overlay {
-  position: fixed; inset: 0; background: rgba(15,23,42,.35);
-  backdrop-filter: blur(2px); z-index: 300;
-  opacity: 0; pointer-events: none; transition: opacity .25s;
+  position: fixed; inset: 0; background: rgba(15,23,42,.45);
+  backdrop-filter: blur(3px); z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
 }
 .drawer-overlay.open { opacity: 1; pointer-events: all; }
 
 .drawer {
-  position: fixed; top: 0; right: 0; bottom: 0;
-  width: 520px; max-width: 95vw;
-  background: var(--surface); border-left: 1px solid var(--border);
+  position: relative;
+  width: 560px; max-width: 100%;
+  max-height: 88vh;
+  background: var(--surface); border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
   box-shadow: var(--shadow-lg);
   display: flex; flex-direction: column;
-  transform: translateX(100%); transition: transform .28s cubic-bezier(.2,.8,.2,1);
-  z-index: 301;
+  transform: scale(.96) translateY(10px); opacity: 0;
+  transition: transform .25s cubic-bezier(.2,.8,.2,1), opacity .2s;
 }
-.drawer-overlay.open .drawer { transform: translateX(0); }
+.drawer-overlay.open .drawer { transform: scale(1) translateY(0); opacity: 1; }
 
 .drawer-header {
   padding: 20px 24px; border-bottom: 1px solid var(--border);
@@ -751,6 +755,7 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
 
 .drawer-body {
   flex: 1; overflow-y: auto; padding: 20px 24px;
+  min-height: 0;
 }
 
 .drawer-footer {
@@ -758,6 +763,28 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
   display: flex; gap: 10px; flex-shrink: 0;
 }
 .drawer-footer .btn { flex: 1; }
+
+/* Step 4 — post-creation next-action panel */
+.next-action-list {
+  border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden;
+  margin-top: 20px;
+}
+.next-action-btn {
+  width: 100%; display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; border: none; background: transparent;
+  cursor: pointer; text-align: left; transition: background var(--transition);
+}
+.next-action-btn:hover { background: var(--chip-bg); }
+.next-action-btn + .next-action-btn { border-top: 1px solid var(--border); }
+.next-action-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.next-action-icon svg { width: 18px; height: 18px; }
+.next-action-text { flex: 1; }
+.next-action-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.next-action-desc  { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+.next-action-arrow { color: var(--text-subtle); flex-shrink: 0; }
 
 /* ============================================================
    CUSTOMER DETAIL PAGE
@@ -1923,9 +1950,60 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
         <div id="review-summary"></div>
       </div>
 
+      <!-- Step 4: Success — Next Actions (UC18 Step 7) -->
+      <div id="dsp-4" class="step-panel">
+        <div style="text-align:center;padding:20px 0 4px;">
+          <div style="width:60px;height:60px;border-radius:50%;background:var(--green-dim);border:2px solid color-mix(in srgb,var(--green) 25%,white);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width:26px;height:26px;color:var(--green);"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+          </div>
+          <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:6px;">Customer Created Successfully</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">A new customer profile has been saved and an ID has been assigned.</div>
+          <code id="success-cust-id" style="font-family:ui-monospace,monospace;font-size:13px;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent-border);display:inline-block;padding:4px 14px;border-radius:20px;font-weight:700;"></code>
+        </div>
+
+        <div style="margin-top:6px;padding:10px 12px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-subtle);margin-bottom:8px;">What would you like to do next?</div>
+          <div class="next-action-list">
+            <!-- Action 1: Add Account -->
+            <button class="next-action-btn" onclick="afterCreateDoAccount()">
+              <div class="next-action-icon" style="background:var(--accent-dim);">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="color:var(--accent);"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg>
+              </div>
+              <div class="next-action-text">
+                <div class="next-action-title">Add Account</div>
+                <div class="next-action-desc">Link a billing account to this customer</div>
+              </div>
+              <svg class="next-action-arrow" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+            </button>
+            <!-- Action 2: Add Service Subscription -->
+            <button class="next-action-btn" onclick="afterCreateDoService()">
+              <div class="next-action-icon" style="background:var(--blue-dim);">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="color:var(--blue);"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </div>
+              <div class="next-action-text">
+                <div class="next-action-title">Add Product / Service Subscription</div>
+                <div class="next-action-desc">Assign a service from the product catalogue</div>
+              </div>
+              <svg class="next-action-arrow" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+            </button>
+            <!-- Action 3: Return to List -->
+            <button class="next-action-btn" onclick="closeCreateDrawer()">
+              <div class="next-action-icon" style="background:var(--chip-bg);border:1px solid var(--border);">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="color:var(--text-subtle);"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"/></svg>
+              </div>
+              <div class="next-action-text">
+                <div class="next-action-title">Return to Customer List</div>
+                <div class="next-action-desc">View and manage all customer profiles</div>
+              </div>
+              <svg class="next-action-arrow" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /drawer-body -->
 
-    <div class="drawer-footer">
+    <div class="drawer-footer" id="drawer-footer">
       <button class="btn btn-ghost" id="drawer-back-btn" onclick="drawerBack()" style="display:none;">Back</button>
       <button class="btn btn-primary" id="drawer-next-btn" onclick="drawerNext()">
         Next — Contact Details
@@ -2362,24 +2440,34 @@ function drawerBack() {
 }
 
 function updateDrawerStep() {
+  // Show/hide step panels (1-4)
+  [1,2,3,4].forEach(i => {
+    const panel = document.getElementById('dsp-' + i);
+    if (panel) panel.classList.toggle('active', i === drawerStep);
+  });
+
+  // Step 4 = success state: hide stepper + footer nav
+  const isSuccess = drawerStep === 4;
+  document.getElementById('drawer-steps').style.display = isSuccess ? 'none' : '';
+  document.getElementById('drawer-footer').style.display = isSuccess ? 'none' : '';
+  document.getElementById('drawer-sub').textContent = isSuccess
+    ? 'Customer created — select next action'
+    : ['Step 1 of 3 — Customer Type & Identity', 'Step 2 of 3 — Contact Details', 'Step 3 of 3 — Review & Create'][drawerStep - 1];
+
+  if (isSuccess) return;
+
   [1,2,3].forEach(i => {
-    document.getElementById('dsp-' + i).classList.toggle('active', i === drawerStep);
     const stepEl = document.getElementById('ds-' + i);
     stepEl.classList.remove('active','done');
     if (i < drawerStep)  stepEl.classList.add('done');
     if (i === drawerStep) stepEl.classList.add('active');
-    if (i <= drawerStep) {
-      const circle = stepEl.querySelector('.step-circle');
-      if (i < drawerStep) {
-        circle.innerHTML = `<svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width:12px;height:12px;"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>`;
-      } else {
-        circle.textContent = i;
-      }
+    const circle = stepEl.querySelector('.step-circle');
+    if (i < drawerStep) {
+      circle.innerHTML = `<svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width:12px;height:12px;"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>`;
+    } else {
+      circle.textContent = i;
     }
   });
-
-  const subs = ['Step 1 of 3 — Customer Type & Identity', 'Step 2 of 3 — Contact Details', 'Step 3 of 3 — Review & Create'];
-  document.getElementById('drawer-sub').textContent = subs[drawerStep - 1];
 
   document.getElementById('drawer-back-btn').style.display = drawerStep > 1 ? '' : 'none';
   const nextBtn = document.getElementById('drawer-next-btn');
@@ -2441,6 +2529,8 @@ function buildReviewSummary() {
     </div>`).join('');
 }
 
+let lastCreatedCustomer = null;
+
 function submitCreateCustomer() {
   const t = (document.querySelector('input[name="cust-type"]:checked') || {}).value || 'Individual';
   const name = t === 'Individual'
@@ -2467,9 +2557,29 @@ function submitCreateCustomer() {
     accountList: [], serviceList: [],
   };
   CUSTOMERS.unshift(newCust);
-  closeCreateDrawer();
+  lastCreatedCustomer = newCust;
   renderCustomerTable();
-  showSnack(`Customer ${newId} created successfully`);
+
+  // UC18 Step 7 — show confirmation with next-action choices
+  document.getElementById('success-cust-id').textContent = newId;
+  drawerStep = 4;
+  updateDrawerStep();
+}
+
+/* UC18 Step 7 — Next-action handlers */
+function afterCreateDoAccount() {
+  // Open detail view for the new customer then open Add Account modal
+  closeCreateDrawer();
+  openCustomerDetail(lastCreatedCustomer.id);
+  detailTab('accounts');
+  setTimeout(() => openAddAccount(), 80);
+}
+
+function afterCreateDoService() {
+  // Navigate to Products & Pricing page (UC19)
+  closeCreateDrawer();
+  navTo('products', document.getElementById('ni-products'));
+  showSnack('Select a product or service to subscribe ' + (lastCreatedCustomer ? lastCreatedCustomer.name : 'the new customer'));
 }
 
 /* ── Add Account Modal ── */
