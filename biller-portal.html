@@ -829,23 +829,22 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
 
     <!-- ════════ BILL MANAGEMENT ════════ -->
     <div class="page active" id="page-bill-mgmt">
-      <div class="page-header">
-        <div class="page-title">Bill Management</div>
-        <div class="page-meta">Upload and manage bills submitted to the ePG Fulfilment Entity · Biller Code: BCT-ELEC-001</div>
+      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+        <div>
+          <div class="page-title">Bill Management</div>
+          <div class="page-meta">Submit bills to the ePG Fulfilment Entity · Biller Code: BCT-ELEC-001</div>
+        </div>
+        <button class="btn btn-primary" style="flex-shrink:0;margin-top:2px;" onclick="openUploadDialog()">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+          Upload File
+        </button>
       </div>
 
       <div class="card">
         <div class="card-section">
-          <div class="tab-row">
-            <button class="tab-btn active" id="bm-tab-offline" onclick="bmTab('offline')">
-              Offline Batch Upload <span class="tab-count">4</span>
-            </button>
-            <button class="tab-btn" id="bm-tab-online" onclick="bmTab('online')">Online – Single Load</button>
-            <button class="tab-btn" id="bm-tab-history" onclick="bmTab('history')">Submission History</button>
-          </div>
 
-          <!-- ── OFFLINE ── -->
-          <div id="bm-offline">
+          <!-- ── OFFLINE (dialog) ── -->
+          <div id="bm-offline" style="display:none;">
             <!-- Step indicator -->
             <div class="steps" id="bm-steps">
               <div class="step active" id="bs-1">
@@ -971,19 +970,14 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
                   <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
                   New Upload
                 </button>
-                <button class="btn btn-primary" onclick="bmTab('history')">View History</button>
+                <button class="btn btn-primary" onclick="closeUploadDialogDirect()">Close</button>
               </div>
             </div>
           </div><!-- /bm-offline -->
 
           <!-- ── ONLINE ── -->
-          <div id="bm-online" style="display:none;">
-
-            <!-- How it works banner -->
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--blue-dim,#EFF6FF);border:1px solid color-mix(in srgb,var(--blue) 20%,white);border-radius:var(--radius-sm);margin-bottom:22px;font-size:13px;color:var(--blue);">
-              <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:16px;height:16px;flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
-              <span><strong>Online Single Load</strong> registers one bill directly to ePG in real time. Unlike Offline Batch, the bill is validated against the FE immediately and becomes payable by the customer as soon as it's confirmed — no waiting period.</span>
-            </div>
+          <!-- ── ONLINE ── -->
+          <div id="bm-online">
 
             <!-- Step indicator -->
             <div class="steps" id="ol-steps">
@@ -1040,10 +1034,6 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
                     <input type="text" id="ol-due" placeholder="YYYY-MM-DD" oninput="olClearErr('ol-due-err')">
                     <div class="field-err" id="ol-due-err"></div>
                   </div>
-                  <div class="field">
-                    <label for="ol-rmk">Remarks</label>
-                    <input type="text" id="ol-rmk" placeholder="Optional — max 200 characters" maxlength="200">
-                  </div>
                 </div>
 
                 <div class="btn-row">
@@ -1072,7 +1062,6 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
                   <div class="summary-row"><div class="summary-label">Customer ID</div><div class="summary-value" id="rv-cust">—</div></div>
                   <div class="summary-row"><div class="summary-label">Bill Reference</div><div class="summary-value" id="rv-ref">—</div></div>
                   <div class="summary-row"><div class="summary-label">Biller Code</div><div class="summary-value" id="rv-code">—</div></div>
-                  <div class="summary-row"><div class="summary-label">Remarks</div><div class="summary-value" id="rv-rmk" style="color:var(--text-subtle);font-family:inherit;font-weight:400;">—</div></div>
                 </div>
                 <div style="padding:18px 20px;background:var(--chip-bg);">
                   <div class="section-label">Payment Details</div>
@@ -1189,88 +1178,6 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
 
           </div>
 
-          <!-- ── HISTORY ── -->
-          <div id="bm-history" style="display:none;">
-
-            <!-- Filter row -->
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
-
-              <!-- Search -->
-              <div style="position:relative;display:flex;align-items:center;">
-                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"
-                     style="position:absolute;left:10px;width:14px;height:14px;color:var(--text-subtle);pointer-events:none;">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
-                </svg>
-                <input type="text" id="hist-search" placeholder="Search batch ID…"
-                       oninput="histFilter()"
-                       style="padding:8px 12px 8px 32px;font-size:13px;width:190px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);">
-              </div>
-
-              <!-- Time filter -->
-              <div class="select-wrap" style="min-width:155px;">
-                <select id="hist-time" onchange="histFilter()" style="padding:8px 32px 8px 10px;font-size:13px;">
-                  <option value="all">All Time</option>
-                  <option value="thismonth">This Month</option>
-                  <option value="last3">Last 3 Months</option>
-                  <option value="last6">Last 6 Months</option>
-                  <option value="thisyear">This Year</option>
-                </select>
-              </div>
-
-              <!-- Status filter -->
-              <div class="select-wrap" style="min-width:145px;">
-                <select id="hist-status" onchange="histFilter()" style="padding:8px 32px 8px 10px;font-size:13px;">
-                  <option value="all">All Status</option>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="processing">Processing</option>
-                  <option value="pending">Pending</option>
-                  <option value="failed">Failed</option>
-                </select>
-              </div>
-
-              <!-- Value filter -->
-              <div class="select-wrap" style="min-width:170px;">
-                <select id="hist-value" onchange="histFilter()" style="padding:8px 32px 8px 10px;font-size:13px;">
-                  <option value="all">All Values</option>
-                  <option value="lt10k">Under BND 10,000</option>
-                  <option value="10k50k">BND 10,000 – 50,000</option>
-                  <option value="gt50k">Over BND 50,000</option>
-                </select>
-              </div>
-
-              <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
-                <button class="btn btn-ghost" style="padding:8px 14px;font-size:13px;" onclick="showSnack('Exporting filtered results…')">
-                  <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:14px;height:14px;">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
-                  </svg>
-                  Export
-                </button>
-              </div>
-            </div>
-
-            <!-- Active filter chips -->
-            <div id="hist-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;min-height:0;"></div>
-
-            <!-- Result count -->
-            <div style="font-size:12px;color:var(--text-subtle);margin-bottom:8px;" id="hist-count"></div>
-
-            <!-- Table -->
-            <div class="table-wrap">
-              <table>
-                <thead><tr>
-                  <th class="th-check"><input type="checkbox" id="hist-cb-all" onchange="histToggleAll(this)"></th>
-                  <th>Batch ID</th>
-                  <th>Submitted</th>
-                  <th>Bills</th>
-                  <th class="th-right">Total Value</th>
-                  <th>FE Status</th>
-                  <th>Confirmed At</th>
-                  <th style="width:90px;"></th>
-                </tr></thead>
-                <tbody id="hist-tbody"></tbody>
-              </table>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -1344,6 +1251,144 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
     </div>
 
   </main>
+</div>
+
+<!-- ════════ UPLOAD DIALOG (Offline Batch) ════════ -->
+<div class="dialog-overlay" id="upload-dialog" onclick="closeUploadDialog(event)">
+  <div class="dialog" style="max-width:680px;width:90vw;">
+    <div class="dialog-header">
+      <div>
+        <div class="dialog-title">Upload Bill File</div>
+        <div class="dialog-sub">Offline Batch Upload · BCT-ELEC-001</div>
+      </div>
+      <button class="dialog-close" onclick="closeUploadDialogDirect()">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="dialog-body" style="padding:24px;">
+      <div class="steps" id="bm-steps">
+        <div class="step active" id="bs-1">
+          <div class="step-circle">1</div>
+          <div class="step-label"><div class="step-label-main">Upload Bills</div><div class="step-label-sub">CSV / XLSX</div></div>
+        </div>
+        <div class="step" id="bs-2">
+          <div class="step-circle">2</div>
+          <div class="step-label"><div class="step-label-main">Review &amp; Submit</div><div class="step-label-sub">Verify</div></div>
+        </div>
+        <div class="step" id="bs-3">
+          <div class="step-circle">3</div>
+          <div class="step-label"><div class="step-label-main">Confirmation</div><div class="step-label-sub">Job ID</div></div>
+        </div>
+      </div>
+
+      <!-- Step 1 -->
+      <div class="step-panel active" id="bsp-1">
+        <div id="upload-idle">
+          <div class="upload-area">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor" style="width:48px;height:48px;color:var(--accent);margin:0 auto 16px;display:block;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/></svg>
+            <button class="btn btn-primary" style="font-size:14px;padding:11px 28px;" onclick="bmSimUpload()">
+              <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+              Upload Bill File
+            </button>
+            <div class="upload-desc">
+              CSV or XLSX &nbsp;·&nbsp; Max 500 records &nbsp;·&nbsp; 10 MB limit
+              &nbsp;·&nbsp; <a onclick="openSpecDialog()">Learn more about file specs</a>
+            </div>
+          </div>
+        </div>
+        <div id="upload-progress" style="display:none;padding:24px 0 8px;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="1.25" stroke="currentColor" style="width:32px;height:32px;color:var(--green);flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text);" id="progress-filename">bills_batch_20240520.csv</div>
+              <div style="font-size:12px;color:var(--text-subtle);">47.2 KB · BCT-ELEC-001</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <span id="progress-label" style="font-size:13px;color:var(--text-muted);">Reading file…</span>
+            <span id="progress-pct" style="font-size:12px;font-weight:700;color:var(--accent);">0%</span>
+          </div>
+          <div class="progress-wrap"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-panel" id="bsp-2">
+        <div class="section-label">Parsed Records <span id="bm-count-lbl" style="font-family:ui-monospace,monospace;font-size:11px;font-weight:600;color:var(--text-muted);margin-left:4px;text-transform:none;letter-spacing:0;"></span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th class="th-check"><input type="checkbox" checked id="cb-all" onchange="toggleAll(this)"></th>
+              <th>Bill Reference</th><th>Customer</th><th>Type</th>
+              <th class="th-right">Amount Due</th><th>Due Date</th><th>Status</th>
+            </tr></thead>
+            <tbody id="bm-tbody"></tbody>
+          </table>
+        </div>
+        <div class="total-row" style="margin-top:16px;">
+          <div><div class="total-label">Total Batch Amount</div><div style="font-size:11px;color:var(--accent-text);margin-top:2px;" id="bm-count-sub"></div></div>
+          <div class="total-value" id="bm-total-val">BND 0.00</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="bmGoStep(1)">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+            Back
+          </button>
+          <button class="btn btn-primary" onclick="bmSubmit()">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Submit to ePG
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-panel" id="bsp-3">
+        <div class="alert alert-success">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <div><strong>Batch submitted to Fulfilment Entity.</strong> A confirmation file (ACK) will be available once the FE has reconciled all records.</div>
+        </div>
+        <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">Job ID</div>
+            <div style="font-size:16px;font-weight:700;font-family:ui-monospace,monospace;color:var(--text);" id="conf-jobid">—</div>
+          </div>
+          <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">Records Submitted</div>
+            <div style="font-size:16px;font-weight:700;font-family:ui-monospace,monospace;color:var(--text);" id="conf-count">—</div>
+          </div>
+          <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">Total Amount</div>
+            <div style="font-size:16px;font-weight:700;font-family:ui-monospace,monospace;color:var(--accent);" id="conf-total">—</div>
+          </div>
+          <div style="padding:16px 18px;background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-subtle);margin-bottom:6px;">Submitted At</div>
+            <div style="font-size:16px;font-weight:700;font-family:ui-monospace,monospace;color:var(--text);" id="conf-time">—</div>
+          </div>
+        </div>
+        <div style="margin-top:16px;padding:14px 16px;border:1px solid var(--border);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:space-between;gap:16px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:18px;height:18px;color:var(--text-subtle);flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text);">Confirmation File (ACK)</div>
+              <div style="font-size:12px;color:var(--text-muted);">Available after FE reconciliation · CSV format</div>
+            </div>
+          </div>
+          <button class="btn btn-ghost" style="padding:8px 14px;font-size:13px;" onclick="showSnack('Confirmation file downloaded: ACK_' + document.getElementById('conf-jobid').textContent + '.csv')">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+            Download
+          </button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="bmReset()">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+            New Upload
+          </button>
+          <button class="btn btn-primary" onclick="closeUploadDialogDirect()">Close</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <!-- ════════ SPEC DIALOG ════════ -->
@@ -1464,13 +1509,16 @@ function navTo(id, el) {
   if (ni) ni.classList.add('active');
 }
 
-// ── BILL MGMT TABS ──
-function bmTab(t) {
-  ['offline','online','history'].forEach(n => {
-    document.getElementById('bm-' + n).style.display = n === t ? 'block' : 'none';
-    document.getElementById('bm-tab-' + n).classList.toggle('active', n === t);
-  });
-  if (t === 'history') { navTo('bill-mgmt', null); histFilter(); }
+// ── UPLOAD DIALOG ──
+function openUploadDialog() {
+  bmReset();
+  document.getElementById('upload-dialog').classList.add('open');
+}
+function closeUploadDialog(e) {
+  if (e.target === document.getElementById('upload-dialog')) closeUploadDialogDirect();
+}
+function closeUploadDialogDirect() {
+  document.getElementById('upload-dialog').classList.remove('open');
 }
 
 // ── UPLOAD SIMULATION ──
@@ -1635,11 +1683,9 @@ function olValidate() {
 
     // Populate review panel
     const code = document.getElementById('ol-code').value;
-    const rmk  = document.getElementById('ol-rmk').value.trim();
     document.getElementById('rv-cust').textContent = cust;
     document.getElementById('rv-ref').textContent  = ref;
     document.getElementById('rv-code').textContent = code;
-    document.getElementById('rv-rmk').textContent  = rmk || '—';
     document.getElementById('rv-amt').textContent  = 'BND ' + amt.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});
     document.getElementById('rv-due').textContent  = due;
     olGoStep(2);
@@ -1672,7 +1718,7 @@ function olSubmit() {
 }
 
 function olReset() {
-  ['ol-cust','ol-ref','ol-amt','ol-due','ol-rmk'].forEach(id => {
+  ['ol-cust','ol-ref','ol-amt','ol-due'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
