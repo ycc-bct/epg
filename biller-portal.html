@@ -821,30 +821,6 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
         <span class="sb-badge">3</span>
       </div>
     </div>
-    <div class="sb-divider"></div>
-    <div class="sb-section">
-      <span class="sb-label">Customers</span>
-      <div class="sb-item" id="ni-customers" onclick="navTo('customers',this)">
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
-        Customers
-      </div>
-      <div class="sb-item" id="ni-products" onclick="navTo('products',this)">
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.658.524a18.634 18.634 0 005.83-5.829c.349-.879.177-1.96-.523-2.659L9.568 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/></svg>
-        Products &amp; Pricing
-      </div>
-    </div>
-    <div class="sb-divider"></div>
-    <div class="sb-section">
-      <span class="sb-label">Finance</span>
-      <div class="sb-item" id="ni-payments" onclick="navTo('payments',this)">
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/></svg>
-        Payment Tracking
-      </div>
-      <div class="sb-item" id="ni-reports" onclick="navTo('reports',this)">
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
-        Reports
-      </div>
-    </div>
     <div class="sb-footer">ePG R2 · v2.4.1</div>
   </aside>
 
@@ -1367,142 +1343,6 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
       </div>
     </div>
 
-    <!-- ════════ CUSTOMERS ════════ -->
-    <div class="page" id="page-customers">
-      <div class="page-header">
-        <div class="page-title">Customer Management</div>
-        <div class="page-meta">Registered customers under biller account BCT-ELEC-001</div>
-      </div>
-      <div class="card">
-        <div class="card-section">
-          <div class="filter-bar">
-            <input type="text" placeholder="Search customers…" style="width:220px;">
-            <div class="filter-bar-right">
-              <button class="btn btn-primary" style="padding:8px 14px;font-size:13px;" onclick="showSnack('Add Customer — coming soon')">
-                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:14px;height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                Add Customer
-              </button>
-            </div>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr>
-                <th>Customer ID</th><th>Name</th><th>Account Number</th><th>Type</th><th>Bills</th><th>Status</th>
-              </tr></thead>
-              <tbody>
-                <tr><td class="td-mono">CUST-10042</td><td><div style="font-weight:600;">Al-Rashid Trading Co.</div></td><td class="td-mono" style="font-size:11px;">SA0380…167519</td><td><span class="chip chip-muted">Corporate</span></td><td>3</td><td><span class="chip chip-green">Active</span></td></tr>
-                <tr><td class="td-mono">CUST-10087</td><td><div style="font-weight:600;">Green Valley Properties</div></td><td class="td-mono" style="font-size:11px;">SA8480…167530</td><td><span class="chip chip-muted">Corporate</span></td><td>2</td><td><span class="chip chip-green">Active</span></td></tr>
-                <tr><td class="td-mono">CUST-10103</td><td><div style="font-weight:600;">Sunrise Medical Center</div></td><td class="td-mono" style="font-size:11px;">SA0380…167541</td><td><span class="chip chip-blue">Healthcare</span></td><td>1</td><td><span class="chip chip-green">Active</span></td></tr>
-                <tr><td class="td-mono">CUST-10215</td><td><div style="font-weight:600;">Horizon Logistics LLC</div></td><td class="td-mono" style="font-size:11px;">SA5480…167552</td><td><span class="chip chip-muted">Corporate</span></td><td>4</td><td><span class="chip chip-amber">Partial</span></td></tr>
-                <tr><td class="td-mono">CUST-10308</td><td><div style="font-weight:600;">Al-Baraka Supermarket</div></td><td class="td-mono" style="font-size:11px;">SA0380…167563</td><td><span class="chip chip-muted">Retail</span></td><td>2</td><td><span class="chip chip-green">Active</span></td></tr>
-                <tr><td class="td-mono">CUST-10512</td><td><div style="font-weight:600;">Gulf Star Manufacturing</div></td><td class="td-mono" style="font-size:11px;">SA0380…167585</td><td><span class="chip chip-muted">Industrial</span></td><td>5</td><td><span class="chip chip-green">Active</span></td></tr>
-                <tr><td class="td-mono">CUST-10637</td><td><div style="font-weight:600;">Desert Rose Hotels</div></td><td class="td-mono" style="font-size:11px;">SA5480…167596</td><td><span class="chip chip-muted">Hospitality</span></td><td>3</td><td><span class="chip chip-red">Overdue</span></td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════════ PRODUCTS ════════ -->
-    <div class="page" id="page-products">
-      <div class="page-header">
-        <div class="page-title">Products &amp; Pricing</div>
-        <div class="page-meta">Service category and fee structure for your biller account · BCT-ELEC-001</div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-        <div class="card">
-          <div class="card-section">
-            <div class="section-label">BCT-ELEC-001 · Electricity</div>
-            <div class="summary-row"><div class="summary-label">Service type</div><div class="summary-value">Utility — Electricity</div></div>
-            <div class="summary-row"><div class="summary-label">Billing cycle</div><div class="summary-value">Monthly</div></div>
-            <div class="summary-row"><div class="summary-label">Payment window</div><div class="summary-value">30 days</div></div>
-            <div class="summary-row"><div class="summary-label">Late fee</div><div class="summary-value">2% per month</div></div>
-            <div class="summary-row"><div class="summary-label">Status</div><div><span class="chip chip-green">Active</span></div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════════ PAYMENTS ════════ -->
-    <div class="page" id="page-payments">
-      <div class="page-header">
-        <div class="page-title">Payment Tracking</div>
-        <div class="page-meta">Incoming payments confirmed by the Fulfilment Entity · 20 May 2024</div>
-      </div>
-      <div class="kpi-grid">
-        <div class="kpi-card"><div class="kpi-label">Total Collected</div><div class="kpi-value green">18,321</div><div class="kpi-sub">BND · 5 payments</div></div>
-        <div class="kpi-card"><div class="kpi-label">Outstanding</div><div class="kpi-value amber">8,421</div><div class="kpi-sub">BND · 2 partial</div></div>
-        <div class="kpi-card"><div class="kpi-label">Success Rate</div><div class="kpi-value blue">80%</div><div class="kpi-sub kpi-up">↑ from 74% last month</div></div>
-        <div class="kpi-card"><div class="kpi-label">Payments Today</div><div class="kpi-value">15</div><div class="kpi-sub">As of 10:38 AM</div></div>
-      </div>
-      <div class="card">
-        <div class="card-section">
-          <div class="section-label">Payment Advice · 20 May 2024</div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr>
-                <th>Payment Ref</th><th>Bill Ref</th><th>Customer</th><th>Type</th><th class="th-right">Paid</th><th class="th-right">Bill Total</th><th>Channel</th><th>Time</th><th>Status</th>
-              </tr></thead>
-              <tbody>
-                <tr><td class="td-mono">PAY-0001</td><td class="td-mono">BILL-000001</td><td>Al-Rashid Trading</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">1,250.00</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">1,250.00</td><td>Portal</td><td>10:15</td><td><span class="chip chip-green">Full</span></td></tr>
-                <tr><td class="td-mono">PAY-0002</td><td class="td-mono">BILL-000002</td><td>Green Valley Prop.</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">3,400.75</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">3,400.75</td><td>Portal</td><td>10:17</td><td><span class="chip chip-green">Full</span></td></tr>
-<tr><td class="td-mono">PAY-0004</td><td class="td-mono">BILL-000004</td><td>Horizon Logistics</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">1,000.00</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">2,100.00</td><td>Portal</td><td>10:20</td><td><span class="chip chip-amber">Partial</span></td></tr>
-                <tr><td class="td-mono">PAY-0005</td><td class="td-mono">BILL-000005</td><td>Al-Baraka Supermt.</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">5,670.25</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">5,670.25</td><td>Portal</td><td>10:21</td><td><span class="chip chip-green">Full</span></td></tr>
-                <tr><td class="td-mono">PAY-0008</td><td class="td-mono">BILL-000008</td><td>Desert Rose Hotels</td><td><span class="chip chip-muted">Utility</span></td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">7,000.00</td><td class="td-right" style="font-family:ui-monospace,monospace;color:var(--text-muted);">14,320.50</td><td>Portal</td><td>10:26</td><td><span class="chip chip-amber">Partial</span></td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════════ REPORTS ════════ -->
-    <div class="page" id="page-reports">
-      <div class="page-header">
-        <div class="page-title">Reports</div>
-        <div class="page-meta">Billing and payment reports for your biller account</div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-        <div class="card" style="cursor:pointer;" onclick="showSnack('Generating Monthly Billing Report…')">
-          <div class="card-section">
-            <div class="section-label">Monthly Billing Report</div>
-            <div style="font-size:13px;color:var(--text-muted);line-height:1.7;">Summary of all bills issued, payment status, and outstanding balances for any given month.</div>
-            <div style="margin-top:14px;display:flex;gap:8px;">
-              <span class="chip chip-muted">CSV</span><span class="chip chip-muted">XLSX</span><span class="chip chip-muted">PDF</span>
-            </div>
-          </div>
-        </div>
-        <div class="card" style="cursor:pointer;" onclick="showSnack('Generating Payment Reconciliation…')">
-          <div class="card-section">
-            <div class="section-label">Payment Reconciliation</div>
-            <div style="font-size:13px;color:var(--text-muted);line-height:1.7;">Match payments received against bills issued. Identify discrepancies and partial payments.</div>
-            <div style="margin-top:14px;display:flex;gap:8px;">
-              <span class="chip chip-muted">CSV</span><span class="chip chip-muted">XLSX</span>
-            </div>
-          </div>
-        </div>
-        <div class="card" style="cursor:pointer;" onclick="showSnack('Generating Batch Submission Log…')">
-          <div class="card-section">
-            <div class="section-label">Batch Submission Log</div>
-            <div style="font-size:13px;color:var(--text-muted);line-height:1.7;">Full audit trail of all offline batch uploads submitted to the ePG Fulfilment Entity.</div>
-            <div style="margin-top:14px;display:flex;gap:8px;">
-              <span class="chip chip-muted">CSV</span><span class="chip chip-muted">XLSX</span>
-            </div>
-          </div>
-        </div>
-        <div class="card" style="cursor:pointer;" onclick="showSnack('Generating Outstanding Bills Report…')">
-          <div class="card-section">
-            <div class="section-label">Outstanding Bills</div>
-            <div style="font-size:13px;color:var(--text-muted);line-height:1.7;">List of all unpaid or partially paid bills with ageing analysis and contact details.</div>
-            <div style="margin-top:14px;display:flex;gap:8px;">
-              <span class="chip chip-muted">CSV</span><span class="chip chip-muted">PDF</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
   </main>
 </div>
 
@@ -1613,9 +1453,7 @@ function doLogout() {
 
 // ── NAVIGATION ──
 const PAGE_TITLES = {
-  'bill-mgmt': 'Bill Management', 'invoices': 'Invoices & Bills',
-  'customers': 'Customer Management', 'products': 'Products & Pricing',
-  'payments': 'Payment Tracking', 'reports': 'Reports'
+  'bill-mgmt': 'Bill Management', 'invoices': 'Invoices & Bills'
 };
 function navTo(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
