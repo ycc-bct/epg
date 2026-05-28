@@ -154,6 +154,9 @@ body {
   border-radius: var(--radius-sm); font-size: 12px; color: var(--text-muted); line-height: 1.7;
 }
 .login-hint strong { color: var(--text-subtle); font-weight: 600; }
+.remember-row { display:flex; align-items:center; gap:8px; margin-top:4px; margin-bottom:4px; }
+.remember-row input[type="checkbox"] { width:15px; height:15px; accent-color:var(--accent); cursor:pointer; flex-shrink:0; }
+.remember-row label { font-size:13px; color:var(--text-muted); cursor:pointer; user-select:none; }
 
 /* ============================================================
    HEADER
@@ -787,6 +790,52 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
 .next-action-arrow { color: var(--text-subtle); flex-shrink: 0; }
 
 /* ============================================================
+   PRODUCT CATALOGUE + SUBSCRIPTION FORM
+   ============================================================ */
+.product-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.product-card {
+  border: 2px solid var(--border); border-radius: var(--radius-md);
+  padding: 14px 15px; cursor: pointer;
+  transition: all var(--transition); background: var(--surface);
+  text-align: left;
+}
+.product-card:hover { border-color: var(--accent-border); background: var(--accent-dim); }
+.product-card.selected { border-color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 0 3px var(--accent-dim); }
+.product-card-icon {
+  width: 34px; height: 34px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 10px;
+}
+.product-card-icon svg { width: 17px; height: 17px; }
+.product-card-name  { font-size: 13px; font-weight: 700; color: var(--text); }
+.product-card-code  { font-size: 11px; font-family: ui-monospace, monospace; color: var(--text-subtle); margin: 3px 0 6px; }
+.product-card-desc  { font-size: 12px; color: var(--text-muted); line-height: 1.45; }
+.product-card-model { display: inline-block; margin-top: 8px; font-size: 11px; font-weight: 600;
+  color: var(--accent-text); background: var(--accent-dim); border: 1px solid var(--accent-border);
+  padding: 2px 8px; border-radius: 20px; }
+
+/* Selected product banner in Step 2 */
+.selected-product-banner {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: var(--radius-sm);
+  border: 1px solid var(--accent-border); background: var(--accent-dim);
+  margin-bottom: 18px;
+}
+.selected-product-banner-icon {
+  width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.selected-product-banner svg { width: 16px; height: 16px; }
+.selected-product-banner-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.selected-product-banner-code { font-size: 11px; font-family: ui-monospace, monospace; color: var(--text-subtle); margin-top: 1px; }
+.price-display {
+  font-size: 13px; color: var(--text-muted);
+  padding: 8px 12px; background: var(--chip-bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); margin-top: 6px;
+}
+
+/* ============================================================
    CUSTOMER DETAIL PAGE
    ============================================================ */
 .cust-profile-grid {
@@ -920,6 +969,10 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
         <input type="password" id="login-pw" placeholder="Enter your password"
                onkeydown="if(event.key==='Enter')doLogin()"/>
       </div>
+    </div>
+    <div class="remember-row" style="margin-bottom:16px;">
+      <input type="checkbox" id="remember-me" />
+      <label for="remember-me">Remember me on this device</label>
     </div>
     <button class="login-btn" onclick="doLogin()">
       <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
@@ -1611,7 +1664,7 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
 
       <!-- Profile header -->
       <div class="card" style="margin-bottom:16px;">
-        <div class="card-section">
+        <div class="card-section" style="border-bottom:none;padding-bottom:0;">
           <div class="cust-header-row">
             <div class="cust-avatar" id="detail-avatar"></div>
             <div class="cust-header-info" style="flex:1;">
@@ -1623,7 +1676,7 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
               <div class="cust-header-id" id="detail-id"></div>
             </div>
             <div style="display:flex;gap:8px;">
-              <button class="btn btn-ghost" style="padding:8px 14px;font-size:13px;">
+              <button class="btn btn-ghost" style="padding:8px 14px;font-size:13px;" onclick="openEditCustomer()">
                 <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
                 Edit
               </button>
@@ -1664,7 +1717,7 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
         <div id="dt-services" class="card-section" style="display:none;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
             <div class="section-label" style="margin-bottom:0;">Subscribed Services</div>
-            <button class="btn btn-ghost" style="padding:7px 12px;font-size:13px;" onclick="showSnack('Add Service — links to UC19 Product Catalogue')">
+            <button class="btn btn-ghost" style="padding:7px 12px;font-size:13px;" onclick="openAddService()">
               <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
               Add Service
             </button>
@@ -2093,18 +2146,8 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
           <input type="text" id="acc-addr" placeholder="Address where service is provided" />
         </div>
       </div>
-      <!-- Edit-mode only: Status + Closure Date -->
-      <div id="acc-edit-fields" class="field-row" style="margin-top:14px;display:none;">
-        <div class="field">
-          <label>Status <span class="req">*</span></label>
-          <div class="select-wrap">
-            <select id="acc-status">
-              <option value="Active">Active</option>
-              <option value="Suspended">Suspended</option>
-              <option value="Closed">Closed</option>
-            </select>
-          </div>
-        </div>
+      <!-- Edit-mode only: Closure Date -->
+      <div id="acc-edit-fields" style="margin-top:14px;display:none;">
         <div class="field">
           <label>Closure Date</label>
           <input type="text" id="acc-closure" placeholder="YYYY-MM-DD (if closing)" />
@@ -2116,9 +2159,306 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
         <textarea id="acc-notes" rows="2" style="resize:vertical;" placeholder="Optional notes…"></textarea>
       </div>
       <div class="btn-row">
-        <button class="btn btn-ghost" onclick="closeAddAccount()">Cancel</button>
         <button class="btn btn-primary" id="acc-submit-btn" onclick="submitAddAccount()">Add Account</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ ADD SERVICE SUBSCRIPTION MODAL ════════ -->
+<div class="dialog-overlay" id="add-service-dialog" onclick="closeAddServiceOnBg(event)">
+  <div class="dialog" style="width:640px;">
+    <div class="dialog-header">
+      <div>
+        <div class="dialog-title" id="svc-modal-title">Add Service Subscription</div>
+        <div class="dialog-sub" id="svc-modal-sub">Step 1 of 2 — Select Product</div>
+      </div>
+      <button class="dialog-close" onclick="closeAddService()">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="dialog-body" style="padding-top:16px;">
+
+      <!-- Step 1: Product selection grid -->
+      <div id="svc-step-1">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
+          Select a product or service from the catalogue below. Only products available to this customer type are shown.
+        </div>
+        <div class="product-grid" id="svc-product-grid">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <!-- Step 2: Subscription configuration -->
+      <div id="svc-step-2" style="display:none;">
+        <!-- Selected product summary -->
+        <div class="selected-product-banner" id="svc-selected-banner">
+          <div class="selected-product-banner-icon" id="svc-banner-icon"></div>
+          <div>
+            <div class="selected-product-banner-name" id="svc-banner-name"></div>
+            <div class="selected-product-banner-code" id="svc-banner-code"></div>
+          </div>
+          <button onclick="svcBackToStep1()" style="margin-left:auto;font-size:12px;color:var(--accent);background:none;border:none;cursor:pointer;font-weight:600;">Change</button>
+        </div>
+
+        <!-- Row 1: Service Plan + Associated Account -->
+        <div class="field-row">
+          <div class="field">
+            <label>Service Plan / Tier <span class="req">*</span></label>
+            <div class="select-wrap">
+              <select id="svc-plan" onchange="onSvcPlanChange()">
+                <option value="">Select plan…</option>
+              </select>
+            </div>
+            <div class="field-err" id="err-svc-plan">Service plan is required.</div>
+          </div>
+          <div class="field">
+            <label>Associated Account <span class="req">*</span></label>
+            <div class="select-wrap">
+              <select id="svc-account">
+                <option value="">Select account…</option>
+              </select>
+            </div>
+            <div class="field-err" id="err-svc-account">Please select an account.</div>
+          </div>
+        </div>
+
+        <!-- Plan base price display -->
+        <div id="svc-price-display" class="price-display" style="display:none;">
+          <span id="svc-price-text"></span>
+        </div>
+
+        <!-- Row 2: Billing Frequency + Contract/Adjusted Price -->
+        <div class="field-row" style="margin-top:14px;">
+          <div class="field">
+            <label>Billing Frequency <span class="req">*</span></label>
+            <div class="select-wrap">
+              <select id="svc-freq">
+                <option value="">Select frequency…</option>
+                <option>One-Time</option>
+                <option>Monthly</option>
+                <option>Quarterly</option>
+                <option>Annual</option>
+                <option>Usage-Based</option>
+              </select>
+            </div>
+            <div class="field-err" id="err-svc-freq">Billing frequency is required.</div>
+          </div>
+          <div class="field">
+            <label>Contract / Adjusted Price (BND)</label>
+            <input type="text" id="svc-contract-price" placeholder="Leave blank to use standard price" />
+          </div>
+        </div>
+
+        <!-- Row 3: Promo Code + Minimum Term -->
+        <div class="field-row" style="margin-top:14px;">
+          <div class="field">
+            <label>Promo Code</label>
+            <input type="text" id="svc-promo" placeholder="e.g. PROMO2026" style="text-transform:uppercase;" />
+          </div>
+          <div class="field">
+            <label>Minimum Term</label>
+            <div class="select-wrap">
+              <select id="svc-min-term">
+                <option value="">No minimum</option>
+                <option>3 months</option>
+                <option>6 months</option>
+                <option>12 months</option>
+                <option>24 months</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 4: Start Date + End Date -->
+        <div class="field-row" style="margin-top:14px;">
+          <div class="field">
+            <label>Start Date <span class="req">*</span></label>
+            <input type="text" id="svc-start" placeholder="YYYY-MM-DD" />
+            <div class="field-err" id="err-svc-start">Start date is required.</div>
+          </div>
+          <div class="field">
+            <label>End Date</label>
+            <input type="text" id="svc-end" placeholder="YYYY-MM-DD (leave blank for open-ended)" />
+          </div>
+        </div>
+
+        <!-- Initial Status -->
+        <div class="field" style="margin-top:14px;">
+          <label>Initial Status</label>
+          <div style="display:flex;gap:10px;margin-top:6px;">
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-weight:400;">
+              <input type="radio" name="svc-init-status" value="Active" checked style="width:14px;height:14px;" />
+              <span class="chip chip-green" style="pointer-events:none;">Active</span>
+              <span style="font-size:12px;color:var(--text-muted);">Immediately active</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-weight:400;">
+              <input type="radio" name="svc-init-status" value="Pending Activation" style="width:14px;height:14px;" />
+              <span class="chip chip-amber" style="pointer-events:none;">Pending Activation</span>
+              <span style="font-size:12px;color:var(--text-muted);">Requires activation step</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="field" style="margin-top:14px;">
+          <label>Notes / Special Requirements</label>
+          <textarea id="svc-notes" rows="2" style="resize:vertical;" placeholder="Optional — service-specific parameters, SLA notes, etc."></textarea>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="dialog-footer" style="padding:16px 24px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" id="svc-back-btn" onclick="svcBackToStep1()" style="flex:1;display:none;">Back</button>
+        <button class="btn btn-primary" id="svc-next-btn" onclick="svcNext()" style="flex:1;" disabled>
+          Configure Subscription
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ EDIT CUSTOMER MODAL ════════ -->
+<div class="dialog-overlay" id="edit-customer-dialog" onclick="closeEditCustomerOnBg(event)">
+  <div class="dialog" style="width:560px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;">
+    <div class="dialog-header">
+      <div>
+        <div class="dialog-title" id="edit-cust-modal-title">Edit Customer</div>
+        <div class="dialog-sub" id="edit-cust-modal-sub"></div>
+      </div>
+      <button class="dialog-close" onclick="closeEditCustomer()">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div style="overflow-y:auto;padding:20px 24px;flex:1;">
+
+      <!-- Status — top of form so it's always visible -->
+      <div class="section-label" style="margin-bottom:12px;">Status</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-weight:400;">
+          <input type="radio" name="ec-status" value="Active" style="width:14px;height:14px;" />
+          <span class="chip chip-green" style="pointer-events:none;">Active</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-weight:400;">
+          <input type="radio" name="ec-status" value="Pending" style="width:14px;height:14px;" />
+          <span class="chip chip-amber" style="pointer-events:none;">Pending</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-weight:400;">
+          <input type="radio" name="ec-status" value="Inactive" style="width:14px;height:14px;" />
+          <span class="chip chip-muted" style="pointer-events:none;">Inactive</span>
+        </label>
+      </div>
+
+      <!-- Identity -->
+      <div class="section-label" style="margin-top:20px;margin-bottom:12px;">Identity</div>
+
+      <!-- Individual fields -->
+      <div id="ec-fields-individual">
+        <div class="field">
+          <label>Full Name <span class="req">*</span></label>
+          <input type="text" id="ec-name" placeholder="e.g. Muhammad Haziq bin Abdullah" />
+          <div class="field-err" id="err-ec-name">Full name is required.</div>
+        </div>
+        <div class="field-row" style="margin-top:14px;">
+          <div class="field">
+            <label>IC Number <span class="req">*</span></label>
+            <input type="text" id="ec-ic" placeholder="e.g. 01-123456" />
+            <div class="field-err" id="err-ec-ic">IC number is required.</div>
+          </div>
+          <div class="field">
+            <label>Date of Birth</label>
+            <input type="text" id="ec-dob" placeholder="DD / MM / YYYY" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Corporate fields -->
+      <div id="ec-fields-corporate" style="display:none;">
+        <div class="field">
+          <label>Legal Entity Name <span class="req">*</span></label>
+          <input type="text" id="ec-entity" placeholder="e.g. Al-Rashid Trading Co. Sdn Bhd" />
+          <div class="field-err" id="err-ec-entity">Entity name is required.</div>
+        </div>
+        <div class="field-row" style="margin-top:14px;">
+          <div class="field">
+            <label>Company Registration No. <span class="req">*</span></label>
+            <input type="text" id="ec-regno" placeholder="e.g. RC-200001-XYZ" />
+            <div class="field-err" id="err-ec-regno">Registration number is required.</div>
+          </div>
+          <div class="field">
+            <label>Industry / Sector</label>
+            <div class="select-wrap">
+              <select id="ec-sector">
+                <option value="">Select…</option>
+                <option>Retail</option><option>Corporate</option><option>Healthcare</option>
+                <option>Hospitality</option><option>Industrial</option><option>Education</option><option>Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact -->
+      <div class="section-label" style="margin-top:20px;margin-bottom:12px;">Contact Details</div>
+      <div class="field">
+        <label>Email Address <span class="req">*</span></label>
+        <input type="email" id="ec-email" placeholder="e.g. contact@example.com" />
+        <div class="field-err" id="err-ec-email">A valid email address is required.</div>
+      </div>
+      <div class="field-row" style="margin-top:14px;">
+        <div class="field">
+          <label>Mobile Number <span class="req">*</span></label>
+          <input type="text" id="ec-mobile" placeholder="e.g. +673 8123456" />
+          <div class="field-err" id="err-ec-mobile">Mobile number is required.</div>
+        </div>
+        <div class="field">
+          <label>Phone (Office)</label>
+          <input type="text" id="ec-phone" placeholder="e.g. +673 2234567" />
+        </div>
+      </div>
+
+      <!-- Address -->
+      <div class="section-label" style="margin-top:20px;margin-bottom:12px;">Address</div>
+      <div class="field">
+        <label>Address Line 1 <span class="req">*</span></label>
+        <input type="text" id="ec-addr1" placeholder="e.g. No. 12, Jalan Gadong" />
+        <div class="field-err" id="err-ec-addr1">Address is required.</div>
+      </div>
+      <div class="field" style="margin-top:14px;">
+        <label>Address Line 2</label>
+        <input type="text" id="ec-addr2" placeholder="Building / Floor / Unit (optional)" />
+      </div>
+      <div class="field-row" style="margin-top:14px;">
+        <div class="field">
+          <label>City / Mukim <span class="req">*</span></label>
+          <input type="text" id="ec-city" placeholder="e.g. Bandar Seri Begawan" />
+          <div class="field-err" id="err-ec-city">City is required.</div>
+        </div>
+        <div class="field">
+          <label>Postcode</label>
+          <input type="text" id="ec-postcode" placeholder="e.g. BA1110" />
+        </div>
+      </div>
+      <div class="field" style="margin-top:14px;">
+        <label>District</label>
+        <div class="select-wrap">
+          <select id="ec-district">
+            <option value="">Select district…</option>
+            <option>Brunei-Muara</option><option>Belait</option><option>Tutong</option><option>Temburong</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Save button -->
+      <div class="btn-row" style="margin-top:20px;">
+        <button class="btn btn-primary" onclick="submitEditCustomer()">Save Changes</button>
+      </div>
+
     </div>
   </div>
 </div>
@@ -2409,7 +2749,6 @@ function openCustomerDetail(id) {
           <div class="account-type">${a.name ? a.name + ' · ' : ''}${a.type}${a.cycle ? ' · ' + a.cycle : ''}</div>
           <div class="account-meta">${a.addr || ''}${(a.addr && a.notes) ? ' · ' : ''}${a.notes || ''}</div>
         </div>
-        <span class="chip ${a.status === 'Suspended' ? 'chip-amber' : a.status === 'Closed' ? 'chip-muted' : 'chip-green'}" style="flex-shrink:0;">${a.status || 'Active'}</span>
         <button class="btn btn-ghost" style="padding:6px 8px;flex-shrink:0;" title="Edit account" onclick="openEditAccount('${a.no}')">
           <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:14px;height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"/></svg>
         </button>
@@ -2420,14 +2759,19 @@ function openCustomerDetail(id) {
   const svcStatusChip = s => ({ Active:'chip-green', Pending:'chip-amber', Suspended:'chip-red' }[s] || 'chip-muted');
   document.getElementById('detail-services-list').innerHTML = c.serviceList.length === 0
     ? `<div class="empty-state"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.658.524a18.634 18.634 0 005.83-5.829c.349-.879.177-1.96-.523-2.659L9.568 3z"/></svg><p>No services subscribed yet</p></div>`
-    : c.serviceList.map(s => `
+    : c.serviceList.map((s, idx) => `
       <div class="service-card">
         <div class="service-row">
           <div>
             <div class="service-name">${s.name}</div>
             <div class="service-code">${s.code} · ${s.plan}</div>
           </div>
-          <span class="chip ${svcStatusChip(s.status)}">${s.status}</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="chip ${svcStatusChip(s.status)}">${s.status}</span>
+            <button class="btn btn-ghost" style="padding:4px 8px;min-width:0;" onclick="openEditService(${idx})" title="Edit subscription">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"/></svg>
+            </button>
+          </div>
         </div>
         <div class="service-dates">Active since ${s.start}</div>
       </div>`).join('');
@@ -2441,6 +2785,107 @@ function openCustomerDetail(id) {
 
 function backToCustomers() {
   navTo('customers', document.getElementById('ni-customers'));
+}
+
+/* ── Edit Customer Modal ── */
+function openEditCustomer() {
+  if (!activeCustomer) return;
+  const c = activeCustomer;
+  const isCorp = c.type === 'Corporate';
+
+  document.getElementById('edit-cust-modal-sub').textContent = c.id + ' — ' + c.name;
+
+  // Toggle identity fields
+  document.getElementById('ec-fields-individual').style.display = isCorp ? 'none' : '';
+  document.getElementById('ec-fields-corporate').style.display  = isCorp ? '' : 'none';
+
+  // Pre-fill identity
+  if (isCorp) {
+    document.getElementById('ec-entity').value = c.name  || '';
+    document.getElementById('ec-regno').value  = c.ic    || '';
+    document.getElementById('ec-sector').value = c.sector|| '';
+  } else {
+    document.getElementById('ec-name').value = c.name || '';
+    document.getElementById('ec-ic').value   = c.ic   || '';
+    document.getElementById('ec-dob').value  = c.dob  || '';
+  }
+
+  // Status
+  document.querySelectorAll('input[name="ec-status"]').forEach(r => r.checked = r.value === (c.status || 'Active'));
+
+  // Contact
+  document.getElementById('ec-email').value  = c.email   || '';
+  document.getElementById('ec-mobile').value = c.mobile  || '';
+  document.getElementById('ec-phone').value  = c.phone   || '';
+
+  // Address
+  document.getElementById('ec-addr1').value    = c.addr1    || '';
+  document.getElementById('ec-addr2').value    = c.addr2    || '';
+  document.getElementById('ec-city').value     = c.city     || '';
+  document.getElementById('ec-postcode').value = c.postcode || '';
+  document.getElementById('ec-district').value = c.district || '';
+
+  // Clear errors
+  ['err-ec-name','err-ec-ic','err-ec-entity','err-ec-regno','err-ec-email','err-ec-mobile','err-ec-addr1','err-ec-city']
+    .forEach(id => document.getElementById(id).classList.remove('visible'));
+
+  document.getElementById('edit-customer-dialog').classList.add('open');
+}
+
+function closeEditCustomer() {
+  document.getElementById('edit-customer-dialog').classList.remove('open');
+}
+
+function closeEditCustomerOnBg(e) {
+  if (e.target === document.getElementById('edit-customer-dialog')) closeEditCustomer();
+}
+
+function submitEditCustomer() {
+  if (!activeCustomer) return;
+  const c = activeCustomer;
+  const isCorp = c.type === 'Corporate';
+  let valid = true;
+  const setErr = (id, show) => { document.getElementById(id).classList.toggle('visible', show); if (show) valid = false; };
+
+  // Validate identity
+  if (isCorp) {
+    setErr('err-ec-entity', !document.getElementById('ec-entity').value.trim());
+    setErr('err-ec-regno',  !document.getElementById('ec-regno').value.trim());
+  } else {
+    setErr('err-ec-name', !document.getElementById('ec-name').value.trim());
+    setErr('err-ec-ic',   !document.getElementById('ec-ic').value.trim());
+  }
+  setErr('err-ec-email',  !document.getElementById('ec-email').value.trim());
+  setErr('err-ec-mobile', !document.getElementById('ec-mobile').value.trim());
+  setErr('err-ec-addr1',  !document.getElementById('ec-addr1').value.trim());
+  setErr('err-ec-city',   !document.getElementById('ec-city').value.trim());
+  if (!valid) return;
+
+  // Apply changes
+  if (isCorp) {
+    c.name   = document.getElementById('ec-entity').value.trim();
+    c.ic     = document.getElementById('ec-regno').value.trim();
+    c.sector = document.getElementById('ec-sector').value;
+  } else {
+    c.name = document.getElementById('ec-name').value.trim();
+    c.ic   = document.getElementById('ec-ic').value.trim();
+    c.dob  = document.getElementById('ec-dob').value.trim();
+  }
+  c.status   = (document.querySelector('input[name="ec-status"]:checked') || {}).value || 'Active';
+  c.email    = document.getElementById('ec-email').value.trim();
+  c.mobile   = document.getElementById('ec-mobile').value.trim();
+  c.phone    = document.getElementById('ec-phone').value.trim();
+  c.addr1    = document.getElementById('ec-addr1').value.trim();
+  c.addr2    = document.getElementById('ec-addr2').value.trim();
+  c.city     = document.getElementById('ec-city').value.trim();
+  c.postcode = document.getElementById('ec-postcode').value.trim();
+  c.district = document.getElementById('ec-district').value;
+
+  // Re-render
+  renderCustomerTable();
+  closeEditCustomer();
+  openCustomerDetail(c.id);
+  showSnack(`${c.name} updated successfully`);
 }
 
 function detailTab(tab, el) {
@@ -2645,10 +3090,348 @@ function afterCreateDoAccount() {
 }
 
 function afterCreateDoService() {
-  // Navigate to Products & Pricing page (UC19)
   closeCreateDrawer();
-  navTo('products', document.getElementById('ni-products'));
-  showSnack('Select a product or service to subscribe ' + (lastCreatedCustomer ? lastCreatedCustomer.name : 'the new customer'));
+  // Open the service subscription modal for the newly created customer
+  if (lastCreatedCustomer) openCustomerDetail(lastCreatedCustomer.id);
+  setTimeout(() => { detailTab('services'); openAddService(); }, 80);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ADD SERVICE SUBSCRIPTION (UC18 Section 04)
+   ══════════════════════════════════════════════════════════════ */
+
+const PRODUCT_CATALOGUE = [
+  {
+    code: 'BCT-ELEC-001', name: 'Electricity Supply',
+    desc: 'Standard electricity supply for domestic, commercial and industrial premises.',
+    model: 'Tiered / Usage-based', color: '#1D7A4E', colorDim: 'var(--green-dim)',
+    eligibility: ['Individual','Corporate'],
+    plans: [
+      { id:'D1',  name:'Domestic D1',        desc:'For residential customers',         price: 'BND 0.00 – 0.10/kWh (tiered)' },
+      { id:'C2',  name:'Commercial C2',       desc:'Small to medium commercial',        price: 'BND 0.12 – 0.16/kWh (tiered)' },
+      { id:'C3',  name:'Commercial C3',       desc:'Large commercial premises',         price: 'BND 0.14 – 0.18/kWh (tiered)' },
+      { id:'LP1', name:'Large Power LP1',     desc:'High-demand facilities',            price: 'BND 0.16/kWh + 12.00/kVA MD' },
+      { id:'LP2', name:'Large Power LP2',     desc:'Very large facilities',             price: 'BND 0.15/kWh + 14.00/kVA MD' },
+      { id:'I2',  name:'Industrial I2',       desc:'Medium industrial sites',           price: 'BND 0.13/kWh + 10.00/kVA MD' },
+      { id:'I3',  name:'Industrial I3 (HV)',  desc:'High-voltage industrial connection',price: 'BND 0.11/kWh + 9.50/kVA MD' },
+    ]
+  },
+  {
+    code: 'BCT-LITE-003', name: 'Street Lighting',
+    desc: 'Public street, road and area lighting services for commercial and residential estates.',
+    model: 'Flat / Subscription', color: '#2E75B6', colorDim: 'var(--blue-dim)',
+    eligibility: ['Corporate'],
+    plans: [
+      { id:'STD', name:'Standard',     desc:'Conventional street lighting',    price: 'BND 45.00/month per unit' },
+      { id:'LED', name:'LED Premium',  desc:'Energy-efficient LED upgrade',    price: 'BND 35.00/month per unit' },
+    ]
+  },
+  {
+    code: 'BCT-DEM-002', name: 'Demand Management',
+    desc: 'Peak demand monitoring, load forecasting and demand response management programme.',
+    model: 'Subscription', color: '#B45309', colorDim: 'var(--amber-dim)',
+    eligibility: ['Corporate'],
+    plans: [
+      { id:'BASIC', name:'Basic Monitoring',   desc:'Demand monitoring and alerts',           price: 'BND 60.00/month' },
+      { id:'PREM',  name:'Premium',            desc:'Full demand management & optimisation',  price: 'BND 120.00/month' },
+    ]
+  },
+  {
+    code: 'BCT-MTR-001', name: 'Metering Services',
+    desc: 'Smart meter installation, remote reading and consumption data analytics services.',
+    model: 'One-time + Subscription', color: '#7C3AED', colorDim: 'rgba(124,58,237,.1)',
+    eligibility: ['Individual','Corporate'],
+    plans: [
+      { id:'SMART', name:'Smart Meter',         desc:'Smart meter with real-time data portal', price: 'BND 15.00/month' },
+      { id:'ADV',   name:'Advanced Analytics',  desc:'Smart meter + full analytics dashboard', price: 'BND 25.00/month' },
+    ]
+  },
+  {
+    code: 'BCT-PFC-001', name: 'Power Factor Correction',
+    desc: 'Automatic power factor monitoring and correction to reduce reactive energy penalties.',
+    model: 'Subscription', color: '#0891B2', colorDim: 'rgba(8,145,178,.1)',
+    eligibility: ['Corporate'],
+    plans: [
+      { id:'STD',  name:'Standard',  desc:'PFC monitoring & quarterly report', price: 'BND 80.00/month' },
+      { id:'PLUS', name:'Plus',      desc:'PFC with automatic capacitor bank',  price: 'BND 150.00/month' },
+    ]
+  },
+];
+
+let svcCurrentStep   = 1;
+let svcSelectedProd  = null;  // selected product object
+let svcEditMode      = false; // false = Add, true = Edit
+let svcEditIndex     = -1;    // index into serviceList when editing
+
+const SVC_ICONS = {
+  'BCT-ELEC-001': `<svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>`,
+  'BCT-LITE-003': `<svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"/></svg>`,
+  'BCT-DEM-002': `<svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>`,
+  'BCT-MTR-001': `<svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z"/></svg>`,
+  'BCT-PFC-001': `<svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>`,
+};
+
+function openAddService() {
+  if (!activeCustomer) return;
+  svcEditMode     = false;
+  svcEditIndex    = -1;
+  svcCurrentStep  = 1;
+  svcSelectedProd = null;
+  document.getElementById('svc-modal-title').textContent = 'Add Service Subscription';
+  document.getElementById('svc-step-1').style.display = '';
+  document.getElementById('svc-step-2').style.display = 'none';
+  document.getElementById('svc-modal-sub').textContent = 'Step 1 of 2 — Select Product';
+  document.getElementById('svc-back-btn').style.display = 'none';
+  document.getElementById('svc-next-btn').disabled = true;
+  document.getElementById('svc-next-btn').innerHTML =
+    'Configure Subscription <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>';
+  document.querySelectorAll('#add-service-dialog .field-err').forEach(e => e.classList.remove('visible'));
+  renderProductGrid();
+  document.getElementById('add-service-dialog').classList.add('open');
+}
+
+function openEditService(idx) {
+  if (!activeCustomer) return;
+  const s = activeCustomer.serviceList[idx];
+  if (!s) return;
+  const prod = PRODUCT_CATALOGUE.find(p => p.code === s.code);
+  if (!prod) return;
+
+  svcEditMode     = true;
+  svcEditIndex    = idx;
+  svcCurrentStep  = 2;
+  svcSelectedProd = prod;
+
+  document.getElementById('svc-modal-title').textContent = 'Edit Service Subscription';
+  document.getElementById('svc-modal-sub').textContent   = 'Edit Subscription Details';
+  document.getElementById('svc-step-1').style.display    = 'none';
+  document.getElementById('svc-step-2').style.display    = '';
+  document.getElementById('svc-back-btn').style.display  = 'none'; // no going back to product in edit
+  document.getElementById('svc-next-btn').disabled       = false;
+  document.getElementById('svc-next-btn').innerHTML =
+    '<svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Save Changes';
+
+  // Banner
+  document.getElementById('svc-banner-icon').style.background = prod.colorDim;
+  document.getElementById('svc-banner-icon').style.borderRadius = '8px';
+  document.getElementById('svc-banner-icon').style.display = 'flex';
+  document.getElementById('svc-banner-icon').style.alignItems = 'center';
+  document.getElementById('svc-banner-icon').style.justifyContent = 'center';
+  document.getElementById('svc-banner-icon').style.width = '32px';
+  document.getElementById('svc-banner-icon').style.height = '32px';
+  document.getElementById('svc-banner-icon').innerHTML = `<span style="color:${prod.color};">${SVC_ICONS[prod.code] || ''}</span>`;
+  document.getElementById('svc-banner-name').textContent = prod.name;
+  document.getElementById('svc-banner-code').textContent = prod.code + ' · ' + prod.model;
+
+  // Plans
+  const planSel = document.getElementById('svc-plan');
+  planSel.innerHTML = '<option value="">Select plan…</option>' +
+    prod.plans.map(pl => `<option value="${pl.id}" ${pl.name === s.plan ? 'selected' : ''}>${pl.name} — ${pl.desc}</option>`).join('');
+
+  // Accounts
+  const accSel = document.getElementById('svc-account');
+  const accounts = activeCustomer ? activeCustomer.accountList : [];
+  accSel.innerHTML = accounts.length === 0
+    ? '<option value="">No accounts — add one first</option>'
+    : '<option value="">Select account…</option>' +
+      accounts.map(a => `<option value="${a.no}" ${a.no === s.account ? 'selected' : ''}>${a.no} — ${a.name || a.type}</option>`).join('');
+
+  // Other fields
+  document.getElementById('svc-freq').value          = s.freq          || '';
+  document.getElementById('svc-contract-price').value = s.contractPrice || '';
+  document.getElementById('svc-promo').value         = s.promo         || '';
+  document.getElementById('svc-min-term').value      = s.minTerm       || '';
+  document.getElementById('svc-start').value         = s.start         || '';
+  document.getElementById('svc-end').value           = s.end           || '';
+  document.getElementById('svc-notes').value         = s.notes         || '';
+
+  // Status radio
+  const statusVal = s.status === 'Pending Activation' ? 'Pending Activation' : 'Active';
+  const radios = document.querySelectorAll('input[name="svc-init-status"]');
+  radios.forEach(r => { r.value === statusVal ? r.checked = true : r.checked = false; });
+
+  // Price display
+  const planObj = prod.plans.find(p => p.name === s.plan);
+  const display = document.getElementById('svc-price-display');
+  if (planObj) {
+    document.getElementById('svc-price-text').textContent = 'Standard price: ' + planObj.price;
+    display.style.display = '';
+  } else {
+    display.style.display = 'none';
+  }
+
+  document.querySelectorAll('#add-service-dialog .field-err').forEach(e => e.classList.remove('visible'));
+  document.getElementById('add-service-dialog').classList.add('open');
+}
+
+function closeAddService() {
+  document.getElementById('add-service-dialog').classList.remove('open');
+}
+
+function closeAddServiceOnBg(e) {
+  if (e.target === document.getElementById('add-service-dialog')) closeAddService();
+}
+
+function renderProductGrid() {
+  const type = activeCustomer ? activeCustomer.type : 'Corporate';
+  const grid  = document.getElementById('svc-product-grid');
+  const available = PRODUCT_CATALOGUE.filter(p => p.eligibility.includes(type));
+  grid.innerHTML = available.map(p => `
+    <button class="product-card" id="pc-${p.code}" onclick="selectServiceProduct('${p.code}')">
+      <div class="product-card-icon" style="background:${p.colorDim};">
+        <span style="color:${p.color};">${SVC_ICONS[p.code] || ''}</span>
+      </div>
+      <div class="product-card-name">${p.name}</div>
+      <div class="product-card-code">${p.code}</div>
+      <div class="product-card-desc">${p.desc}</div>
+      <div class="product-card-model">${p.model}</div>
+    </button>`).join('');
+}
+
+function selectServiceProduct(code) {
+  const prod = PRODUCT_CATALOGUE.find(p => p.code === code);
+  if (!prod) return;
+  svcSelectedProd = prod;
+  // highlight selected
+  document.querySelectorAll('.product-card').forEach(c => c.classList.remove('selected'));
+  const card = document.getElementById('pc-' + code);
+  if (card) card.classList.add('selected');
+  // enable next
+  document.getElementById('svc-next-btn').disabled = false;
+}
+
+function svcNext() {
+  if (svcCurrentStep === 1) {
+    if (!svcSelectedProd) return;
+    svcGoToStep2();
+  } else {
+    submitAddService();
+  }
+}
+
+function svcGoToStep2() {
+  svcCurrentStep = 2;
+  const p = svcSelectedProd;
+
+  // Update banner
+  document.getElementById('svc-banner-icon').style.background = p.colorDim;
+  document.getElementById('svc-banner-icon').style.borderRadius = '8px';
+  document.getElementById('svc-banner-icon').style.display = 'flex';
+  document.getElementById('svc-banner-icon').style.alignItems = 'center';
+  document.getElementById('svc-banner-icon').style.justifyContent = 'center';
+  document.getElementById('svc-banner-icon').style.width = '32px';
+  document.getElementById('svc-banner-icon').style.height = '32px';
+  document.getElementById('svc-banner-icon').innerHTML = `<span style="color:${p.color};">${SVC_ICONS[p.code] || ''}</span>`;
+  document.getElementById('svc-banner-name').textContent = p.name;
+  document.getElementById('svc-banner-code').textContent = p.code + ' · ' + p.model;
+
+  // Populate plans
+  const planSel = document.getElementById('svc-plan');
+  planSel.innerHTML = '<option value="">Select plan…</option>' +
+    p.plans.map(pl => `<option value="${pl.id}">${pl.name} — ${pl.desc}</option>`).join('');
+
+  // Populate accounts
+  const accSel = document.getElementById('svc-account');
+  const accounts = activeCustomer ? activeCustomer.accountList : [];
+  accSel.innerHTML = accounts.length === 0
+    ? '<option value="">No accounts — add one first</option>'
+    : '<option value="">Select account…</option>' +
+      accounts.map(a => `<option value="${a.no}">${a.no} — ${a.name || a.type}</option>`).join('');
+
+  // Reset other fields
+  ['svc-contract-price','svc-promo','svc-start','svc-end','svc-notes'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('svc-freq').value     = '';
+  document.getElementById('svc-min-term').value = '';
+  document.querySelector('input[name="svc-init-status"][value="Active"]').checked = true;
+  document.getElementById('svc-price-display').style.display = 'none';
+
+  // Set today as default start date
+  document.getElementById('svc-start').value = new Date().toISOString().slice(0,10);
+
+  // Show step 2
+  document.getElementById('svc-step-1').style.display = 'none';
+  document.getElementById('svc-step-2').style.display = '';
+  document.getElementById('svc-modal-sub').textContent = 'Step 2 of 2 — Configure Subscription';
+  document.getElementById('svc-back-btn').style.display = '';
+  document.getElementById('svc-next-btn').disabled = false;
+  document.getElementById('svc-next-btn').innerHTML =
+    '<svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Confirm Subscription';
+}
+
+function svcBackToStep1() {
+  svcCurrentStep = 1;
+  document.getElementById('svc-step-1').style.display = '';
+  document.getElementById('svc-step-2').style.display = 'none';
+  document.getElementById('svc-modal-sub').textContent = 'Step 1 of 2 — Select Product';
+  document.getElementById('svc-back-btn').style.display = 'none';
+  document.getElementById('svc-next-btn').disabled = !svcSelectedProd;
+  document.getElementById('svc-next-btn').innerHTML =
+    'Configure Subscription <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>';
+}
+
+function onSvcPlanChange() {
+  const planId = document.getElementById('svc-plan').value;
+  const plan   = svcSelectedProd && svcSelectedProd.plans.find(p => p.id === planId);
+  const display = document.getElementById('svc-price-display');
+  if (plan) {
+    document.getElementById('svc-price-text').textContent = 'Standard price: ' + plan.price;
+    display.style.display = '';
+  } else {
+    display.style.display = 'none';
+  }
+}
+
+function submitAddService() {
+  const plan    = document.getElementById('svc-plan').value;
+  const account = document.getElementById('svc-account').value;
+  const freq    = document.getElementById('svc-freq').value;
+  const start   = document.getElementById('svc-start').value.trim();
+  let valid = true;
+  const setErr = (id, show) => { document.getElementById(id).classList.toggle('visible', show); if (show) valid = false; };
+  setErr('err-svc-plan',    !plan);
+  setErr('err-svc-account', !account);
+  setErr('err-svc-freq',    !freq);
+  setErr('err-svc-start',   !start);
+  if (!valid || !activeCustomer || !svcSelectedProd) return;
+
+  const planObj  = svcSelectedProd.plans.find(p => p.id === plan);
+  const initStatus = document.querySelector('input[name="svc-init-status"]:checked').value;
+
+  const newSvc = {
+    name:          svcSelectedProd.name,
+    code:          svcSelectedProd.code,
+    plan:          planObj ? planObj.name : plan,
+    account:       account,
+    freq:          freq,
+    contractPrice: document.getElementById('svc-contract-price').value.trim(),
+    promo:         document.getElementById('svc-promo').value.trim(),
+    minTerm:       document.getElementById('svc-min-term').value,
+    start:         start,
+    end:           document.getElementById('svc-end').value.trim(),
+    notes:         document.getElementById('svc-notes').value.trim(),
+    status:        initStatus,
+  };
+
+  if (svcEditMode && svcEditIndex >= 0) {
+    // Edit in-place
+    activeCustomer.serviceList[svcEditIndex] = newSvc;
+    closeAddService();
+    openCustomerDetail(activeCustomer.id);
+    detailTab('services');
+    showSnack(`${svcSelectedProd.name} subscription updated`);
+    return;
+  }
+
+  activeCustomer.serviceList.push(newSvc);
+  activeCustomer.services++;
+
+  closeAddService();
+  // Re-render services tab
+  openCustomerDetail(activeCustomer.id);
+  detailTab('services');
+  showSnack(`${svcSelectedProd.name} subscription created — ${initStatus}`);
 }
 
 /* ── Add Account Modal ── */
@@ -2662,7 +3445,7 @@ function openAddAccount() {
   });
   document.getElementById('acc-type').value   = '';
   document.getElementById('acc-cycle').value  = '';
-  document.getElementById('acc-status').value = 'Active';
+
   document.getElementById('acc-no').readOnly  = false;
   document.getElementById('acc-no').style.background = '';
   document.querySelectorAll('#add-account-dialog .field-err').forEach(e => e.classList.remove('visible'));
@@ -2690,7 +3473,6 @@ function openEditAccount(accNo) {
   document.getElementById('acc-cycle').value    = a.cycle  || '';
   document.getElementById('acc-credit').value   = a.credit || '';
   document.getElementById('acc-addr').value     = a.addr   || '';
-  document.getElementById('acc-status').value   = a.status || 'Active';
   document.getElementById('acc-closure').value  = a.closure|| '';
   document.getElementById('acc-notes').value    = a.notes  || '';
   document.querySelectorAll('#add-account-dialog .field-err').forEach(e => e.classList.remove('visible'));
@@ -2740,7 +3522,7 @@ function submitAddAccount() {
     parent:  document.getElementById('acc-parent').value,
     credit:  document.getElementById('acc-credit').value.trim(),
     addr:    document.getElementById('acc-addr').value.trim(),
-    status:  document.getElementById('acc-status').value || 'Active',
+    status:  accEditMode ? (accEditTarget ? accEditTarget.status : 'Active') : 'Active',
     closure: document.getElementById('acc-closure').value.trim(),
     notes:   document.getElementById('acc-notes').value.trim()
   };
@@ -2770,7 +3552,6 @@ function submitAddAccount() {
         <div class="account-type">${a.name ? a.name + ' · ' : ''}${a.type}${a.cycle ? ' · ' + a.cycle : ''}</div>
         <div class="account-meta">${a.addr || ''}${(a.addr && a.notes) ? ' · ' : ''}${a.notes || ''}</div>
       </div>
-      <span class="chip chip-green" style="flex-shrink:0;">Active</span>
     </div>`).join('');
   closeAddAccount();
   showSnack(`Account ${no} added successfully`);
@@ -2781,10 +3562,18 @@ const CREDS = {'B-001':'1234','B-002':'1234'};
 let currentUser = null;
 
 function doLogin() {
-  const id = document.getElementById('login-id').value.trim();
-  const pw = document.getElementById('login-pw').value;
+  const id  = document.getElementById('login-id').value.trim();
+  const pw  = document.getElementById('login-pw').value;
+  const remember = document.getElementById('remember-me').checked;
   const err = document.getElementById('login-error');
   if (CREDS[id] && CREDS[id] === pw) {
+    if (remember) {
+      localStorage.setItem('epg_biller_saved_id', id);
+      localStorage.setItem('epg_biller_saved_pw', pw);
+    } else {
+      localStorage.removeItem('epg_biller_saved_id');
+      localStorage.removeItem('epg_biller_saved_pw');
+    }
     currentUser = id;
     document.getElementById('header-avatar').textContent = id.replace('B-','B');
     document.getElementById('login-screen').classList.add('hidden');
@@ -2799,10 +3588,72 @@ function doLogin() {
 function doLogout() {
   document.getElementById('login-screen').classList.remove('hidden');
   document.getElementById('app').classList.remove('visible');
-  document.getElementById('login-id').value = '';
-  document.getElementById('login-pw').value = '';
   currentUser = null;
+  // Restore saved credentials if remember me was set
+  const savedId = localStorage.getItem('epg_biller_saved_id');
+  const savedPw = localStorage.getItem('epg_biller_saved_pw');
+  document.getElementById('login-id').value = savedId || '';
+  document.getElementById('login-pw').value = savedPw || '';
+  document.getElementById('remember-me').checked = !!(savedId && savedPw);
+  document.getElementById('login-error').classList.remove('visible');
 }
+
+// Pre-fill saved credentials on page load
+(function initRememberMe() {
+  const savedId = localStorage.getItem('epg_biller_saved_id');
+  const savedPw = localStorage.getItem('epg_biller_saved_pw');
+  if (savedId && savedPw) {
+    document.getElementById('login-id').value = savedId;
+    document.getElementById('login-pw').value = savedPw;
+    document.getElementById('remember-me').checked = true;
+  }
+})();
+
+// ── Double-click demo fill ──
+const DEMO_DATA = {
+  // Login
+  'login-id': 'B-001', 'login-pw': '1234',
+  // Create Customer — Individual
+  'c-name': 'Ahmad Haziq bin Abdullah', 'c-ic': '01-234567', 'c-dob': '01 / 01 / 1985',
+  // Create Customer — Corporate
+  'c-entity': 'Sunrise Tech Solutions Sdn Bhd', 'c-regno': 'RC-202401-STS',
+  'c-sector': 'Corporate',
+  // Create Customer — Contact & Address
+  'c-email': 'info@sunrisetech.bn', 'c-mobile': '+673 8123456', 'c-phone': '+673 2234567',
+  'c-addr1': 'No. 5, Jalan Gadong', 'c-addr2': 'Level 2',
+  'c-city': 'Bandar Seri Begawan', 'c-postcode': 'BA1110', 'c-district': 'Brunei-Muara',
+  // Add Account
+  'acc-no': 'SA0000-999001', 'acc-name': 'Main Office',
+  'acc-type': 'Main Account', 'acc-cycle': 'Monthly',
+  'acc-credit': '5000', 'acc-addr': 'No. 5, Jalan Gadong, BA1110',
+  // Add Service
+  'svc-freq': 'Monthly', 'svc-contract-price': '150.00',
+  'svc-promo': 'DEMO2026', 'svc-min-term': '12 months',
+  'svc-start': new Date().toISOString().slice(0,10),
+  'svc-end': '', 'svc-notes': 'Demo subscription — for presentation purposes.',
+  // Edit Customer — Individual
+  'ec-name': 'Ahmad Haziq bin Abdullah', 'ec-ic': '01-234567', 'ec-dob': '01 / 01 / 1985',
+  // Edit Customer — Corporate
+  'ec-entity': 'Sunrise Tech Solutions Sdn Bhd', 'ec-regno': 'RC-202401-STS',
+  'ec-sector': 'Corporate',
+  // Edit Customer — Contact & Address
+  'ec-email': 'info@sunrisetech.bn', 'ec-mobile': '+673 8123456', 'ec-phone': '+673 2234567',
+  'ec-addr1': 'No. 5, Jalan Gadong', 'ec-addr2': 'Level 2',
+  'ec-city': 'Bandar Seri Begawan', 'ec-postcode': 'BA1110', 'ec-district': 'Brunei-Muara',
+};
+
+document.addEventListener('dblclick', function(e) {
+  const el = e.target;
+  if (!el.id || !DEMO_DATA.hasOwnProperty(el.id)) return;
+  if (el.tagName !== 'INPUT' && el.tagName !== 'SELECT' && el.tagName !== 'TEXTAREA') return;
+  el.value = DEMO_DATA[el.id];
+  el.dispatchEvent(new Event('change'));
+  el.dispatchEvent(new Event('input'));
+  // Visual flash to indicate fill
+  el.style.transition = 'background .15s';
+  el.style.background = 'rgba(29,122,78,.18)';
+  setTimeout(() => { el.style.background = ''; }, 500);
+});
 
 // ── NAVIGATION ──
 const PAGE_TITLES = {
