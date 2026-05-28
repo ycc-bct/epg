@@ -1189,9 +1189,9 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
         <div class="page-meta">All bills issued under your biller account · <strong style="font-family:ui-monospace,monospace;font-weight:600;">BCT-ELEC-001</strong> · Electricity</div>
       </div>
       <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);">
-        <div class="kpi-card"><div class="kpi-label">Total Bills Issued</div><div class="kpi-value">6</div><div class="kpi-sub">Apr 2024 cycle</div></div>
-        <div class="kpi-card"><div class="kpi-label">Amount Billed</div><div class="kpi-value green">36,541</div><div class="kpi-sub">BND · Full period</div></div>
-        <div class="kpi-card"><div class="kpi-label">Outstanding</div><div class="kpi-value amber">8,420</div><div class="kpi-sub">BND · 2 bills</div></div>
+        <div class="kpi-card"><div class="kpi-label">Total Bills Issued</div><div class="kpi-value">8</div><div class="kpi-sub">Apr 2024 cycle</div></div>
+        <div class="kpi-card"><div class="kpi-label">Amount Billed</div><div class="kpi-value green">46,871</div><div class="kpi-sub">BND · Full period</div></div>
+        <div class="kpi-card"><div class="kpi-label">Outstanding</div><div class="kpi-value amber">11,430</div><div class="kpi-sub">BND · 3 bills (excl. Hold)</div></div>
       </div>
       <div class="card">
         <div class="card-section">
@@ -1206,11 +1206,12 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
             <div style="display:flex;gap:4px;align-items:center;">
               <span style="font-size:12px;color:var(--text-subtle);padding-right:4px;">Status</span>
               <button class="btn btn-ghost inv-sb active" data-s="all"     onclick="invSetStatus('all')"     style="padding:5px 11px;font-size:12px;">All</button>
+              <button class="btn btn-ghost inv-sb"        data-s="valid"   onclick="invSetStatus('valid')"   style="padding:5px 11px;font-size:12px;">Valid</button>
               <button class="btn btn-ghost inv-sb"        data-s="paid"    onclick="invSetStatus('paid')"    style="padding:5px 11px;font-size:12px;">Paid</button>
               <button class="btn btn-ghost inv-sb"        data-s="partial" onclick="invSetStatus('partial')" style="padding:5px 11px;font-size:12px;">Partial</button>
               <button class="btn btn-ghost inv-sb"        data-s="hold"    onclick="invSetStatus('hold')"    style="padding:5px 11px;font-size:12px;">Hold</button>
             </div>
-            <span id="inv-count" style="margin-left:auto;font-size:12px;color:var(--text-subtle);">6 bills</span>
+            <span id="inv-count" style="margin-left:auto;font-size:12px;color:var(--text-subtle);">8 bills</span>
           </div>
           <!-- Table -->
           <div class="table-wrap">
@@ -1241,7 +1242,24 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
                   <td class="td-mono">BILL-000007</td><td><div style="font-weight:600;">Gulf Star Manufacturing</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10512</div></td><td class="td-mono" style="font-size:11px;">SA0380…167585</td><td>Apr 2024</td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">9,800.00</td><td>31 May 2024</td><td><span class="chip chip-blue">Paid</span></td>
                 </tr>
                 <tr data-status="hold" data-search="bill-000008 desert rose hotels cust-10637">
-                  <td class="td-mono">BILL-000008</td><td><div style="font-weight:600;">Desert Rose Hotels</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10637</div></td><td class="td-mono" style="font-size:11px;">SA5480…167596</td><td>Apr 2024</td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">14,320.50</td><td>31 May 2024</td><td><span class="chip chip-hold">Hold</span></td>
+                  <td class="td-mono">BILL-000008</td><td><div style="font-weight:600;">Desert Rose Hotels</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10637</div></td><td class="td-mono" style="font-size:11px;">SA5480…167596</td><td>Apr 2024</td>
+                  <td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">14,320.50<div style="font-size:11px;font-weight:400;color:var(--text-subtle);margin-top:2px;text-align:right;">7,000.00 paid · 7,320.50 balance</div></td>
+                  <td>31 May 2024</td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:5px;">
+                      <span class="chip chip-hold">Hold</span>
+                      <span title="Payment is suspended for this bill. The outstanding balance (BND 7,320.50) is not included in Outstanding totals." style="cursor:help;color:var(--text-subtle);display:flex;align-items:center;">
+                        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="width:13px;height:13px;"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+                      </span>
+                    </div>
+                    <div style="font-size:11px;color:var(--text-subtle);margin-top:3px;">Payment suspended</div>
+                  </td>
+                </tr>
+                <tr data-status="valid" data-search="bill-000010 al-noor pharmaceuticals cust-10845">
+                  <td class="td-mono">BILL-000010</td><td><div style="font-weight:600;">Al-Noor Pharmaceuticals</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10845</div></td><td class="td-mono" style="font-size:11px;">SA0380…167607</td><td>Apr 2024</td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">6,450.00</td><td>31 May 2024</td><td><span class="chip chip-green">Valid</span></td>
+                </tr>
+                <tr data-status="valid" data-search="bill-000011 falak retail group cust-10912">
+                  <td class="td-mono">BILL-000011</td><td><div style="font-weight:600;">Falak Retail Group</div><div style="font-size:11px;color:var(--text-subtle);">CUST-10912</div></td><td class="td-mono" style="font-size:11px;">SA0380…167614</td><td>Apr 2024</td><td class="td-right" style="font-family:ui-monospace,monospace;font-weight:600;">3,880.25</td><td>31 May 2024</td><td><span class="chip chip-green">Valid</span></td>
                 </tr>
               </tbody>
             </table>
