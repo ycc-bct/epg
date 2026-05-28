@@ -123,6 +123,8 @@ body {
   font-size: 14px; font-family: inherit; color: var(--text); outline: none;
 }
 .login-input-wrap input::placeholder { color: var(--text-subtle); opacity: .6; }
+.login-input-wrap:has(#login-id) { border-color: transparent; background: transparent; }
+.login-input-wrap:has(#login-id):focus-within { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent); }
 
 .login-error {
   display: none; align-items: center; gap: 7px;
@@ -148,13 +150,32 @@ body {
 }
 .login-btn svg { width: 16px; height: 16px; }
 
-.login-hint {
-  margin-top: 20px; padding: 12px 14px;
-  background: var(--chip-bg); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); font-size: 12px; color: var(--text-muted); line-height: 1.7;
-}
-.login-hint strong { color: var(--text-subtle); font-weight: 600; }
 .remember-row { display:flex; align-items:center; gap:8px; margin-top:4px; margin-bottom:4px; }
+/* Demo FAB */
+.demo-fab {
+  position: fixed; bottom: 24px; right: 24px; z-index: 999;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+}
+.demo-fab-btn {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--accent); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(139,92,246,.45);
+  transition: transform .15s, box-shadow .15s;
+  color: #fff;
+}
+.demo-fab-btn:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(139,92,246,.55); }
+.demo-fab-btn svg { width: 20px; height: 20px; }
+.demo-fab-popup {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  font-size: 12px; color: var(--text-muted); line-height: 1.8;
+  box-shadow: var(--shadow-lg); white-space: nowrap;
+  opacity: 0; pointer-events: none; transform: translateY(6px) scale(.97);
+  transition: opacity .15s, transform .15s;
+}
+.demo-fab-popup strong { color: var(--text-subtle); font-weight: 600; }
+.demo-fab.open .demo-fab-popup { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
 .remember-row input[type="checkbox"] { width:15px; height:15px; accent-color:var(--accent); cursor:pointer; flex-shrink:0; }
 .remember-row label { font-size:13px; color:var(--text-muted); cursor:pointer; user-select:none; }
 
@@ -978,12 +999,19 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent);
       <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
       Sign In
     </button>
-    <div class="login-hint">
-      <strong>Demo credentials:</strong><br>
-      Biller ID: <strong>B-001</strong> &nbsp;/&nbsp; Password: <strong>1234</strong><br>
-      Biller ID: <strong>B-002</strong> &nbsp;/&nbsp; Password: <strong>1234</strong>
-    </div>
   </div>
+</div>
+
+<!-- Demo credentials FAB -->
+<div class="demo-fab" id="demo-fab">
+  <div class="demo-fab-popup">
+    <strong>Demo credentials</strong><br>
+    Biller ID: <strong>B-001</strong> &nbsp;/&nbsp; Password: <strong>1234</strong><br>
+    Biller ID: <strong>B-002</strong> &nbsp;/&nbsp; Password: <strong>1234</strong>
+  </div>
+  <button class="demo-fab-btn" onclick="document.getElementById('demo-fab').classList.toggle('open')" title="Demo credentials">
+    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"/></svg>
+  </button>
 </div>
 
 <!-- ════════════════════════════════════════════════════════
