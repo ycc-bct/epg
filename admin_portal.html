@@ -2758,8 +2758,24 @@ const BillerRegPage = ({ onSuccess, onCancel, mode = 'add', initial, onSave }) =
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
             </svg>
           </div>
-          <div className="success-title">Biller Onboarding Complete</div>
+          <div className="success-title">Biller Registered Successfully</div>
           <div className="eid-badge">{entId}</div>
+          <div style={{ background:'var(--chip-bg)', border:'0.5px solid var(--border)', borderRadius:8, padding:16, margin:'16px 0', textAlign:'left', display:'flex', alignItems:'flex-start', gap:10, maxWidth:540, width:'100%' }}>
+            <div style={{ fontSize:20, lineHeight:1 }}>🔑</div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ display:'flex', alignItems:'center', marginBottom:6 }}>
+                <span style={{ fontSize:13, fontWeight:600, color:'var(--text)' }}>Portal Access</span>
+                <span className="tbc-tag">(TBC)</span>
+              </div>
+              <div style={{ fontSize:13, color:'var(--text-muted)' }}>Login credentials will be sent to:</div>
+              <span style={{ fontWeight:600, color:'var(--accent)', display:'block', margin:'4px 0' }}>
+                {(notifs && notifs[0] && notifs[0].email) || bi.primaryContactEmail || '—'}
+              </span>
+              <div style={{ fontSize:12, color:'var(--text-subtle)', lineHeight:1.55 }}>
+                The biller can now log in to Biller Portal to start uploading bills.
+              </div>
+            </div>
+          </div>
           <div className="success-desc">
             <strong>{bi.entityName || 'This biller'}</strong> has been successfully registered in the ePG system.
             Fee configuration and notification settings have been saved.
@@ -3170,11 +3186,29 @@ const FERegPage = ({ onSuccess, onCancel, mode = 'add', initial, onSave }) => {
           </div>
           <div className="success-title">Fulfillment Registered Successfully</div>
           <div className="eid-badge">{entId}</div>
+          <div style={{ background:'var(--chip-bg)', border:'0.5px solid var(--border)', borderRadius:8, padding:16, margin:'16px 0', textAlign:'left', display:'flex', alignItems:'flex-start', gap:10, maxWidth:540, width:'100%' }}>
+            <div style={{ fontSize:20, lineHeight:1 }}>🔑</div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ display:'flex', alignItems:'center', marginBottom:6 }}>
+                <span style={{ fontSize:13, fontWeight:600, color:'var(--text)' }}>Portal Access</span>
+                <span className="tbc-tag">(TBC)</span>
+              </div>
+              <div style={{ fontSize:13, color:'var(--text-muted)' }}>Login credentials will be sent to:</div>
+              <span style={{ fontWeight:600, color:'var(--accent)', display:'block', margin:'4px 0' }}>
+                {bi.primaryContactEmail || '—'}
+              </span>
+              <div style={{ fontSize:12, color:'var(--text-subtle)', lineHeight:1.55 }}>
+                The fulfillment entity can now log in to Teller Portal to start processing payments.
+              </div>
+            </div>
+          </div>
           <div className="success-desc">
-            Next steps: Map GL accounts in <code style={{background:'#E8F0FE',padding:'1px 6px',borderRadius:3,fontSize:12}}>GL &amp; CoA Mapping (BCONFIG_UC8)</code> and configure notifications in <code style={{background:'#E8F0FE',padding:'1px 6px',borderRadius:3,fontSize:12}}>Contact List (BCONFIG_UC4)</code>.
+            <strong>{bi.entityName || 'This fulfillment'}</strong> has been successfully registered in the ePG system.
+            Fee preference and channel configuration have been saved.
+            The fulfillment entity is now ready to process payments.
           </div>
           <div className="success-actions">
-            <button className="btn btn-secondary" onClick={reset}>Register Another FE</button>
+            <button className="btn btn-secondary" onClick={reset}>Register Another Fulfillment</button>
             <button className="btn btn-primary" onClick={() => onCancel('fe')}>Back to Entity List</button>
           </div>
         </div>
