@@ -663,28 +663,15 @@ body:not(.not-authed) .login-screen { display: none; }
   user-select: none;
 }
 .svc-more:hover { color: var(--text); }
-.svc-tip {
-  position: fixed;
-  z-index: 9999;
-  background: #1E293B;
-  color: #fff;
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 12px;
-  line-height: 1.65;
-  pointer-events: none;
-  white-space: nowrap;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, .25);
-}
 
 /* ─── List page tables share a fixed column layout ─── */
 .entity-list-table { table-layout: fixed; }
 .entity-list-table th:nth-child(1),
-.entity-list-table td:nth-child(1) { width: 45%; }
+.entity-list-table td:nth-child(1) { width: 35%; }
 .entity-list-table th:nth-child(2),
 .entity-list-table td:nth-child(2) { width: 20%; }
 .entity-list-table th:nth-child(3),
-.entity-list-table td:nth-child(3) { width: 35%; }
+.entity-list-table td:nth-child(3) { width: 45%; }
 
 /* ─── Modal: leave-this-page confirmation ─── */
 .modal-backdrop {
@@ -1589,6 +1576,11 @@ body:not(.not-authed) .login-screen { display: none; }
 <div id="root"></div>
 
 <!-- ════════════════════════════════════════════════════════
+     GLOBAL TOOLTIP (used by anything with [data-remaining])
+════════════════════════════════════════════════════════ -->
+<div id="global-tooltip" style="position:fixed;z-index:9999;background:#1E293B;color:white;border-radius:6px;padding:8px 12px;font-size:12px;line-height:1.6;pointer-events:none;display:none;max-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.3);"></div>
+
+<!-- ════════════════════════════════════════════════════════
      LOGIN / LOGOUT JS (vanilla, runs before React mount)
 ════════════════════════════════════════════════════════ -->
 <script>
@@ -1643,6 +1635,47 @@ function doLogout() {
     const remembered = localStorage.getItem(REMEMBER_KEY);
     if (remembered && CREDS[remembered]) showApp(remembered);
   } catch (e) {}
+})();
+
+/* ─── Global tooltip via event delegation ───
+   Any element with a [data-remaining="a,b,c"] attribute will show the
+   #global-tooltip with one item per line, following the cursor. */
+(function initGlobalTooltip() {
+  const tip = document.getElementById('global-tooltip');
+  if (!tip) return;
+  let activeEl = null;
+
+  const positionTip = (x, y) => {
+    let left = x + 10;
+    let top  = y - 10;
+    if (left + tip.offsetWidth > window.innerWidth) left = x - tip.offsetWidth - 10;
+    if (top  + tip.offsetHeight > window.innerHeight) top = y - tip.offsetHeight - 10;
+    if (top  < 0) top = 10;
+    if (left < 0) left = 10;
+    tip.style.left = left + 'px';
+    tip.style.top  = top  + 'px';
+  };
+
+  document.addEventListener('mouseover', (e) => {
+    const el = e.target && e.target.closest && e.target.closest('[data-remaining]');
+    if (!el || el === activeEl) return;
+    activeEl = el;
+    const items = (el.getAttribute('data-remaining') || '').split(',').filter(Boolean);
+    tip.innerHTML = items.map(s => '<div>' + s + '</div>').join('');
+    tip.style.display = 'block';
+    positionTip(e.clientX, e.clientY);
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!activeEl) return;
+    positionTip(e.clientX, e.clientY);
+  });
+  document.addEventListener('mouseout', (e) => {
+    if (!activeEl) return;
+    const related = e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('[data-remaining]');
+    if (related === activeEl) return;  // still hovering same target
+    activeEl = null;
+    tip.style.display = 'none';
+  });
 })();
 </script>
 
@@ -3516,36 +3549,19 @@ const FeeStructureBadge = ({ structure }) => {
 };
 
 const PrioritisedTags = ({ items, priority, lookup, max = 3 }) => {
-  const [tip, setTip] = useState(null);  // { x, y, lines }
   if (!items) return <span className="tbl-muted">—</span>;
   const isToggleKey = (k) => typeof items[k] === 'boolean';
   const enabledByPriority = priority.filter(id => items[id]);
   const extras = Object.keys(items).filter(id => items[id] && isToggleKey(id) && !priority.includes(id));
   const ordered = [...enabledByPriority, ...extras];
   if (ordered.length === 0) return <span className="tbl-muted">—</span>;
-  const top = ordered.slice(0, max);
-  const rest = ordered.slice(max);
-  const onEnter = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    // Place above the +N marker; clamp into viewport.
-    const lines = rest.map(id => lookup(id));
-    const approxW = Math.max(140, lines.reduce((m, t) => Math.max(m, t.length * 7), 0) + 24);
-    let left = rect.left + rect.width / 2;
-    if (left + approxW / 2 > window.innerWidth - 8) left = window.innerWidth - approxW / 2 - 8;
-    if (left - approxW / 2 < 8) left = approxW / 2 + 8;
-    setTip({ x: left, y: rect.top - 8, lines });
-  };
-  const onLeave = () => setTip(null);
+  const top  = ordered.slice(0, max);
+  const rest = ordered.slice(max).map(lookup);
   return (
     <div className="svc-tags">
       {top.map(id => <span key={id} className="svc-tag">{lookup(id)}</span>)}
       {rest.length > 0 && (
-        <span className="svc-more" onMouseEnter={onEnter} onMouseLeave={onLeave}>+{rest.length}</span>
-      )}
-      {tip && (
-        <div className="svc-tip" style={{ top: tip.y, left: tip.x, transform: 'translate(-50%, -100%)' }}>
-          {tip.lines.map((l, i) => <div key={i}>{l}</div>)}
-        </div>
+        <span className="svc-more" data-remaining={rest.join(',')}>+{rest.length}</span>
       )}
     </div>
   );
@@ -3817,25 +3833,25 @@ const SEED_BILLERS = [
     type:'biller', status:'Active', id:'ENT-BILL-2026-1041', date:'2026-01-08',
     bi:{ entityName:'Telekom Brunei Berhad (TelBru)', contractRefNo:'CONTRACT-2026-TELB-001', contractDate:'2026-01-05', primaryContactName:'Haji Mohd Azri bin Abdullah', primaryContactEmail:'azri.abdullah@telbru.com.bn', primaryContactPhone:'+673 222 2000', secondaryContactName:'Siti Nur Izzati binti Hj Rosli', secondaryContactEmail:'izzati.rosli@telbru.com.bn', hierarchyLevels:'3', languageSetting:'Both' },
     accts:[{ id:1, currency:'BND', accountName:'Telekom Brunei Berhad', accountNumber:'0110023456789', bankName:'Baiduri Bank Berhad', accountType:'Settlement' }, { id:2, currency:'BND', accountName:'TelBru Reconciliation', accountNumber:'0110023456790', bankName:'Baiduri Bank Berhad', accountType:'Reconciliation' }],
-    svcs:{ billEnquiry:true, billPayment:true, adHocPayment:true, safProcessing:false, onlineBillPresentment:true, bulkFileUpload:true, paymentNotification:true, uploadPath:'sftp://sftp.telbru.com.bn/epg/upload/', downloadPath:'sftp://sftp.telbru.com.bn/epg/download/' },
+    svcs:{ billDataMode:'Hybrid', billEnquiry:true, billPayment:true, adHocPayment:true, safProcessing:false, onlineBillPresentment:true, bulkFileUpload:true, paymentNotification:true, uploadPath:'sftp://sftp.telbru.com.bn/epg/upload/', downloadPath:'sftp://sftp.telbru.com.bn/epg/download/' },
   }),
   seedBiller({
     type:'biller', status:'Active', id:'ENT-BILL-2026-1087', date:'2026-01-22',
     bi:{ entityName:'DST Communications Sdn Bhd', contractRefNo:'CONTRACT-2026-DST-001', contractDate:'2026-01-20', primaryContactName:'Dayang Noraini binti Hj Sulaiman', primaryContactEmail:'noraini.sulaiman@dst.com.bn', primaryContactPhone:'+673 222 1000', secondaryContactName:'', secondaryContactEmail:'', hierarchyLevels:'2', languageSetting:'English' },
     accts:[{ id:3, currency:'BND', accountName:'DST Communications Sdn Bhd', accountNumber:'0220034567001', bankName:'Bank Islam Brunei Darussalam', accountType:'Both' }],
-    svcs:{ billEnquiry:true, billPayment:true, adHocPayment:false, safProcessing:false, onlineBillPresentment:true, bulkFileUpload:false, paymentNotification:true },
+    svcs:{ billDataMode:'Online', billEnquiry:true, billPayment:true, adHocPayment:false, safProcessing:false, onlineBillPresentment:true, bulkFileUpload:false, paymentNotification:true },
   }),
   seedBiller({
     type:'biller', status:'Active', id:'ENT-BILL-2026-1102', date:'2026-02-05',
     bi:{ entityName:'Jabatan Air (Department of Water Services)', contractRefNo:'CONTRACT-2026-JAIR-001', contractDate:'2026-02-01', primaryContactName:'Pg Hj Mohd Shahril bin Pg Ahmad', primaryContactEmail:'shahril@air.gov.bn', primaryContactPhone:'+673 238 0333', secondaryContactName:'Hjh Rasidah binti Hj Salleh', secondaryContactEmail:'rasidah@air.gov.bn', hierarchyLevels:'2', languageSetting:'Malay' },
     accts:[{ id:4, currency:'BND', accountName:'Jabatan Air Brunei Darussalam', accountNumber:'0330045678012', bankName:'Bank Islam Brunei Darussalam', accountType:'Settlement' }],
-    svcs:{ billEnquiry:true, billPayment:true, adHocPayment:false, safProcessing:true, onlineBillPresentment:false, bulkFileUpload:true, paymentNotification:true, uploadPath:'sftp://sftp.air.gov.bn/epg/upload/', downloadPath:'sftp://sftp.air.gov.bn/epg/download/' },
+    svcs:{ billDataMode:'Offline', billEnquiry:true, billPayment:true, adHocPayment:false, safProcessing:true, onlineBillPresentment:false, bulkFileUpload:true, paymentNotification:true, uploadPath:'sftp://sftp.air.gov.bn/epg/upload/', downloadPath:'sftp://sftp.air.gov.bn/epg/download/' },
   }),
   seedBiller({
     type:'biller', status:'Active', id:'ENT-BILL-2026-1155', date:'2026-02-18',
     bi:{ entityName:'Royal Brunei Airlines Bhd', contractRefNo:'CONTRACT-2026-RBA-001', contractDate:'2026-02-15', primaryContactName:'Mohd Fareez bin Hj Kamaluddin', primaryContactEmail:'fareez.kamaluddin@rba.com.bn', primaryContactPhone:'+673 221 2222', secondaryContactName:'', secondaryContactEmail:'', hierarchyLevels:'1', languageSetting:'English' },
     accts:[{ id:5, currency:'BND', accountName:'Royal Brunei Airlines Bhd', accountNumber:'0440056789023', bankName:'Standard Chartered Bank Brunei', accountType:'Settlement' }, { id:6, currency:'USD', accountName:'RBA USD Settlement', accountNumber:'0440056789024', bankName:'Standard Chartered Bank Brunei', accountType:'Settlement' }],
-    svcs:{ billEnquiry:false, billPayment:false, adHocPayment:true, safProcessing:false, onlineBillPresentment:false, bulkFileUpload:false, paymentNotification:true },
+    svcs:{ billDataMode:'Online', billEnquiry:false, billPayment:false, adHocPayment:true, safProcessing:false, onlineBillPresentment:false, bulkFileUpload:false, paymentNotification:true },
   }),
 ];
 
