@@ -638,7 +638,7 @@ body:not(.not-authed) .login-screen { display: none; }
 .fs-badge.fs-percentage { background: #FFF7ED; color: #9A3412; }
 .fs-badge.fs-fixed      { background: #F8FAFC; color: #475569; }
 
-/* Service / channel tag chips for table cells — all tags shown with wrapping */
+/* Service / channel tag chips for table cells — top 3 + "+N" overflow */
 .svc-tags {
   display: flex;
   align-items: center;
@@ -654,6 +654,80 @@ body:not(.not-authed) .login-screen { display: none; }
   color: var(--text-muted);
   white-space: nowrap;
 }
+.svc-more {
+  font-size: 11px;
+  color: var(--text-subtle);
+  cursor: pointer;
+  margin-left: 4px;
+  font-weight: 500;
+  user-select: none;
+}
+.svc-more:hover { color: var(--text); }
+.svc-tip {
+  position: fixed;
+  z-index: 9999;
+  background: #1E293B;
+  color: #fff;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 1.65;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .25);
+}
+
+/* ─── List page tables share a fixed column layout ─── */
+.entity-list-table { table-layout: fixed; }
+.entity-list-table th:nth-child(1),
+.entity-list-table td:nth-child(1) { width: 45%; }
+.entity-list-table th:nth-child(2),
+.entity-list-table td:nth-child(2) { width: 20%; }
+.entity-list-table th:nth-child(3),
+.entity-list-table td:nth-child(3) { width: 35%; }
+
+/* ─── Modal: leave-this-page confirmation ─── */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(15, 23, 42, .55);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9000;
+  padding: 24px;
+  animation: modalFade .15s ease both;
+}
+@keyframes modalFade { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 28px 32px 24px;
+  width: 100%;
+  max-width: 440px;
+  animation: modalIn .18s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes modalIn {
+  from { transform: translateY(8px) scale(.98); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+.modal-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -.01em; }
+.modal-body  { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+.modal-actions {
+  display: flex; justify-content: flex-end; gap: 10px;
+  margin-top: 22px;
+}
+
+/* Login: demo-fill hover hint */
+.login-demo-hint {
+  display: block;
+  font-size: 10px;
+  color: var(--text-subtle);
+  opacity: 0;
+  margin-top: 4px;
+  font-style: italic;
+  transition: opacity .15s ease;
+}
+.login-field:hover .login-demo-hint,
+.login-input-wrap:focus-within ~ .login-demo-hint { opacity: .6; }
 
 /* Detail page header — entity name + meta + Edit button */
 .detail-header {
@@ -812,7 +886,8 @@ body:not(.not-authed) .login-screen { display: none; }
 }
 .fg:hover .demo-hint { opacity: .6; }
 /* Demo auto-fill: green flash after dblclick fills the input */
-.fi.demo-filled, .fsel.demo-filled {
+.fi.demo-filled, .fsel.demo-filled,
+.login-input-wrap:has(input.demo-filled) {
   border-color: #1D7A4E !important;
   box-shadow: 0 0 0 3px color-mix(in srgb, #1D7A4E 18%, transparent) !important;
   transition: border-color .25s ease, box-shadow .25s ease;
@@ -1454,15 +1529,17 @@ body:not(.not-authed) .login-screen { display: none; }
       <label for="login-id">Admin ID</label>
       <div class="login-input-wrap">
         <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
-        <input type="text" id="login-id" placeholder="e.g. A-001" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()"/>
+        <input type="text" id="login-id" placeholder="e.g. epg_admin" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()" ondblclick="loginDblFill('login-id','epg_admin')"/>
       </div>
+      <span class="login-demo-hint">double-click to fill demo credentials</span>
     </div>
     <div class="login-field">
       <label for="login-pw">Password</label>
       <div class="login-input-wrap">
         <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
-        <input type="password" id="login-pw" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()"/>
+        <input type="password" id="login-pw" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()" ondblclick="loginDblFill('login-pw','1234')"/>
       </div>
+      <span class="login-demo-hint">double-click to fill demo credentials</span>
     </div>
 
     <label class="login-remember">
@@ -1476,8 +1553,8 @@ body:not(.not-authed) .login-screen { display: none; }
     </button>
     <div class="login-hint">
       <strong>Demo credentials:</strong><br>
-      Admin ID: <strong>A-001</strong> &nbsp;/&nbsp; Password: <strong>1234</strong><br>
-      Admin ID: <strong>A-002</strong> &nbsp;/&nbsp; Password: <strong>1234</strong>
+      Admin ID: <strong>epg_admin</strong> &nbsp;/&nbsp; Password: <strong>1234</strong><br>
+      (or <strong>A-001</strong> / <strong>1234</strong>, <strong>A-002</strong> / <strong>1234</strong>)
     </div>
   </div>
 </div>
@@ -1515,8 +1592,18 @@ body:not(.not-authed) .login-screen { display: none; }
      LOGIN / LOGOUT JS (vanilla, runs before React mount)
 ════════════════════════════════════════════════════════ -->
 <script>
-const CREDS = { 'A-001':'1234', 'A-002':'1234' };
+const CREDS = { 'epg_admin':'1234', 'A-001':'1234', 'A-002':'1234' };
 const REMEMBER_KEY = 'epg-admin-remember';
+
+function loginDblFill(id, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.value = value;
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+  // Reuse the existing green-flash demo-filled animation
+  el.classList.add('demo-filled');
+  setTimeout(() => el.classList.remove('demo-filled'), 500);
+}
 
 function showApp(userId) {
   document.body.classList.remove('not-authed');
@@ -3394,18 +3481,38 @@ const FeeStructureBadge = ({ structure }) => {
   return <span className={`fs-badge ${cls}`}>{structure}</span>;
 };
 
-const PrioritisedTags = ({ items, priority, lookup }) => {
+const PrioritisedTags = ({ items, priority, lookup, max = 3 }) => {
+  const [tip, setTip] = useState(null);  // { x, y, lines }
   if (!items) return <span className="tbl-muted">—</span>;
-  // Service/channel keys that are NOT real toggles (e.g. paths, mode strings)
   const isToggleKey = (k) => typeof items[k] === 'boolean';
-  // Enabled in priority order, then any leftover enabled toggles
   const enabledByPriority = priority.filter(id => items[id]);
   const extras = Object.keys(items).filter(id => items[id] && isToggleKey(id) && !priority.includes(id));
   const ordered = [...enabledByPriority, ...extras];
   if (ordered.length === 0) return <span className="tbl-muted">—</span>;
+  const top = ordered.slice(0, max);
+  const rest = ordered.slice(max);
+  const onEnter = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    // Place above the +N marker; clamp into viewport.
+    const lines = rest.map(id => lookup(id));
+    const approxW = Math.max(140, lines.reduce((m, t) => Math.max(m, t.length * 7), 0) + 24);
+    let left = rect.left + rect.width / 2;
+    if (left + approxW / 2 > window.innerWidth - 8) left = window.innerWidth - approxW / 2 - 8;
+    if (left - approxW / 2 < 8) left = approxW / 2 + 8;
+    setTip({ x: left, y: rect.top - 8, lines });
+  };
+  const onLeave = () => setTip(null);
   return (
     <div className="svc-tags">
-      {ordered.map(id => <span key={id} className="svc-tag">{lookup(id)}</span>)}
+      {top.map(id => <span key={id} className="svc-tag">{lookup(id)}</span>)}
+      {rest.length > 0 && (
+        <span className="svc-more" onMouseEnter={onEnter} onMouseLeave={onLeave}>+{rest.length}</span>
+      )}
+      {tip && (
+        <div className="svc-tip" style={{ top: tip.y, left: tip.x, transform: 'translate(-50%, -100%)' }}>
+          {tip.lines.map((l, i) => <div key={i}>{l}</div>)}
+        </div>
+      )}
     </div>
   );
 };
@@ -3479,7 +3586,7 @@ const ListPage = ({ tab, onTabChange, billers, fes, onAddBiller, onAddFE, onView
               )
             ) : (
               <div className="tbl-wrap">
-                <table className="data-table">
+                <table className="data-table entity-list-table">
                   <thead><tr>
                     <th>Biller Name</th>
                     <th>Bill Data Mode</th>
@@ -3519,7 +3626,7 @@ const ListPage = ({ tab, onTabChange, billers, fes, onAddBiller, onAddFE, onView
               )
             ) : (
               <div className="tbl-wrap">
-                <table className="data-table">
+                <table className="data-table entity-list-table">
                   <thead><tr>
                     <th>Fulfillment Name</th>
                     <th>Fee Structure</th>
@@ -3826,6 +3933,8 @@ const applyDemoFill = (el) => {
   return true;
 };
 
+const FORM_PAGES = ['biller', 'fe', 'biller-edit', 'fe-edit'];
+
 const App = () => {
   const [page, setPage]           = useState('list');
   const [tab,  setTab]            = useState('billers');
@@ -3835,6 +3944,8 @@ const App = () => {
   const [toast, setToast]         = useState(null);
   const [expanded, setExpanded]   = useState({ entity: true, settings: false });
   const [selectedEntityId, setSelectedEntityId] = useState(null);
+  const [isDirty, setIsDirty]     = useState(false);  // form-page has user edits
+  const [pendingNav, setPendingNav] = useState(null); // {action} pending Leave-confirm
 
   // Register the global demo auto-fill handler once
   useEffect(() => {
@@ -3843,13 +3954,45 @@ const App = () => {
     return () => document.removeEventListener('dblclick', handler);
   }, []);
 
+  // Track unsaved changes on form pages: any input flips dirty=true
+  useEffect(() => {
+    if (!FORM_PAGES.includes(page)) { setIsDirty(false); return; }
+    const onInput = (e) => {
+      if (['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) setIsDirty(true);
+    };
+    document.addEventListener('input',  onInput, true);
+    document.addEventListener('change', onInput, true);
+    // Warn on browser back / refresh / close
+    const onBeforeUnload = (e) => { if (isDirty) { e.preventDefault(); e.returnValue = ''; } };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => {
+      document.removeEventListener('input',  onInput, true);
+      document.removeEventListener('change', onInput, true);
+      window.removeEventListener('beforeunload', onBeforeUnload);
+    };
+  }, [page, isDirty]);
+
+  // guardedNav wraps any navigation away from a dirty form page.
+  // Hold a ref so the breadcrumb's bound handler always sees fresh isDirty/page.
+  const guardedNav = (action) => {
+    if (FORM_PAGES.includes(page) && isDirty) {
+      setPendingNav({ action });
+    } else {
+      action();
+    }
+  };
+  const guardedNavRef = useRef(guardedNav);
+  guardedNavRef.current = guardedNav;
+
   const goNav = (p, t) => { setPage(p); if (t) setTab(t); };
   const goList = () => { setPage('list'); setSelectedEntityId(null); };
+  const guardedGoNav = (p, t) => guardedNav(() => goNav(p, t));
+  const guardedGoList = () => guardedNav(goList);
   const toggleExp = id => setExpanded(e => ({ ...e, [id]: !e[id] }));
 
-  const onBillerSuccess = (data) => setBillers(b => [...b, data]);
-  const onFESuccess     = (data) => setFEs(f => [...f, data]);
-  const backToList      = (t)    => { setPage('list'); setSelectedEntityId(null); if (t) setTab(t); };
+  const onBillerSuccess = (data) => { setIsDirty(false); setBillers(b => [...b, data]); };
+  const onFESuccess     = (data) => { setIsDirty(false); setFEs(f => [...f, data]); };
+  const backToList      = (t)    => { setIsDirty(false); setPage('list'); setSelectedEntityId(null); if (t) setTab(t); };
 
   // Detail/edit navigation
   const viewEntity = (id, type) => {
@@ -3858,14 +4001,16 @@ const App = () => {
     setTab(type === 'biller' ? 'billers' : 'fe');
   };
   const editEntity   = () => setPage(page === 'biller-detail' ? 'biller-edit' : 'fe-edit');
-  const goToDetail   = () => setPage(page === 'biller-edit' ? 'biller-detail' : 'fe-detail');
-  const cancelEdit   = () => goToDetail();
+  const goToDetail   = () => { setIsDirty(false); setPage(page === 'biller-edit' ? 'biller-detail' : 'fe-detail'); };
+  const cancelEdit   = () => goToDetail();  // Cancel bypasses guard per spec
   const saveBiller   = (updated) => {
+    setIsDirty(false);
     setBillers(bs => bs.map(b => b.id === updated.id ? updated : b));
     setPage('biller-detail');
     setToast('Changes saved successfully.');
   };
   const saveFE       = (updated) => {
+    setIsDirty(false);
     setFEs(fs => fs.map(f => f.id === updated.id ? updated : f));
     setPage('fe-detail');
     setToast('Changes saved successfully.');
@@ -3908,7 +4053,7 @@ const App = () => {
       } else if (c.onClick) {
         const a = document.createElement('a');
         a.href = '#'; a.textContent = c.label;
-        a.onclick = (e) => { e.preventDefault(); c.onClick(); };
+        a.onclick = (e) => { e.preventDefault(); guardedNavRef.current(c.onClick); };
         hdrCrumb.appendChild(a);
       } else {
         const span = document.createElement('span');
@@ -3920,7 +4065,7 @@ const App = () => {
 
   return (
     <div id="app">
-      <Sidebar page={page} tab={tab} onNav={goNav} expanded={expanded} onToggle={toggleExp}/>
+      <Sidebar page={page} tab={tab} onNav={guardedGoNav} expanded={expanded} onToggle={toggleExp}/>
       <div className="main-wrapper">
         {/* Detail pages render their own header (entity name + meta + Edit button), so skip the default */}
         {!isDetailPage && (
@@ -3963,6 +4108,25 @@ const App = () => {
         </div>
       </div>
       {toast && <Toast msg={toast} onClose={() => setToast(null)}/>}
+      {pendingNav && (
+        <div className="modal-backdrop" onClick={() => setPendingNav(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-title">Leave this page?</div>
+            <div className="modal-body">
+              You have unsaved changes. If you leave now, your progress will be lost.
+            </div>
+            <div className="modal-actions">
+              <button className="btn btn-outline" onClick={() => setPendingNav(null)}>Stay on Page</button>
+              <button className="btn btn-primary" onClick={() => {
+                const act = pendingNav.action;
+                setIsDirty(false);
+                setPendingNav(null);
+                act();
+              }}>Leave</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
